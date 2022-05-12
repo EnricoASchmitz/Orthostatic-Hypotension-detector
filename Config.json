@@ -1,0 +1,14 @@
+{
+  "klop": {
+    "dataset": "klop",
+    "input_steps": 2400,
+    "output_steps": 1200,
+    "model": "baseline",
+    "smooth": true,
+    "outlier_algo": "knn",
+    "resample": false,
+    "rolling_window": false,
+    "lagging": false,
+    "file_loc": "C:\\Users\\enric\\Documents\\Master thesis\\Scripts_master\\Data\\More markers\\"
+  }
+}

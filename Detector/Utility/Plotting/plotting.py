@@ -1,0 +1,196 @@
+# Author: Enrico Schmitz (s1047521)
+# Master Thesis Data science
+# Project: Applications of Deep Learning on Orthostatic Hypotension detection
+# Assignment of: Donders Institute for Brain, Cognition and Behaviour
+# Script: Plotting functions
+
+# Imports
+import logging
+from typing import Union, Optional
+
+import mlflow
+import numpy as np
+import pandas as pd
+import plotly.express as px
+from plotly.graph_objs import Figure, Layout, Scatter
+
+from Detector.Utility.Metrics.Losses import Loss
+
+
+def line_plot_with_stages(
+        x: Union[np.array, str],
+        y: Union[np.array, str],
+        stand_markers: pd.DataFrame,
+        title: str,
+        df: Optional[pd.DataFrame] = None,
+        **kwargs: any
+) -> None:
+    """ Line plot data using stand markers
+
+    Args:
+        x: x data to be plotted
+        y: y data to be plotted
+        stand_markers: dataframe containing marker timestamps
+        title: string to use a title in the plot
+        df: dataframe needed if x and y are column names
+
+    Returns:
+        None
+    """
+    fig = px.line(df, x=x, y=y, title=title, labels={"x": "time (seconds)"}, **kwargs)
+    fig = plot_stages(fig, stand_markers)
+    fig.show()
+
+
+def scatter_plot_with_stages(
+        x: Union[np.array, str],
+        y: Union[np.array, str],
+        stand_markers: pd.DataFrame,
+        title: str,
+        df: Optional[pd.DataFrame] = None,
+        **kwargs: any
+) -> None:
+    """ Scatter plot data using stand markers
+
+    Args:
+        x: x data to be plotted
+        y: y data to be plotted
+        stand_markers: dataframe containing marker timestamps
+        title: string to use a title in the plot
+        df: dataframe needed if x and y are column names
+
+    Returns:
+         None
+    """
+    fig = px.scatter(df, x=x, y=y, title=title, labels={"x": "time (seconds)"}, **kwargs)
+    fig = plot_stages(fig, stand_markers)
+    fig.show()
+
+
+def plot_stages(fig: Figure, stand_markers: pd.DataFrame) -> Figure:
+    """ Add stages to a plot
+
+    Args:
+        fig: plotly figure to add the stages to needs to be indexed same way as stand_markers columns
+        stand_markers: dataframe containing marker timestamps
+
+    Returns:
+        returns figure with stages
+    """
+    for index, row in stand_markers.iterrows():
+        fig.add_vrect(x0=row['begin'], x1=row['end'],
+                      annotation_text=index, annotation_position="top left",
+                      fillcolor="green", opacity=0.25, line_width=0)
+    return fig
+
+
+def simple_plot(y: np.array, y2: np.array = None, title: str = "plot", y2_name: str = "y2") -> None:
+    """ Wrapper for plotly line function
+
+    Args:
+        y: data
+        y2: data for second scatter (Optional)
+        title: Title for the plot
+        y2_name: Name for legend of y2
+
+    Returns:
+        None
+    """
+    fig = px.line(y=y, title=title)
+    if y2 is not None:
+        fig.add_scatter(y=y2, cliponaxis=True, mode="markers", name=y2_name)
+    fig.show()
+
+
+def plot_prediction(target_name: str, target_index: int, train: np.ndarray, prediction: np.ndarray, true: np.ndarray,
+                    title: str, std: np.ndarray = None, folder_name: str = None):
+    """ Plot the prediction
+
+    Args:
+        target_name: name to add to the plot
+        target_index: column to plot
+        train: training data
+        true:  test data
+        prediction: Predicted values
+        title: title of the plot
+
+    Returns:
+        None
+    """
+    logger = logging.Logger(__name__)
+
+    # get only the target column
+
+    def get_correct_shape(data, target_index):
+        if data.ndim > 2:
+            data = data[:, -1, target_index]
+        else:
+            data = data[:, target_index]
+        return data
+
+    train = get_correct_shape(train, target_index)
+    prediction = get_correct_shape(prediction, target_index)
+    true = get_correct_shape(true, target_index)
+
+    date_train = np.array(range(0, len(train)))
+    date_test = np.array(range(len(train), len(train) + len(true)))
+
+    if ((np.amin(prediction) < 0) or (np.max(prediction) > 300)) and std is None:
+        # Clip the prediction
+        logger.warning("Values clipped")
+        prediction = np.clip(prediction, a_min=0, a_max=300)
+
+    trace1 = Scatter(
+        x=date_train,
+        y=train,
+        mode='lines',
+        name='Data'
+    )
+    trace2 = Scatter(
+        x=date_test,
+        y=prediction,
+        mode='lines',
+        name='Prediction',
+    )
+    trace3 = Scatter(
+        x=date_test,
+        y=true,
+        opacity=0.5,
+        mode='lines',
+        name='Ground Truth'
+    )
+
+    plots = [trace1, trace2, trace3]
+
+    if std is not None:
+        std = std[..., -1]
+        upper_std = Scatter(
+            x=date_test,
+            y=prediction + std,
+            opacity=0.5,
+            mode='lines',
+            name='+STD'
+        )
+        plots.append(upper_std)
+        lower_std = Scatter(
+            x=date_test,
+            y=prediction + std,
+            opacity=0.5,
+            mode='lines',
+            name='-STD'
+        )
+        plots.append(lower_std)
+
+    mae = Loss().get_loss_metric("mae")
+    mae = round(mae(true, prediction), 4)
+
+    layout = Layout(
+        title=f"{title}, Loss mae:{mae}",
+        xaxis={'title': "Date"},
+        yaxis={'title': f"{target_name}"}
+    )
+    fig = Figure(data=plots, layout=layout)
+    if folder_name is not None:
+        mlflow.log_figure(fig, f"figure/{folder_name}/prediction_{target_name}.html")
+    else:
+        fig.show()
