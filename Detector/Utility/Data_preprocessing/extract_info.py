@@ -10,6 +10,8 @@ import logging
 import numpy as np
 
 # Variables
+import pandas as pd
+
 from Detector.Utility.Data_preprocessing.Transformation import time_as_datetime
 
 Threshold = 1  # Threshold for minimal difference
@@ -107,3 +109,129 @@ def get_full_curve(BP_dict, BP_type, BP, start, end, baseline_length=40, seconds
     # Get the BP up until 180 seconds into the future
     BP_dict[BP_type] = resampled_BP[start_int - baseline_length:start_int + 180]
     return BP_dict
+
+
+def get_indices(sitting, stand, stop_index):
+    # Get index when the repeat starts
+    start_index = sitting[stop_index:].idxmax()
+    # Get index when we stand up during the repeat
+    stand_index = stand[start_index:].idxmax()
+    # Get index when this repeats ends
+    stop_index = stand[stand_index:].idxmin()
+    # Make sure that we have a stop and start index
+    if stand_index == stop_index:
+        stop_index = stand.index[-1]
+    return start_index, stand_index, stop_index
+
+
+def extract_values(data_object, df, stand_index, baseline_length, stop_index, time, warning, seconds, standing_length,
+                   future_steps):
+    # Dicts
+    par = {}
+    x = {}
+    x_nirs = {}
+    bp_dict = {}
+
+    starting_index = stand_index - baseline_length
+
+    # get values for systolic and diastolic
+    for BP_type in data_object.target_col:
+        # get the data
+        BP_data = df[BP_type]
+        # get x values for corresponding data
+        x = get_x_values(x, BP_data[starting_index:stop_index].copy(), BP_type)
+        # get parameters about the standing part
+        par = get_y_values(par, BP_data.copy(), time, stand_index, BP_type)
+        drop_timestamp = par[f"{BP_type}_drop_index"]
+        if drop_timestamp <= 1:
+            # If the BP drop is within 1 second of standing up we assume wrong markers
+            stand_index = stand_index - 1
+            if drop_timestamp <= 0:
+                print(warning)
+                print(f"Drop before marker, index {drop_timestamp};")
+                stand_index = stand_index - drop_timestamp
+
+            return extract_values(data_object, df, stand_index, baseline_length, stop_index, time, warning, seconds,
+                                  standing_length, future_steps)
+
+        # Get the full BP during standing
+        bp_dict = get_full_curve(bp_dict, BP_type, BP_data.copy(), stand_index, stop_index, baseline_length, seconds)
+
+    # get values for oxy and dxy
+    for Nirs_type in data_object.nirs_col:
+        x_nirs = get_x_values(x_nirs, df[Nirs_type][starting_index:stop_index].copy(), Nirs_type)
+
+    return convert_dict(x, x_nirs, bp_dict, baseline_length, standing_length, future_steps), par
+
+
+def convert_dict(x, x_nirs, bp_dict, baseline_length, standing_length, future_steps):
+    # Convert dictionary to dataframe and then to numpy array
+    x_df = pd.DataFrame(x).interpolate().fillna(0)
+    x_array = np.array(x_df)[:baseline_length + standing_length]
+
+    x_nirs_df = pd.DataFrame(x_nirs).interpolate().fillna(0)
+    x_nirs_array = np.array(x_nirs_df)[:baseline_length + standing_length]
+
+    y_curve = pd.DataFrame(bp_dict).interpolate()
+    y_curve_array = np.array(y_curve)[:future_steps + baseline_length]
+    return x_array, x_nirs_array, y_curve_array
+
+
+def make_datasets(data_object, sub, info, baseline_length, standing_length, time,future,seconds, lists):
+    x_dataframes, x_oxy_dxy, y_curves, infs, parameters = lists
+    dfs = info['Data'].copy()
+    # Loop over all dataframes
+    for chal, df in dfs.items():
+
+        h_stages = df['stage']
+        # Get protocol
+        sitting = h_stages.str.contains("start", case=False)
+        stand = h_stages.str.contains("stand", case=False)
+        stop_index = df.index[0]
+        if chal in ["FSit", "FSup"]:
+            pass
+        else:
+            continue
+        for repeat in range(0, 3):
+
+            warning = f"Warning: Subject {sub}; challenge: {chal}; repeat: {repeat + 1}"
+
+            start_index, stand_index, stop_index = get_indices(sitting, stand, stop_index)
+            if start_index == stand_index:
+                print(warning)
+                print(f"Missing repeat: {repeat + 1}")
+                continue
+            # Save the patient info
+            inf = info["info"].copy()
+            inf["challenge"] = str(chal)
+            inf["repeat"] = int(repeat)
+            # calculate expected rows in the daframe
+            future_steps = int(future / seconds)
+
+            (x_array, x_nirs_array, y_curve_array), par = extract_values(data_object,
+                                                                         df,
+                                                                         stand_index,
+                                                                         baseline_length,
+                                                                         stop_index,
+                                                                         time,
+                                                                         warning,
+                                                                         seconds,
+                                                                         standing_length,
+                                                                         future_steps)
+
+            # Make sure data is in the right format or we skip the repeat
+            if x_array.shape[0] == baseline_length + standing_length and y_curve_array.shape[
+                0] == future_steps + baseline_length:
+                x_dataframes.append(x_array)
+                x_oxy_dxy.append(x_nirs_array - x_nirs_array.mean(axis=0))
+                y_curves.append(y_curve_array)
+                infs.append(inf)
+                parameters.append(par)
+            elif x_array.shape[0] == baseline_length + standing_length and \
+                    y_curve_array.shape[0] != future_steps:
+                print(warning)
+                print(f"y curve not long enough; {y_curve_array.shape[0]}/{future_steps}")
+            else:
+                print(warning)
+                print(f"X incorrect/ insufficient data")
+    return x_dataframes, x_oxy_dxy, y_curves, infs, parameters

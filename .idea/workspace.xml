@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
@@ -13,6 +12,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/Optimize_model.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/Predict_future.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/Preprocessing.py" beforeDir="false" />
@@ -62,6 +62,8 @@
       <change beforePath="$PROJECT_DIR$/BP_forecaster/__init__.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/BP_forecaster/enums.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Optimized/mlruns/0/meta.yaml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/meta.yaml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/metrics/mae" beforeDir="false" />
@@ -274,6 +276,7 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="28vQnTYqMVnpADYAQ3KTKSPvINa" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />

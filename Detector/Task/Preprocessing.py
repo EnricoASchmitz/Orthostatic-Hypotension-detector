@@ -15,7 +15,8 @@ import pandas as pd
 
 from Detector.Utility.Data_preprocessing.Cleansing import remove_flatliners
 from Detector.Utility.Data_preprocessing.Transformation import resample, add_diastolic_systolic_bp
-from Detector.Utility.Data_preprocessing.extract_info import get_x_values, get_y_values, get_full_curve
+from Detector.Utility.Data_preprocessing.extract_info import get_x_values, get_y_values, get_full_curve, get_indices, \
+    extract_values, make_datasets
 from Detector.Utility.PydanticObject import InfoObject, DataObject
 from Detector.Utility.Task.preprocessing.Preprocessor_creator import PreprocessorCreator
 from Detector.Utility.Util import nan_helper, get_markers
@@ -23,7 +24,11 @@ from Detector.Utility.Util import nan_helper, get_markers
 o = 1
 # Variables
 plot_resample_vs_decimate = False
-
+time = 60
+baseline_length = 40
+future = 150
+standing_length = 150
+seconds = 1
 
 def preprocessing(info_object: InfoObject) -> dict:
     """ Perform preprocessing
@@ -40,7 +45,13 @@ def preprocessing(info_object: InfoObject) -> dict:
     # Get the preprocessor we need for our current dataset
     Preprocessor = PreprocessorCreator.get_preprocessor(info_object.dataset, logger=logger, info_object=info_object)
 
-    subjects = {}
+    # Lists
+    infs = []
+    parameters = []
+    x_dataframes = []
+    x_oxy_dxy = []
+    y_curves = []
+
     # get all subject files
     for subject in os.listdir(Path(info_object.file_loc)):
         challenges = {}
@@ -95,97 +106,20 @@ def preprocessing(info_object: InfoObject) -> dict:
             }
 
             info["info"] = tags.sample
-            subjects[subject] = info
-
-    # Now merge this into a dataframe containing all subjects
-    # Variables
-    time = 60
-    future = 150
-    past = 180
-    seconds = 1
-
-    # Lists
-    infs = []
-    parameters = []
-    x_dataframes = []
-    x_oxy_dxy = []
-    y_curves = []
-
-    # Loop over all subjects
-    for sub, info in subjects.items():
-        print(sub)
-        dfs = info['Data'].copy()
-        # Loop over all dataframes
-        for chal, df in dfs.items():
-            h_stages = df['stage']
-            # Get protocol
-            sitting = h_stages.str.contains("start", case=False)
-            stand = h_stages.str.contains("stand", case=False)
-            stop_index = df.index[0]
-            if chal == "FSit" or chal == "FSup":
-                pass
-            else:
-                break
-            for repeat in range(0, 3):
-                # Get index when the repeat starts
-                start_index = sitting[stop_index:].idxmax()
-                # Get index when we stand up during the repeat
-                stand_index = stand[start_index:].idxmax()
-                # Get index when this repeats ends
-                stop_index = stand[stand_index:].idxmin()
-                # Make sure that we have a stop and start index
-                if stand_index == stop_index:
-                    stop_index = stand.index[-1]
-                if start_index == stand_index:
-                    print(f"Missing repeat: {repeat + 1} with challenge:{chal}")
-                    continue
-                # Save the patient info
-                par = info["info"]
-                par["ID"] = sub
-
-                # Dicts
-                params = {}
-                x = {}
-                x_nirs = {}
-                bp_dict = {}
-                # get values for systolic and diastolic
-                for BP_type in data_object.target_col:
-                    # get x values for corresponding data
-                    x = get_x_values(x, df[BP_type].loc[start_index:stand_index].copy(), BP_type)
-                    # get parameters about the standing part
-                    params = get_y_values(params, df[BP_type].copy(), time, stand_index, BP_type)
-                    # Get the full BP during standing
-                    bp_dict = get_full_curve(bp_dict, BP_type, df[BP_type].copy(), stand_index, stop_index, seconds)
-
-                # get values for oxy and dxy
-                for Nirs_type in data_object.nirs_col:
-                    x_nirs = get_x_values(x_nirs, df[Nirs_type].loc[start_index:stand_index].copy(), Nirs_type)
-
-                # Convert dictionary to dataframe and then to numpy array
-                x_df = pd.DataFrame(x).interpolate()
-                x_array = np.array(x_df)[-past:]
-
-                x_nirs_df = pd.DataFrame(x_nirs).interpolate()
-                x_nirs_array = np.array(x_nirs_df)[-past:]
-
-                # calculate expected rows in the daframe
-                future_steps = int(future / seconds)
-
-                y_curve = pd.DataFrame(bp_dict).interpolate()
-                y_curve_array = np.array(y_curve)[:future_steps]
-
-                # Make sure data is in the right format or we skip the repeat
-                if x_array.shape[0] == past and y_curve_array.shape[0] == future_steps:
-                    x_dataframes.append(x_array)
-                    x_oxy_dxy.append(x_nirs_array)
-                    y_curves.append(y_curve_array)
-                    parameters.append(params)
-                    infs.append(par)
-                elif x_array.shape[0] == past and y_curve_array.shape[0] != future_steps:
-                    print(
-                        f"y curve not long enough; {y_curve_array.shape[0]}/{future_steps}; Subject {sub}; challenge: {chal}; repeat: {repeat + 1}")
-                else:
-                    print(f"X incorrect; Subject {sub}; challenge: {chal}; repeat: {repeat + 1}")
+            x_dataframes, x_oxy_dxy, y_curves, infs, parameters = make_datasets(data_object,
+                                                                                subject,
+                                                                                info,
+                                                                                baseline_length,
+                                                                                standing_length,
+                                                                                time,
+                                                                                future,
+                                                                                seconds,
+                                                                                (x_dataframes,
+                                                                                 x_oxy_dxy,
+                                                                                 y_curves,
+                                                                                 infs,
+                                                                                 parameters)
+                                                                                )
 
     dd = defaultdict(list)
 

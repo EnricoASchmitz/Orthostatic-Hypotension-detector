@@ -42,7 +42,7 @@ def identify_flatliners(target_array, future=10):
     return y
 
 
-def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 2) -> pd.DataFrame:
+def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.5) -> pd.DataFrame:
     """ Remove flatliners from dataframe
 
     Args:
