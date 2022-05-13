@@ -8,7 +8,6 @@
 import logging
 
 import numpy as np
-
 # Variables
 import pandas as pd
 
@@ -183,7 +182,7 @@ def convert_dict(x, x_nirs, bp_dict, baseline_length, standing_length, future_st
     return x_array, x_nirs_array, y_curve_array
 
 
-def make_datasets(data_object, sub, info, baseline_length, standing_length, time,future,seconds, lists):
+def make_datasets(data_object, sub, info, baseline_length, standing_length, time, future, seconds, lists):
     x_dataframes, x_oxy_dxy, y_curves, infs, parameters = lists
     df = info['Data'].copy()
     chal = info["Challenge"]

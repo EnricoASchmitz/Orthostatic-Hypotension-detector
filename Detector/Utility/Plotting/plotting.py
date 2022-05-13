@@ -12,7 +12,9 @@ import mlflow
 import numpy as np
 import pandas as pd
 import plotly.express as px
+from numpy import ceil
 from plotly.graph_objs import Figure, Layout, Scatter
+from plotly.subplots import make_subplots
 
 from Detector.Utility.Metrics.Losses import Loss
 
@@ -192,5 +194,49 @@ def plot_prediction(target_name: str, target_index: int, train: np.ndarray, pred
     fig = Figure(data=plots, layout=layout)
     if folder_name is not None:
         mlflow.log_figure(fig, f"figure/{folder_name}/prediction_{target_name}.html")
+    else:
+        fig.show()
+
+
+def plot_comparison(model_name, info_df, names, rescaled_prediction, true, folder_name=None):
+    c = 3
+    r = int(ceil(true.shape[-1] / c))
+
+    fig = make_subplots(rows=r, cols=c,
+                        x_title="true",
+                        y_title="prediction",
+                        subplot_titles=names
+                        )
+    IDS = info_df.ID
+    row_n = 1
+    col_n = 1
+    for col in range(rescaled_prediction.shape[-1]):
+        fig.add_trace(
+            Scatter(x=true[:, col],
+                    y=rescaled_prediction[:, col],
+                    name=names[col],
+                    mode='markers',
+                    showlegend=False,
+                    hovertemplate='<b>%{text}</b><br>' +
+                                  'True: %{x}<br>' +
+                                  'Pred: %{y}<br>',
+                    text=IDS),
+            row=row_n, col=col_n
+        )
+        fig.add_shape(type='line',
+                      x0=min(true[:, col]),
+                      y0=min(true[:, col]),
+                      x1=max(true[:, col]),
+                      y1=max(true[:, col]),
+                      line=dict(color='Red'),
+                      row=row_n, col=col_n)
+
+        col_n += 1
+        if col_n == c + 1:
+            col_n = 1
+            row_n += 1
+    fig.update_layout(height=500 * r, width=500 * c, title_text="Prediction vs True")
+    if folder_name is not None:
+        mlflow.log_figure(fig, f"{folder_name}/{model_name}_comparision.html")
     else:
         fig.show()

@@ -24,6 +24,10 @@ class Model(ABC):
         self.m_eager = True
 
     @abstractmethod
+    def get_copy(self):
+        raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
+
+    @abstractmethod
     def get_data(self, data: np.ndarray, train_index: dict, target_index: dict, val_set: bool, test_set: bool):
         """ Get the data in the correct format
 
@@ -37,12 +41,11 @@ class Model(ABC):
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 
     @abstractmethod
-    def fit(self, train_set: np.ndarray, val_set: np.ndarray, movement_index, callbacks: list) -> int:
+    def fit(self, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list) -> int:
         """ Fit the model
 
         Args:
             train_set: Training set to use
-            val_set: validation set to use
             callbacks: callbacks to use
 
         Returns:
@@ -51,12 +54,11 @@ class Model(ABC):
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 
     @abstractmethod
-    def predict(self, data: np.ndarray, movement_index) -> Union[np.ndarray, Optional[np.ndarray]]:
+    def predict(self, data: np.ndarray) -> Union[np.ndarray, Optional[np.ndarray]]:
         """ Predict with model
 
         Args:
             data: test set to use
-            movement_index: columns that are for movement sensors
         Returns:
             Prediction, Optional[standard deviation]
         """

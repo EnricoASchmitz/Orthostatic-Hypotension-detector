@@ -11,11 +11,13 @@ import os
 import sys
 import warnings
 
+import numpy as np
+
 from Detector.Task.Optimize_model import optimize_model
 from Detector.Task.Preprocessing import preprocessing
 from Detector.Task.Train_model import train_model
-from Detector.Utility.Plotting.plotting import line_plot_with_stages
 from Detector.Utility.Task.preprocessing.PreprocessingFunctions import create_info_object
+from Detector.Utility.Util import nan_helper
 from Detector.enums import MLModelType
 
 warnings.simplefilter(action='ignore', category=UserWarning)
@@ -27,7 +29,7 @@ save_file = False
 plot_BP = False
 plot_features = False
 OP = False
-FI = False
+FI = True
 LoopModels = False
 
 
@@ -38,8 +40,9 @@ def main(argv):
     # create an object containing info from json
     info_object = create_info_object(dataset_name, info_dict)
     # preprocess the data
-    X, info_dataset, parameters, full_curve = preprocessing(info_object)
-
+    data_object, X, info_dataset, parameters, full_curve = preprocessing(info_object)
+    assert not np.any(np.isnan(X))
+    assert not np.any(np.isnan(full_curve))
     # if LoopModels is true we perform it on all models
     if LoopModels:
         models = MLModelType
@@ -55,10 +58,10 @@ def main(argv):
 
         # optimize a model
         if Optimize:
-            optimize_model(df, data_object, info_object, scaler, n_in_steps, n_out_steps, n_features, tags)
+            optimize_model(X, info_dataset, parameters, full_curve, data_object, info_object)
         if Fit or Optimize:
             # fit a model
-            train_model(df, data_object, info_object, scaler, n_in_steps, n_out_steps, n_features, tags)
+            train_model(X, info_dataset, parameters, full_curve, data_object, info_object)
         # predict future
         # predict_future(df, n_in_steps, n_out_steps, n_features, info_object, data_object, tags, scaler)
 

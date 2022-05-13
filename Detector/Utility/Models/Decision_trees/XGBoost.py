@@ -8,12 +8,11 @@
 import logging
 import os.path
 import pickle
-from typing import Tuple
 
 import numpy as np
 from joblib import Parallel, delayed
 from optuna import Trial
-from sklearn.base import is_classifier
+from sklearn.base import is_classifier, clone
 from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputRegressor, _fit_estimator
 from sklearn.utils.multiclass import check_classification_targets
@@ -29,8 +28,7 @@ from Detector.enums import Parameters
 
 class XGB(Model):
     """ XGBoost model """
-
-    def __init__(self, data_object: DataObject, gpu, n_out_steps, n_in_features, n_mov_features, parameters=None,
+    def __init__(self, data_object: DataObject, gpu, parameters=None,
                  **kwargs):
         """ Create XGBoost model """
         super().__init__()
@@ -42,13 +40,7 @@ class XGB(Model):
         else:
             tree_method = 'hist'
         self.data_object = data_object
-        self.multi_step_in = False
-        self.multi_step_out = False
-        self.n_in_steps = 1
-        self.n_out_steps = n_out_steps
-        self.n_in_features = n_in_features
-        self.n_mov_features = n_mov_features
-        self.n_features = n_in_features + n_mov_features
+
         # fill parameters
         self.set_parameters(parameters)
 
@@ -57,6 +49,9 @@ class XGB(Model):
         model = MyMultiOutputRegressor(xgb)
 
         self.model = model
+
+    def get_copy(self):
+        return clone(self.model)
 
     def get_data(self, data, train_index, target_index, val_set, test_set):
         timeserie_X, timeserie_y = split_series(data, self.n_in_steps, 1, train_index, target_index)
@@ -89,26 +84,30 @@ class XGB(Model):
         datasets.reverse()
         return datasets
 
-    def fit(self, train_set: Tuple[np.ndarray, np.ndarray], val_set: Tuple[np.ndarray, np.ndarray],
-            callbacks: list, **kwargs) -> int:
+    def fit(self, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list, **kwargs) -> int:
         """ Fit XGBoost model
 
         :param train_set: timeseries training data
-        :param val_set: timeseries validation data
         :param callbacks: callbacks to use
         :return: number of used estimators
         """
-        self.model.fit(train_set[0], train_set[1], eval_set=[val_set], eval_metric="mae", callbacks=callbacks,
+        index_train, index_val = train_test_split(range(len(X_train_inputs)), test_size=0.33, random_state=42)
+        X_train, X_val = X_train_inputs[index_train], X_train_inputs[index_val]
+        y_train, y_val = y_train_outputs[index_train], y_train_outputs[index_val]
+
+        # reshape X to 2d by adding timesteps as a feature
+        X_train = self._add_timestep_as_feature(X_train)
+        X_val = self._add_timestep_as_feature(X_val)
+
+        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric="mae", callbacks=callbacks,
                        verbose=0)
         return self.parameters["n_estimators"]
 
-    def predict(self, data, **kwargs):
-        if isinstance(data, tuple):
-            data = data[0]
+    def _add_timestep_as_feature(self, X):
+        return X.reshape(X.shape[0], -1)
 
-        data = data.squeeze()
-        if data.ndim == 1:
-            data = data.reshape((1, len(data)))
+    def predict(self, data, **kwargs):
+        data = self._add_timestep_as_feature(data)
         assert data.ndim == 2, "dimensions incorrect"
         prediction = self.model.predict(data)
 

@@ -10,45 +10,43 @@ import gc
 import logging
 import os
 from collections import defaultdict
+from copy import deepcopy
 from statistics import mean
 
 import mlflow
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import TimeSeriesSplit, StratifiedKFold, train_test_split, KFold
 
 # Variables
 from Detector.Utility.Models.Model_creator import ModelCreator
-from Detector.Utility.PydanticObject import DataObject, InfoObject, TagsObject
+from Detector.Utility.Plotting.plotting import plot_comparison
+from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
-from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict
-from Detector.Utility.Task.setup_data import prepare_data
+from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, predicting
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
-def train_model(df: pd.DataFrame, data_object: DataObject, info_object: InfoObject, scaler: MinMaxScaler,
-                n_in_steps: int, n_out_steps: int, n_features: int,
-                tags: TagsObject):
+def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
+                parameters_values: pd.DataFrame, full_curve: np.ndarray,
+                data_object: DataObject, info_object: InfoObject):
     """ Train a model, save to MLflow
 
     Args:
-        df: Dataframe to use for the model
+        X: Dataframe containing input to use for the model
+        info_dataset: Dataframe containing information about the subjects
+        parameters_values: Dataframe containing output to use for the model when predicting parameters
+        full_curve: Dataframe containing output to use for the model when predicting full curve
         data_object: information retrieved from the data
         info_object: information from config
-        scaler: scaler used to transform data
-        n_in_steps: number of input steps
-        n_out_steps: number of output steps
-        n_features: number of features
-        tags: tags to add to mlflow
     """
     use_gpu = check_gpu()
 
     logger = logging.getLogger(__name__)
 
-    serializer = MLflowSerializer(dataset_name=info_object.dataset, data_object=data_object, sample_tags=tags.sample,
-                                  n_in_steps=n_in_steps, n_out_steps=n_out_steps)
+    serializer = MLflowSerializer(dataset_name=info_object.dataset, data_object=data_object,
+                                  parameter_expiriment=info_object.parameter_model, sample_tags={})
     last_optimized_run = serializer.get_last_optimized_run(info_object.model)
     if last_optimized_run is not None:
         run = mlflow.get_run(last_optimized_run.run_id)
@@ -56,70 +54,53 @@ def train_model(df: pd.DataFrame, data_object: DataObject, info_object: InfoObje
     else:
         parameters = None
     logger.info(f"creating model {info_object.model}")
-    # without BP and movement
-    n_in_features = n_features - len(data_object.movement_features) - len(data_object.target_col)
-    # movement
-    n_mov_features = len(data_object.movement_features)
     model = ModelCreator.create_model(info_object.model, data_object=data_object,
-                                      n_in_steps=n_in_steps,
-                                      n_out_steps=n_out_steps, n_in_features=n_in_features,
-                                      n_mov_features=n_mov_features, gpu=use_gpu, plot_layers=True,
+                                      input_shape=(0, 0, 0),
+                                      output_shape=(0, 0, 0),
+                                      gpu=use_gpu, plot_layers=True,
                                       parameters=parameters)
-    assert np.all((df.to_numpy() >= 0))
-    train_index, target_index, input_data = prepare_data(model,
-                                                         df,
-                                                         data_object,
-                                                         val_set=False,
-                                                         test_set=True)
 
-    # only use fitting data and save testing_data for predicting future
-    fitting_data, testing_data = input_data
+    if info_object.parameter_model:
+        output = np.array(parameters_values)
+    else:
+        output = full_curve
+
     with mlflow.start_run(experiment_id=serializer.experiment_id, run_name=info_object.model):
         mlflow.set_tag("phase", "training")
-        mlflow.set_tag("input_steps", n_in_steps)
-        mlflow.set_tag("output_steps", n_out_steps)
-        mlflow.set_tag("n_features", n_features)
-        mlflow.set_tags(tags.tags)
-
-        # fit model
-        movement_index = {}
-        for movement_col in data_object.movement_features:
-            movement_index[movement_col] = train_index[movement_col] - len(target_index)
 
         # cross val
         step = 0
         n_splits = 5
-        tscv = TimeSeriesSplit(n_splits)
+        tscv = KFold(n_splits=n_splits)
 
         loss_dicts = []
-        for fitting_indexes, test_indexes in tscv.split(fitting_data[0]):
+        models_list = []
+
+        fit_indexes, test_indexes = train_test_split(range(len(X)))
+
+        for indexes in tscv.split(fit_indexes):
             logger.warning(f"start cv: {step}")
             # collect
             gc.collect()
-            model_copy = model
-            # split training into a train and val test
-            fitting_samples = len(fitting_indexes)
-            last_train_index = int(fitting_samples * 0.8)
-            train_indexes, val_indexes = fitting_indexes[:last_train_index], fitting_indexes[last_train_index:]
-
-            # make the datasets
-            train_set = (fitting_data[0][train_indexes], fitting_data[1][train_indexes])
-            val_set = (fitting_data[0][val_indexes], fitting_data[1][val_indexes])
-            test_set = (fitting_data[0][test_indexes], fitting_data[1][test_indexes])
-
-            sets = (train_set, val_set, test_set)
-            indexes = (train_index, movement_index, target_index)
+            model_copy = deepcopy(model)
             model_copy, loss_values = fit_and_predict(info_object=info_object,
                                                       logger=logger,
-                                                      df=df,
+                                                      input_values=X,
+                                                      output_values=output,
                                                       model=model_copy,
-                                                      n_out_steps=n_out_steps,
-                                                      sets=sets,
-                                                      indexes=indexes,
-                                                      scaler=scaler,
-                                                      step=step)
+                                                      step=step,
+                                                      indexes=indexes)
             step += 1
             loss_dicts.append(loss_values)
+            models_list.append(model_copy)
+
+        # Get best model
+        mae_loss = []
+        for k in loss_dicts:
+            mae_loss.append(k['mae'])
+        best_k = np.array(mae_loss).argmin()
+
+        model = models_list[best_k]
 
         # Mlflow log loss values
         losses = defaultdict(list)
@@ -131,6 +112,10 @@ def train_model(df: pd.DataFrame, data_object: DataObject, info_object: InfoObje
             avg_loss[f"avg_{loss}"] = mean(vals)
 
         mlflow.log_metrics(avg_loss)
+
+        prediction, std, time = predicting(model, logger, X[test_indexes])
+
+        plot_comparison(info_object.model, info_dataset.iloc[test_indexes], list(parameters_values.columns), prediction, output[test_indexes], folder_name="figure/")
 
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())

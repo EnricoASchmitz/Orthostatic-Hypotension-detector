@@ -18,7 +18,7 @@ from Detector.Utility.PydanticObject import DataObject
 class MLflowSerializer:
     """ Save information to MLflow """
 
-    def __init__(self, dataset_name: str, data_object: DataObject, sample_tags: dict, n_in_steps, n_out_steps):
+    def __init__(self, dataset_name: str, data_object: DataObject, parameter_expiriment: bool, sample_tags: dict):
         # setup
         self.uri_start = "file://"
         pwd = os.getcwd()
@@ -26,11 +26,12 @@ class MLflowSerializer:
             self.uri_start = f"{self.uri_start}/"
         tracking_uri = f"{self.uri_start}{pwd}/{dataset_name}"
         mlflow.set_tracking_uri(tracking_uri)
-        exp_name = data_object.id
         sample_tags.update({"dataset": dataset_name})
+        if parameter_expiriment:
+            exp_name = "Parameters"
+        else:
+            exp_name = "Full curve"
         self.experiment_id = self._set_experiment(exp_name, sample_tags)
-        self.n_in_steps = n_in_steps
-        self.n_out_steps = n_out_steps
 
     def _set_experiment(self, exp_name, sample_tags):
         experiment = mlflow.get_experiment_by_name(exp_name)
@@ -57,10 +58,8 @@ class MLflowSerializer:
         # use mlflow to search old runs, returns a pd.
         filter_run_name = f"tags.mlflow.runName = '{name}'"
         filter_phase = "tags.phase = 'Optimizing'"
-        filter_input = f"tags.input_steps = '{self.n_in_steps}'"
-        filter_output = f"tags.output_steps = '{self.n_out_steps}'"
         last_run = mlflow.search_runs([self.experiment_id],
-                                      filter_string=f"{filter_phase} AND {filter_run_name} AND {filter_input} AND {filter_output}",
+                                      filter_string=f"{filter_phase} AND {filter_run_name}",
                                       max_results=1)
         # if there are no runs we remove the old file and start clean
         if last_run.empty:
@@ -80,9 +79,7 @@ class MLflowSerializer:
         # use mlflow to search old runs, returns a pd.
         filter_run_name = f"tags.mlflow.runName = '{name}'"
         filter_phase = "tags.phase = 'training'"
-        filter_input = f"tags.input_steps = '{self.n_in_steps}'"
-        filter_output = f"tags.output_steps = '{self.n_out_steps}'"
-        query = f"{filter_phase} and {filter_run_name} and {filter_input} and {filter_output}"
+        query = f"{filter_phase} and {filter_run_name}"
         last_run = mlflow.search_runs([self.experiment_id],
                                       filter_string=query,
                                       max_results=1)

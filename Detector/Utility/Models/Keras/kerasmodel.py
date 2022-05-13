@@ -5,10 +5,9 @@
 # Script: Keras general model implementation
 
 # Imports
-import gc
 import os
 from abc import abstractmethod
-from typing import Tuple, Optional, Union
+from typing import Optional, Union
 
 import numpy as np
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
@@ -41,6 +40,9 @@ class KerasModel(Model):
         self.n_mov_features = None
         self.n_in_steps = None
         self.fig = True
+
+    def get_copy(self):
+        return keras.models.clone_model(self.model)
 
     def get_data(self, data: np.ndarray, train_index, target_index: dict, val_set: bool, test_set: bool):
         timeserie_X, timeserie_y = split_series(data, self.n_in_steps, self.n_out_steps, train_index, target_index)
@@ -118,46 +120,24 @@ class KerasModel(Model):
 
         return model, mapper
 
-    def fit(self, train_set: Tuple[np.ndarray, np.ndarray], val_set: Tuple[np.ndarray, np.ndarray], movement_index,
-            callbacks: list) -> int:
+    def fit(self, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list) -> int:
 
         early_stopper = EarlyStopping(patience=10, restore_best_weights=True)
         lr_reducer = ReduceLROnPlateau(factor=0.33, patience=6, min_lr=1e-6, verbose=1)
         nan_terminate = TerminateOnNaN()
 
-        X_train_inputs, y_train_outputs = self._prep_data(train_set, movement_index)
-        X_val_inputs, y_val_outputs = self._prep_data(val_set, movement_index)
-
         if callbacks is None:
             callbacks = [early_stopper, lr_reducer, nan_terminate]
         else:
             callbacks.extend([early_stopper, lr_reducer, nan_terminate])
-        if self.mapper:
-            history = self.model.fit(x=X_train_inputs, y=y_train_outputs[0],
-                                     validation_data=(X_val_inputs, y_val_outputs[0]),
-                                     epochs=self.parameters["epochs"],
-                                     batch_size=self.parameters["batch_size"],
-                                     shuffle=True,
-                                     callbacks=callbacks,
-                                     verbose=0)
-            # get intermediate values from architecture if needed
-            self.get_intermediate = self.architecture.get_intermediate_values(self.model)
-            gc.collect()
 
-            self.mapper.fit(x=y_train_outputs[0], y=y_train_outputs[1],
-                            validation_data=(y_val_outputs[0], y_val_outputs[1]),
-                            epochs=self.parameters["epochs"],
-                            batch_size=self.parameters["batch_size"],
-                            shuffle=True,
-                            callbacks=callbacks,
-                            verbose=0)
-        else:
-            history = self.model.fit(x=X_train_inputs, y=y_train_outputs, validation_data=(X_val_inputs, y_val_outputs),
-                                     epochs=self.parameters["epochs"],
-                                     batch_size=self.parameters["batch_size"],
-                                     shuffle=True,
-                                     callbacks=callbacks,
-                                     verbose=0)
+        history = self.model.fit(x=X_train_inputs, y=y_train_outputs,
+                                 validation_split=Parameters.validation_split,
+                                 epochs=self.parameters["epochs"],
+                                 batch_size=self.parameters["batch_size"],
+                                 shuffle=True,
+                                 callbacks=callbacks,
+                                 verbose=0)
 
         return len(history.history["loss"])
 

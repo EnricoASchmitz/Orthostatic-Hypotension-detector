@@ -15,8 +15,7 @@ import pandas as pd
 
 from Detector.Utility.Data_preprocessing.Cleansing import remove_flatliners
 from Detector.Utility.Data_preprocessing.Transformation import resample, add_diastolic_systolic_bp
-from Detector.Utility.Data_preprocessing.extract_info import get_x_values, get_y_values, get_full_curve, get_indices, \
-    extract_values, make_datasets
+from Detector.Utility.Data_preprocessing.extract_info import make_datasets
 from Detector.Utility.PydanticObject import InfoObject, DataObject
 from Detector.Utility.Task.preprocessing.Preprocessor_creator import PreprocessorCreator
 from Detector.Utility.Util import nan_helper, get_markers
@@ -145,6 +144,9 @@ def preprocessing(info_object: InfoObject) -> dict:
     # merge all different dictionaries to one dataframe
     info_dataset = pd.DataFrame(dd)
 
-    X = np.array(x_dataframes)
+    if info_object.nirs_input:
+        X = np.array(x_oxy_dxy)
+    else:
+        X = np.array(x_dataframes)
     full_curve = np.array(y_curves)
-    return X, info_dataset, parameters_dataset, full_curve
+    return data_object, X, info_dataset, parameters_dataset, full_curve

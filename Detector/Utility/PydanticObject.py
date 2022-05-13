@@ -18,6 +18,8 @@ class InfoObject(BaseModel):
     file_loc: str
     smooth: bool
     model: str
+    nirs_input: bool
+    parameter_model: bool
     time_row: Optional[int] = Parameters.time_row_ms.value
 
 
@@ -28,12 +30,12 @@ class DataObject(BaseModel):
     target_col: List[str]
     hz: int
     reindex: bool = False
-    #features: List[str]
-    #train_features: Optional[List[str]] = []
-    #movement_features: Optional[List[str]] = []
-    #tags: Optional[dict] = None
-    #rows_per_beat: Optional[float] = None
 
+    # features: List[str]
+    # train_features: Optional[List[str]] = []
+    # movement_features: Optional[List[str]] = []
+    # tags: Optional[dict] = None
+    # rows_per_beat: Optional[float] = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

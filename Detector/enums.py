@@ -17,6 +17,7 @@ class Parameters(Enum):
     iterations = 100
     n_trials = 20
     batch_size = 28
+    validation_split = 0.2
     avg_bpm = 80
     minutes = 3
     time_row_ms = 10

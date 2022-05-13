@@ -1,2 +1,6 @@
-
+# Ignore file types
 *.pyc
+
+# Ignore folders
+klop/
+__pycache__/
