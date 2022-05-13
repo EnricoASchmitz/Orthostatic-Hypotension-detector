@@ -62,6 +62,10 @@ def preprocessing(info_object: InfoObject) -> dict:
         for challenge_file in os.listdir(subject_path):
             mat_file = Path(os.path.join(subject_path, challenge_file))
             challenge = Path(challenge_file).stem.split("_")[-1]
+            if challenge in ["FSit", "FSup"]:
+                pass
+            else:
+                continue
             try:
                 # preprocess our data with the right Preprocessor
                 df, markers_dict, datadict = Preprocessor.get_df(mat_file)
@@ -97,7 +101,11 @@ def preprocessing(info_object: InfoObject) -> dict:
 
                 tags = Preprocessor.get_tags(mat_file)
                 # Save extra info for the Subject
-                info = {"Data": challenges, "Markers": markers, "info": tags.sample}
+                info = {"Data": challenges[challenge],
+                        "Markers": markers[challenge],
+                        "Challenge": challenge,
+                        "info": tags.sample
+                        }
 
                 x_dataframes, x_oxy_dxy, y_curves, infs, parameters = make_datasets(data_object,
                                                                                     subject,
@@ -114,7 +122,7 @@ def preprocessing(info_object: InfoObject) -> dict:
                                                                                      parameters)
                                                                                     )
 
-            except ValueError as e:  # Value
+            except ValueError as e:
                 print(f"{subject}:{challenge}: contains invalid data")
                 print(e)
                 continue

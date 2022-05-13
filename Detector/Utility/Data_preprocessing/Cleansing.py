@@ -122,9 +122,10 @@ def slope(point1, point2):
 
 
 def butter_lowpass_filter(data, cutoff, fs, order):
+    index = data.index
     nyq = 0.5 * fs  # Nyquist Frequency
     normal_cutoff = cutoff / nyq
     # Get the filter coefficients
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
     y = filtfilt(b, a, data)
-    return y
+    return pd.Series(y, index=index)

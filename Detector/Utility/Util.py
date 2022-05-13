@@ -84,7 +84,7 @@ def get_markers(df: pd.DataFrame, markers_data: dict, prefix: str = 'stand') \
     stand_markers = markers.loc[result]
     stand_markers = stand_markers.clip(np.amin(df.index.get_level_values(0)), np.amax(df.index.get_level_values(0)))
     stand_markers = stand_markers[stand_markers['begin'] != stand_markers['end']]
-    return df, stand_markers
+    return stand_markers
 
 
 def nan_helper(y: np.ndarray) -> Tuple[np.ndarray, Any]:

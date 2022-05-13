@@ -62,31 +62,6 @@ def main(argv):
         # predict future
         # predict_future(df, n_in_steps, n_out_steps, n_features, info_object, data_object, tags, scaler)
 
-    # save our data to a csv
-    if save_file:
-        original_df.to_csv(f'preprocessed_file_{tags.ID}.csv')
-
-    # plot figures
-    # Plot features that are not BP
-    if plot_features:
-        line_plot_with_stages(
-            x=original_df.index.get_level_values(0),
-            y=original_df.columns, stand_markers=stand_markers,
-            title='Values over time',
-            df=df
-        )
-
-    # Plot all BP values
-    if plot_BP:
-        target_cols = ["BP", "BP_systolic", "BP_diastolic", "MAP"]
-        line_plot_with_stages(
-            df=target_df,
-            x=target_df.index.get_level_values(0),
-            y=target_cols,
-            stand_markers=stand_markers,
-            title='Blood pressure over time'
-        )
-
 
 def parse_arguments(argv):
     usage = 'main.py -i <input_steps> -o <output_steps> -d <dataset_name> ' \

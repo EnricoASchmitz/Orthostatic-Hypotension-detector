@@ -12,6 +12,7 @@ import numpy as np
 # Variables
 import pandas as pd
 
+from Detector.Utility.Data_preprocessing.Cleansing import butter_lowpass_filter
 from Detector.Utility.Data_preprocessing.Transformation import time_as_datetime
 
 Threshold = 1  # Threshold for minimal difference
@@ -31,7 +32,8 @@ def get_drop(BP, baseline_BP, start):
     drop_index = np.round(minimum.idxmin() - start, 4)
     # if drop index = 0 we check 10 seconds before the standing up marker
     if drop_index <= 0:
-        minimum = BP[start - 10:start + 30]
+        start = start - 10
+        minimum = BP[start:start + 30]
         drop_index = np.round(minimum.idxmin() - start, 4)
 
     minimum_BP = minimum.min()
@@ -50,7 +52,7 @@ def get_recovery(BP, baseline, start, window_start, window_end, printing=False):
     # extract mean from the baseline to get the recovery
     recovery = baseline - mean
     if mean is np.nan:
-        recovery = get_recovery(BP, baseline, start, window_start - 10, window_end - 10, printing=True)
+        recovery = get_recovery(BP, baseline, start, window_start - 10, window_end - 10, printing=False)
     if printing:
         print(f"window = ({window_start},{window_end})")
     return recovery
@@ -139,7 +141,9 @@ def extract_values(data_object, df, stand_index, baseline_length, stop_index, ti
         # get the data
         BP_data = df[BP_type]
         # get x values for corresponding data
-        x = get_x_values(x, BP_data[starting_index:stop_index].copy(), BP_type)
+        bp = BP_data[starting_index:stop_index].copy()
+        smooth_bp = butter_lowpass_filter(bp, cutoff=0.2, fs=100, order=2)
+        x = get_x_values(x, smooth_bp, BP_type)
         # get parameters about the standing part
         par = get_y_values(par, BP_data.copy(), time, stand_index, BP_type)
         drop_timestamp = par[f"{BP_type}_drop_index"]
@@ -159,7 +163,9 @@ def extract_values(data_object, df, stand_index, baseline_length, stop_index, ti
 
     # get values for oxy and dxy
     for Nirs_type in data_object.nirs_col:
-        x_nirs = get_x_values(x_nirs, df[Nirs_type][starting_index:stop_index].copy(), Nirs_type)
+        nirs = df[Nirs_type][starting_index:stop_index].copy()
+        smooth_nirs = butter_lowpass_filter(nirs, cutoff=0.5, fs=100, order=2)
+        x_nirs = get_x_values(x_nirs, smooth_nirs, Nirs_type)
 
     return convert_dict(x, x_nirs, bp_dict, baseline_length, standing_length, future_steps), par
 
@@ -179,59 +185,53 @@ def convert_dict(x, x_nirs, bp_dict, baseline_length, standing_length, future_st
 
 def make_datasets(data_object, sub, info, baseline_length, standing_length, time,future,seconds, lists):
     x_dataframes, x_oxy_dxy, y_curves, infs, parameters = lists
-    dfs = info['Data'].copy()
-    # Loop over all dataframes
-    for chal, df in dfs.items():
+    df = info['Data'].copy()
+    chal = info["Challenge"]
+    h_stages = df['stage']
+    # Get protocol
+    sitting = h_stages.str.contains("start", case=False)
+    stand = h_stages.str.contains("stand", case=False)
+    stop_index = df.index[0]
 
-        h_stages = df['stage']
-        # Get protocol
-        sitting = h_stages.str.contains("start", case=False)
-        stand = h_stages.str.contains("stand", case=False)
-        stop_index = df.index[0]
-        if chal in ["FSit", "FSup"]:
-            pass
-        else:
+    for repeat in range(0, 3):
+        warning = f"Warning: Subject {sub}; challenge: {chal}; repeat: {repeat + 1}"
+
+        start_index, stand_index, stop_index = get_indices(sitting, stand, stop_index)
+        if start_index == stand_index:
+            print(warning)
+            print(f"Missing repeat: {repeat + 1}")
             continue
-        for repeat in range(0, 3):
+        # Save the patient info
+        inf = {"ID": sub, "challenge": str(chal), "repeat": int(repeat)}
+        inf.update(info["info"].copy())
 
-            warning = f"Warning: Subject {sub}; challenge: {chal}; repeat: {repeat + 1}"
+        # calculate expected rows in the daframe
+        future_steps = int(future / seconds)
 
-            start_index, stand_index, stop_index = get_indices(sitting, stand, stop_index)
-            if start_index == stand_index:
-                print(warning)
-                print(f"Missing repeat: {repeat + 1}")
-                continue
-            # Save the patient info
-            inf = info["info"].copy()
-            inf["challenge"] = str(chal)
-            inf["repeat"] = int(repeat)
-            # calculate expected rows in the daframe
-            future_steps = int(future / seconds)
+        (x_array, x_nirs_array, y_curve_array), par = extract_values(data_object,
+                                                                     df,
+                                                                     stand_index,
+                                                                     baseline_length,
+                                                                     stop_index,
+                                                                     time,
+                                                                     warning,
+                                                                     seconds,
+                                                                     standing_length,
+                                                                     future_steps)
 
-            (x_array, x_nirs_array, y_curve_array), par = extract_values(data_object,
-                                                                         df,
-                                                                         stand_index,
-                                                                         baseline_length,
-                                                                         stop_index,
-                                                                         time,
-                                                                         warning,
-                                                                         seconds,
-                                                                         standing_length,
-                                                                         future_steps)
-
-            # Make sure data is in the right format or we skip the repeat
-            if x_array.shape[0] == baseline_length + standing_length and y_curve_array.shape[
-                0] == future_steps + baseline_length:
-                x_dataframes.append(x_array)
-                x_oxy_dxy.append(x_nirs_array - x_nirs_array.mean(axis=0))
-                y_curves.append(y_curve_array)
-                infs.append(inf)
-                parameters.append(par)
-            elif x_array.shape[0] == baseline_length + standing_length and \
-                    y_curve_array.shape[0] != future_steps:
-                print(warning)
-                print(f"y curve not long enough; {y_curve_array.shape[0]}/{future_steps}")
-            else:
-                print(warning)
-                print(f"X incorrect/ insufficient data")
+        # Make sure data is in the right format or we skip the repeat
+        if x_array.shape[0] == baseline_length + standing_length and y_curve_array.shape[
+            0] == future_steps + baseline_length:
+            x_dataframes.append(x_array)
+            x_oxy_dxy.append(x_nirs_array - x_nirs_array.mean(axis=0))
+            y_curves.append(y_curve_array)
+            infs.append(inf)
+            parameters.append(par)
+        elif x_array.shape[0] == baseline_length + standing_length and \
+                y_curve_array.shape[0] != future_steps:
+            print(warning)
+            print(f"y curve not long enough; {y_curve_array.shape[0]}/{future_steps}")
+        else:
+            print(warning)
+            print(f"X incorrect/ insufficient data")
     return x_dataframes, x_oxy_dxy, y_curves, infs, parameters

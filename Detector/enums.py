@@ -19,15 +19,8 @@ class Parameters(Enum):
     batch_size = 28
     avg_bpm = 80
     minutes = 3
-    time_row_ms = 50
+    time_row_ms = 10
     default_units = 128
-    shifts = [
-                 0.5,
-                 1,
-                 3,
-                 5,
-                 10
-             ],
 
 
 class MLModelType(Enum):

@@ -92,19 +92,19 @@ class KlopPreprocessor(Preprocessor):
                         right_long = slice(6, 9)
                         left_long = np.mean(value[:, left_long], axis=1)
                         right_long = np.mean(value[:, right_long], axis=1)
-                        if np.any(left_long >= 0):
+                        if np.any(left_long >= 0) or np.isnan(left_long).all():
                             l_l = False
                         else:
                             l_l = True
-                        if np.any(right_long >= 0):
+                        if np.any(right_long >= 0) or np.isnan(right_long).all():
                             r_l = False
                         else:
                             r_l = True
                         if l_l and r_l:
                             value = np.mean(np.array([left_long, right_long]), axis=0)
-                        elif l_l:
+                        elif l_l and not np.isnan(left_long).all():
                             value = left_long
-                        elif r_l:
+                        elif r_l and not np.isnan(right_long).all():
                             value = right_long
                         else:
                             value = np.mean(np.array([left_long, right_long]), axis=0)
