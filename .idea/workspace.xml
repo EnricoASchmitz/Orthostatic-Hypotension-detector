@@ -2,255 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/BP forecast.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/fileTemplates/internal/Python Script.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/Optimize_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/Predict_future.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/Preprocessing.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/Train_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Task/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Data_preprocessing/Cleansing.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Data_preprocessing/Outlier_detection/OD_algorithms.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Data_preprocessing/Outlier_detection/OD_creator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Data_preprocessing/Outlier_detection/Outlier_detection.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Data_preprocessing/Outlier_detection/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Data_preprocessing/Transformation.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Data_preprocessing/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Metrics/Losses.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Metrics/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Decision_trees/XGBoost.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Decision_trees/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/Architecture/AbstractArchitecture.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/Architecture/DeepAR.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/Architecture/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/Architecture/basic.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/Architecture/nbeats.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/BaseLine.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/CNN.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/LSTM.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Keras/kerasmodel.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/Model_creator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Models/abstractmodel.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Plotting/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Plotting/plotting.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/PydanticObject.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Serializer/Serializer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Serializer/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/model_functions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/optimizer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/preprocessing/KlopPreprocessor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/preprocessing/NILVADPreprocessor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/preprocessing/PreprocessingFunctions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/preprocessing/Preprocessor_creator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/preprocessing/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/preprocessing/abstractPreprocessor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Task/setup_data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/Util.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/Utility/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BP_forecaster/enums.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/0/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/params/opti_lr" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/params/optimizer" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/params/units layer 1" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/params/units layer 2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/090dd4a1aaca449883e2fc4afd60c12c/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/params/opti_lr" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/params/optimizer" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/params/units layer 1" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/params/units layer 2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/3ec9939a6321442b8ce0b87c9296f0e5/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/params/layer_widths" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/params/num_blocks" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/params/num_layers" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/params/num_stacks" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/77049edcbaa94fcf9e0d100e915426a9/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/params/alpha" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/params/booster" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/params/lambda" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/81a51e83badb475588f29e6a90484d5d/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/params/opti_lr" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/params/optimizer" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/params/units layer 1" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/82019840aa0848f4a0ea579f781bafa8/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/n_blocks" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/opti_lr" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/optimizer" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/units layer 1" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/params/units layer 2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/8f65f64434b44c9888360d0872ed373f/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/kernel_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/opti_lr" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/optimizer" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/pool_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/strides" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/params/units layer 1" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a643b586f13344d9a74c23ba061d8b29/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/params/hidden_dim" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/params/n_rnn_layers" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/a8c3f7058e6f41ee9032cba733a1801a/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/params/hidden_dim" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/params/n_rnn_layers" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/c8215459c4474f2c92eda0c204ab7c6d/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/params/hidden_dim" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/params/n_rnn_layers" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/cbda9bcc81864e7eae5266f1900cafdd/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/metrics/mae" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/metrics/trials" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/params/Outlier detection" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/params/batch_size" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/params/dropout" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/params/opti_lr" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/params/optimizer" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/params/units layer 1" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/params/units layer 2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/tags/mlflow.runName" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/tags/mlflow.source.git.commit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/tags/mlflow.source.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/tags/mlflow.source.type" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/tags/mlflow.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/f1debc60af394e4898b2c5128b67729e/tags/phase" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/1/meta.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Optimized/mlruns/placeholder.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Data_preprocessing/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Data_preprocessing/test_cleansing.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Data_preprocessing/test_outlier_detection.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Metrics/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Metrics/test_losses.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Models/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Models/test_model_creator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Models/test_movement.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Task/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Task/test_preprocessing_functions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Task/test_preprocessor_creator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/Task/test_setup_data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Test/unit/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/PydanticObject.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/PydanticObject.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -294,17 +48,17 @@
   </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Orthostatic Hypotension detector" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:\Users\enric\anaconda3\envs\Donders\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -349,6 +103,11 @@
           <url>file://$PROJECT_DIR$/main.py</url>
           <line>43</line>
           <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Detector/Task/Preprocessing.py</url>
+          <line>88</line>
+          <option name="timeStamp" value="27" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

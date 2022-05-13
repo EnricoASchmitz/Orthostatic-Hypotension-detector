@@ -30,6 +30,7 @@ future = 150
 standing_length = 150
 seconds = 1
 
+
 def preprocessing(info_object: InfoObject) -> dict:
     """ Perform preprocessing
 
@@ -93,33 +94,30 @@ def preprocessing(info_object: InfoObject) -> dict:
                 df, stand_markers = get_markers(df, markers_dict)
 
                 markers[challenge] = stand_markers
+
+                tags = Preprocessor.get_tags(mat_file)
+                # Save extra info for the Subject
+                info = {"Data": challenges, "Markers": markers, "info": tags.sample}
+
+                x_dataframes, x_oxy_dxy, y_curves, infs, parameters = make_datasets(data_object,
+                                                                                    subject,
+                                                                                    info,
+                                                                                    baseline_length,
+                                                                                    standing_length,
+                                                                                    time,
+                                                                                    future,
+                                                                                    seconds,
+                                                                                    (x_dataframes,
+                                                                                     x_oxy_dxy,
+                                                                                     y_curves,
+                                                                                     infs,
+                                                                                     parameters)
+                                                                                    )
+
             except ValueError as e:  # Value
                 print(f"{subject}:{challenge}: contains invalid data")
+                print(e)
                 continue
-
-        if challenges:
-            tags = Preprocessor.get_tags(mat_file)
-            # Save extra info for the Subject
-            info = {
-                "Data": challenges,
-                "Markers": markers
-            }
-
-            info["info"] = tags.sample
-            x_dataframes, x_oxy_dxy, y_curves, infs, parameters = make_datasets(data_object,
-                                                                                subject,
-                                                                                info,
-                                                                                baseline_length,
-                                                                                standing_length,
-                                                                                time,
-                                                                                future,
-                                                                                seconds,
-                                                                                (x_dataframes,
-                                                                                 x_oxy_dxy,
-                                                                                 y_curves,
-                                                                                 infs,
-                                                                                 parameters)
-                                                                                )
 
     dd = defaultdict(list)
 

@@ -15,14 +15,10 @@ from Detector.enums import Parameters
 class InfoObject(BaseModel):
     """ Object to save the needed information about the setup, taken from config """
     dataset: str
-    input_steps: int
-    output_steps: int
     file_loc: str
     smooth: bool
     model: str
-    outlier_algo: str
     time_row: Optional[int] = Parameters.time_row_ms.value
-    shifts: Optional[List[int]] = Parameters.shifts.value
 
 
 class DataObject(BaseModel):
@@ -30,13 +26,14 @@ class DataObject(BaseModel):
     index_col: str
     nirs_col: List[str]
     target_col: List[str]
-    features: List[str]
     hz: int
-    train_features: Optional[List[str]] = []
-    movement_features: Optional[List[str]] = []
-    tags: Optional[dict] = None
-    rows_per_beat: Optional[float] = None
     reindex: bool = False
+    #features: List[str]
+    #train_features: Optional[List[str]] = []
+    #movement_features: Optional[List[str]] = []
+    #tags: Optional[dict] = None
+    #rows_per_beat: Optional[float] = None
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
