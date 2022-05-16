@@ -16,8 +16,6 @@ from optuna import Trial
 class Model(ABC):
     def __init__(self):
         self.fig = False
-        self.multi_step_in = True
-        self.multi_step_out = True
         self.model = None
         self.parameters = None
         self.logger = logging.getLogger(__name__)
@@ -25,19 +23,6 @@ class Model(ABC):
 
     @abstractmethod
     def get_copy(self):
-        raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
-
-    @abstractmethod
-    def get_data(self, data: np.ndarray, train_index: dict, target_index: dict, val_set: bool, test_set: bool):
-        """ Get the data in the correct format
-
-        Args:
-            data: data to format, [train, test, optional(validation)]
-            target_index: target, not in x but is in y
-        Returns:
-              data in the model needed format
-
-        """
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 
     @abstractmethod
@@ -61,19 +46,6 @@ class Model(ABC):
             data: test set to use
         Returns:
             Prediction, Optional[standard deviation]
-        """
-        raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
-
-    @abstractmethod
-    def predict_future(self, data: np.ndarray, num_prediction: int):
-        """ Predict with model without y
-
-        Args:
-            data: test set to use
-            num_prediction: the length of the prediction to make
-
-        Returns:
-            Prediction
         """
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 

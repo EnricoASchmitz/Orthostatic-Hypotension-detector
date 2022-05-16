@@ -17,7 +17,6 @@ from Detector.Task.Optimize_model import optimize_model
 from Detector.Task.Preprocessing import preprocessing
 from Detector.Task.Train_model import train_model
 from Detector.Utility.Task.preprocessing.PreprocessingFunctions import create_info_object
-from Detector.Utility.Util import nan_helper
 from Detector.enums import MLModelType
 
 warnings.simplefilter(action='ignore', category=UserWarning)

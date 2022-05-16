@@ -104,7 +104,7 @@ def simple_plot(y: np.array, y2: np.array = None, title: str = "plot", y2_name: 
     fig.show()
 
 
-def plot_prediction(target_name: str, target_index: int, train: np.ndarray, prediction: np.ndarray, true: np.ndarray,
+def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray, true: np.ndarray,
                     title: str, std: np.ndarray = None, folder_name: str = None):
     """ Plot the prediction
 
@@ -122,6 +122,8 @@ def plot_prediction(target_name: str, target_index: int, train: np.ndarray, pred
     logger = logging.Logger(__name__)
 
     # get only the target column
+    mae = Loss().get_loss_metric("mae")
+    mae = round(mae(true, prediction), 4)
 
     def get_correct_shape(data, target_index):
         if data.ndim > 2:
@@ -130,24 +132,16 @@ def plot_prediction(target_name: str, target_index: int, train: np.ndarray, pred
             data = data[:, target_index]
         return data
 
-    train = get_correct_shape(train, target_index)
     prediction = get_correct_shape(prediction, target_index)
     true = get_correct_shape(true, target_index)
 
-    date_train = np.array(range(0, len(train)))
-    date_test = np.array(range(len(train), len(train) + len(true)))
+    date_test = np.array(range(0, len(true)))
 
     if ((np.amin(prediction) < 0) or (np.max(prediction) > 300)) and std is None:
         # Clip the prediction
         logger.warning("Values clipped")
         prediction = np.clip(prediction, a_min=0, a_max=300)
 
-    trace1 = Scatter(
-        x=date_train,
-        y=train,
-        mode='lines',
-        name='Data'
-    )
     trace2 = Scatter(
         x=date_test,
         y=prediction,
@@ -162,10 +156,10 @@ def plot_prediction(target_name: str, target_index: int, train: np.ndarray, pred
         name='Ground Truth'
     )
 
-    plots = [trace1, trace2, trace3]
+    plots = [trace2, trace3]
 
     if std is not None:
-        std = std[..., -1]
+        std = std[..., target_index]
         upper_std = Scatter(
             x=date_test,
             y=prediction + std,
@@ -176,15 +170,12 @@ def plot_prediction(target_name: str, target_index: int, train: np.ndarray, pred
         plots.append(upper_std)
         lower_std = Scatter(
             x=date_test,
-            y=prediction + std,
+            y=prediction - std,
             opacity=0.5,
             mode='lines',
             name='-STD'
         )
         plots.append(lower_std)
-
-    mae = Loss().get_loss_metric("mae")
-    mae = round(mae(true, prediction), 4)
 
     layout = Layout(
         title=f"{title}, Loss mae:{mae}",

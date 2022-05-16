@@ -8,11 +8,12 @@
 import logging
 import os.path
 import pickle
+from copy import deepcopy
 
 import numpy as np
 from joblib import Parallel, delayed
 from optuna import Trial
-from sklearn.base import is_classifier, clone
+from sklearn.base import is_classifier
 from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputRegressor, _fit_estimator
 from sklearn.utils.multiclass import check_classification_targets
@@ -28,6 +29,7 @@ from Detector.enums import Parameters
 
 class XGB(Model):
     """ XGBoost model """
+
     def __init__(self, data_object: DataObject, gpu, parameters=None,
                  **kwargs):
         """ Create XGBoost model """
@@ -51,7 +53,7 @@ class XGB(Model):
         self.model = model
 
     def get_copy(self):
-        return clone(self.model)
+        return deepcopy(self.model)
 
     def get_data(self, data, train_index, target_index, val_set, test_set):
         timeserie_X, timeserie_y = split_series(data, self.n_in_steps, 1, train_index, target_index)

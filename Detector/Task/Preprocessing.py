@@ -53,7 +53,7 @@ def preprocessing(info_object: InfoObject) -> dict:
     y_curves = []
 
     # get all subject files
-    for subject in os.listdir(Path(info_object.file_loc)):
+    for subject in os.listdir(Path(info_object.file_loc))[0:5]:
         challenges = {}
         markers = {}
         subject_path = Path(os.path.join(info_object.file_loc, subject))

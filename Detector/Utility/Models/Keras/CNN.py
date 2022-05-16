@@ -5,7 +5,7 @@
 # Script: Keras CNN implementation
 
 # Imports
-
+from keras.layers import LSTM
 from optuna import Trial
 from tensorflow.keras.layers import Conv1D
 
@@ -18,8 +18,8 @@ class CNN(Base):
     """ Basic CNN model """
 
     # todo fix Call to CreateProcess failed. Error code: 2
-    def __init__(self, data_object: DataObject, n_in_steps: int, n_out_steps: int, n_in_features: int,
-                 n_mov_features: int, gpu: bool, plot_layers=False,
+    def __init__(self, data_object: DataObject, input_shape,
+                 output_shape, gpu: bool, plot_layers=False,
                  parameters=None):
         """ Create CNN model
 
@@ -28,21 +28,20 @@ class CNN(Base):
         :param gpu: if GPU is available
         """
         super().__init__(data_object=data_object,
-                         n_in_steps=n_in_steps,
-                         n_out_steps=n_out_steps,
-                         n_in_features=n_in_features,
-                         n_mov_features=n_mov_features,
+                         input_shape=input_shape,
+                         output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    @staticmethod
-    def cnn_mapper(input_layer, units_mapper, kernel_size, activation, **kwargs):
+    def cnn_mapper(self, input_layer, units_mapper, kernel_size, activation, dropout=0.0, **kwargs):
         cnn_layer = Conv1D(filters=int(units_mapper), kernel_size=int(kernel_size), padding="same",
                            activation=activation
                            )(input_layer)
-        return cnn_layer
+        lstm_layer = LSTM(int(units_mapper), dropout=float(dropout))(cnn_layer)
+        out_layer = self._output_layers_parameters(lstm_layer, dropout_value=float(dropout), activation="tanh")
+        return out_layer
 
     def _get_model(self):
         return self.cnn_mapper

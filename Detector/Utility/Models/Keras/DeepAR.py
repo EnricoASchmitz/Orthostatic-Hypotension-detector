@@ -15,52 +15,43 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.initializers import glorot_normal
 from tensorflow.keras.layers import LSTM, Lambda, TimeDistributed, Dense, Add, RepeatVector
 from tensorflow.keras.layers import Layer
+from tensorflow.python.framework.ops import disable_eager_execution
+from tensorflow.python.keras.utils.vis_utils import plot_model
 
-from Detector.Utility.Models.Keras.Architecture import Architecture
+from Detector.Utility.Models.Keras.kerasmodel import KerasModel
+from Detector.Utility.Models.abstractmodel import Model
 
 
-class DeepARArchitecture(Architecture):
-    def __init__(self, n_in_steps, n_in_features, n_out_steps, data_object):
+class DeepAR(KerasModel):
+    def __init__(self, input_shape, output_shape, parameters, data_object, plot_layers, **kwargs):
+        super().__init__()
+        disable_eager_execution()
+
         self._intermediate_layer_name = "gaussian_output"
-        self.AR_eager = False
+        self.m_eager = False
         tf.compat.v1.experimental.output_all_intermediates(True)
-        super().__init__(n_in_steps, n_in_features, n_out_steps, data_object)
-        self.sep_mapper = True
+        self.data_object = data_object
+        self.input_shape = input_shape
+        self.output_shape = output_shape
+        self.set_parameters(parameters)
+        self.model = self._architecture(**self.parameters)
+        if plot_layers:
+            plot_model(self.model, show_shapes=True, to_file="model.png")
 
-    def __call__(self, lstm_units_architecture, **kwargs):
+    def _architecture(self, lstm_units_architecture, optimizer, **kwargs):
         lstm_units = int(lstm_units_architecture)
-        oxy_dxy_in = Input(shape=(self.n_in_steps, self.n_in_features),
-                           name='oxy_dxy_in')
+        inputs = Input(shape=self.input_shape,
+                           name='inputs')
 
         # First branch: process the sequence
         rnn_out, rnn_state_h, rnn_state_c = LSTM(lstm_units, return_sequences=True,
-                                                 name='rnn_layer_architecture', return_state=True)(oxy_dxy_in)
-        # Need because the rnn_out can't be passed directly to add, type of output not correct, this layer does nothing
-        pref_layer = Lambda(passing, name="shape_layer")(rnn_out)
-
-        # Second branch:capture movement
-        movement_features = len(self.data_object.movement_features)
-        if movement_features > 0:
-            mov_in = Input(shape=(self.n_in_steps, movement_features),
-                           name='mov_in')
-            # Dense to 1 variable
-            if movement_features >= 2:
-                dense_in = TimeDistributed(Dense(1, activation="sigmoid"))(mov_in)
-                add = [pref_layer, dense_in]
-            else:
-                add = [pref_layer, mov_in]
-            # Combined output: add the two branches
-            pref_layer = TimeDistributed(Add(name='add_movement_oxy'), name="time_mov_oxy")(add)
-
-            inputs = [oxy_dxy_in, mov_in]
-        else:
-            inputs = oxy_dxy_in
+                                                 name='rnn_layer_architecture', return_state=True)(inputs)
 
         encoder, enc_state_h, enc_state_c = LSTM(int(lstm_units),
-                                                 dropout=0.1, return_sequences=False,
+                                                 dropout=0.1,
                                                  return_state=True,
-                                                 name="encoder")(pref_layer)
-        repeat = RepeatVector(self.n_out_steps, name="future_step_layer")(encoder)
+                                                 name="encoder")(rnn_out)
+        repeat = RepeatVector(self.output_shape[0], name="future_step_layer")(encoder)
         decoder, dec_state_h, dec_state_c = LSTM(int(lstm_units),
                                                  dropout=0.1, return_sequences=True,
                                                  return_state=True,
@@ -70,19 +61,25 @@ class DeepARArchitecture(Architecture):
 
         x = TimeDistributed(Dense(int(lstm_units), activation="relu"))(decoder)
 
-        theta = GaussianLayer(self.n_in_features, name=self._intermediate_layer_name)(x)
+        theta = GaussianLayer(self.output_shape[1], name=self._intermediate_layer_name)(x)
 
-        oxy_out = theta[0]
+        bp_out = theta[0]
         loss = gaussian_likelihood(theta[1])
 
-        return inputs, oxy_out, loss
+        model = tf.keras.Model(inputs=inputs, outputs=bp_out,
+                               name='BP_model')
+        model.compile(optimizer=optimizer, loss=loss, metrics=['mae'], run_eagerly=self.m_eager)
+        return model
 
-    def get_parameters(self):
-        return {"lstm_units_architecture": 32}
+    def _set_default_parameters(self):
+        model_parameters = {"lstm_units_architecture": 32}
 
-    def get_trial_parameters(self, trial):
+        self.parameters.update(model_parameters)
+
+    def _set_optuna_parameters(self, trial):
         lstm_units = trial.suggest_int("lstm_units_architecture", 8, 64, step=8)
-        return {"lstm_units_architecture": lstm_units}
+        model_parameters = {"lstm_units_architecture": lstm_units}
+        self.parameters.update(model_parameters)
 
     def get_intermediate_values(self, model):
         return K.function(
@@ -116,11 +113,6 @@ class DeepARArchitecture(Architecture):
         samples = np.array(samples)[..., 0]
         std = np.array(std)
         return samples, std
-
-
-def passing(tensor):
-    return tensor
-
 
 class GaussianLayer(Layer):
     def __init__(self, output_dim, **kwargs):

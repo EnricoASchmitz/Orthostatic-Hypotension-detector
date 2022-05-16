@@ -10,17 +10,16 @@ import gc
 import logging
 import os
 from collections import defaultdict
-from copy import deepcopy
 from statistics import mean
 
 import mlflow
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import TimeSeriesSplit, StratifiedKFold, train_test_split, KFold
+from sklearn.model_selection import train_test_split, KFold
 
 # Variables
 from Detector.Utility.Models.Model_creator import ModelCreator
-from Detector.Utility.Plotting.plotting import plot_comparison
+from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, predicting
@@ -54,12 +53,6 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
     else:
         parameters = None
     logger.info(f"creating model {info_object.model}")
-    model = ModelCreator.create_model(info_object.model, data_object=data_object,
-                                      input_shape=(0, 0, 0),
-                                      output_shape=(0, 0, 0),
-                                      gpu=use_gpu, plot_layers=True,
-                                      parameters=parameters)
-
     if info_object.parameter_model:
         output = np.array(parameters_values)
     else:
@@ -82,7 +75,12 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
             logger.warning(f"start cv: {step}")
             # collect
             gc.collect()
-            model_copy = deepcopy(model)
+            print(info_object.model)
+            model_copy = ModelCreator.create_model(info_object.model, data_object=data_object,
+                                                   input_shape=X.shape[1:],
+                                                   output_shape=output.shape[1:],
+                                                   gpu=use_gpu, plot_layers=True,
+                                                   parameters=parameters)
             model_copy, loss_values = fit_and_predict(info_object=info_object,
                                                       logger=logger,
                                                       input_values=X,
@@ -115,8 +113,19 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
 
         prediction, std, time = predicting(model, logger, X[test_indexes])
 
-        plot_comparison(info_object.model, info_dataset.iloc[test_indexes], list(parameters_values.columns), prediction, output[test_indexes], folder_name="figure/")
+        if info_object.parameter_model:
+            plot_comparison(info_object.model, info_dataset.iloc[test_indexes], list(parameters_values.columns),
+                            prediction, output[test_indexes], folder_name="figure/")
+        else:
+            for i in range(prediction.shape[0]):
+                for target_index, target_name in enumerate(data_object.target_col):
 
+                    sample = test_indexes[i]
+                    information = info_dataset.iloc[sample]
+                    path = f"{information.ID}_{information.challenge}_{int(information['repeat'])}"
+                    plot_prediction(
+                            target_name, target_index, prediction[i], output[sample], std=std[i],
+                        title= f"{target_name} {path}".replace('_', ' '), folder_name=path)
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())
 

@@ -17,35 +17,30 @@ from Detector.enums import Parameters
 
 
 class SimpleLSTM(Base):
-    def __init__(self, data_object: DataObject, n_in_steps, n_out_steps: int, n_in_features: int,
-                 n_mov_features: int,
+    def __init__(self, data_object: DataObject, input_shape, output_shape,
                  gpu, plot_layers=False, parameters=None):
         """ Create LSTM model
 
         Args:
             data_object: information retrieved from the data
-            n_in_steps: number of input time steps
-            n_out_steps: number of output time steps
-            n_in_features: number of input features
-            n_mov_features: number of movement features
+            input_shape: Shape of input
+            output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
         super().__init__(data_object=data_object,
-                         n_in_steps=n_in_steps,
-                         n_out_steps=n_out_steps,
-                         n_in_features=n_in_features,
-                         n_mov_features=n_mov_features,
+                         input_shape=input_shape,
+                         output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    @staticmethod
-    def lstm_mapper(input_layer, units_mapper, dropout, **kwargs):
-        lstm_layer = LSTM(int(units_mapper), dropout=float(dropout), return_sequences=True)(input_layer)
-        return lstm_layer
+    def lstm_mapper(self, input_layer, units_mapper, dropout, **kwargs):
+        lstm_layer = LSTM(int(units_mapper), dropout=float(dropout))(input_layer)
+        out_layer = self._output_layers_parameters(lstm_layer, dropout_value=float(dropout), activation="tanh")
+        return out_layer
 
     def _get_model(self):
         return self.lstm_mapper
@@ -69,37 +64,31 @@ class SimpleLSTM(Base):
 
 
 class BiLSTM(Base):
-    def __init__(self, data_object: DataObject, n_in_steps, n_out_steps: int, n_in_features: int,
-                 n_mov_features: int, gpu, plot_layers=False,
-                 parameters=None):
+    def __init__(self, data_object: DataObject, input_shape, output_shape,
+                 gpu, plot_layers=False, parameters=None):
         """ Create BiLSTM model
 
         Args:
             data_object: information retrieved from the data
-            n_in_steps: number of input time steps
-            n_out_steps: number of output time steps
-            n_in_features: number of input features
-            n_mov_features: number of movement features
+            input_shape: Shape of input
+            output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
-
         super().__init__(data_object=data_object,
-                         n_in_steps=n_in_steps,
-                         n_out_steps=n_out_steps,
-                         n_in_features=n_in_features,
-                         n_mov_features=n_mov_features,
+                         input_shape=input_shape,
+                         output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    @staticmethod
-    def bilstm_mapper(input_layer, units_mapper, dropout, **kwargs):
-        bilstm_layer = Bidirectional(LSTM(int(units_mapper), dropout=float(dropout), return_sequences=True))(
+    def bilstm_mapper(self, input_layer, units_mapper, dropout, **kwargs):
+        bilstm_layer = Bidirectional(LSTM(int(units_mapper), dropout=float(dropout)))(
             input_layer)
-        return bilstm_layer
+        out_layer = self._output_layers_parameters(bilstm_layer, dropout_value=float(dropout), activation="tanh")
+        return out_layer
 
     def _get_model(self):
         return self.bilstm_mapper
@@ -123,33 +112,27 @@ class BiLSTM(Base):
 
 
 class StackedLSTM(Base):
-    def __init__(self, data_object, n_in_steps, n_out_steps: int, n_in_features: int, n_mov_features: int,
-                 gpu, plot_layers=False,
-                 parameters=None):
-        """ Create stacked LSTM model
+    def __init__(self, data_object: DataObject, input_shape, output_shape,
+                 gpu, plot_layers=False, parameters=None):
+        """ Create StackedLSTM model
 
         Args:
             data_object: information retrieved from the data
-            n_in_steps: number of input time steps
-            n_out_steps: number of output time steps
-            n_in_features: number of input features
-            n_mov_features: number of movement features
+            input_shape: Shape of input
+            output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
         super().__init__(data_object=data_object,
-                         n_in_steps=n_in_steps,
-                         n_out_steps=n_out_steps,
-                         n_in_features=n_in_features,
-                         n_mov_features=n_mov_features,
+                         input_shape=input_shape,
+                         output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    @staticmethod
-    def recursive_block(prev_layer: layers, n_blocks: int, units_mapper: int, dropout: float, **kwargs):
+    def recursive_block(self, prev_layer: layers, n_blocks: int, units_mapper: int, dropout: float, **kwargs):
         """ Create a stacked bilstm-lstm block
 
         Args:
@@ -164,8 +147,12 @@ class StackedLSTM(Base):
         lstm_nodes = int(units_mapper)
         dropout = float(dropout)
         for layer in range(int(n_blocks)):
-            prev_layer = LSTM(lstm_nodes, dropout=dropout, activation='tanh', return_sequences=True)(prev_layer)
-        return prev_layer
+            if layer == int(n_blocks) - 1:
+                prev_layer = LSTM(lstm_nodes, dropout=dropout, activation='tanh')(prev_layer)
+            else:
+                prev_layer = LSTM(lstm_nodes, dropout=dropout, activation='tanh', return_sequences=True)(prev_layer)
+        out_layer = self._output_layers_parameters(prev_layer, dropout_value=float(dropout), activation="tanh")
+        return out_layer
 
     def _get_model(self):
         return self.recursive_block
@@ -192,33 +179,27 @@ class StackedLSTM(Base):
 
 
 class StackedBiLSTM(Base):
-    def __init__(self, data_object, n_in_steps, n_out_steps: int, n_in_features: int, n_mov_features: int,
-                 gpu, plot_layers=False,
-                 parameters=None):
-        """ Create stacked BiLSTM model
+    def __init__(self, data_object: DataObject, input_shape, output_shape,
+                 gpu, plot_layers=False, parameters=None):
+        """ Create Stacked BiLSTM model
 
         Args:
             data_object: information retrieved from the data
-            n_in_steps: number of input time steps
-            n_out_steps: number of output time steps
-            n_in_features: number of input features
-            n_mov_features: number of movement features
+            input_shape: Shape of input
+            output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
         super().__init__(data_object=data_object,
-                         n_in_steps=n_in_steps,
-                         n_out_steps=n_out_steps,
-                         n_in_features=n_in_features,
-                         n_mov_features=n_mov_features,
+                         input_shape=input_shape,
+                         output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    @staticmethod
-    def recursive_block(prev_layer: layers, n_blocks: int, units_mapper: int, dropout: float, **kwargs) -> Layer:
+    def recursive_block(self, prev_layer: layers, n_blocks: int, units_mapper: int, dropout: float, **kwargs) -> Layer:
         """ Create a stacked bilstm-lstm block
 
         Args:
@@ -233,10 +214,12 @@ class StackedBiLSTM(Base):
         bilstm_nodes = int(units_mapper)
         dropout = float(dropout)
         for layer in range(int(n_blocks)):
-            prev_layer = Bidirectional(LSTM(bilstm_nodes, dropout=dropout, activation='tanh', return_sequences=True),
-                                       name=f"BiLSTM_{layer}")(
-                prev_layer)
-        return prev_layer
+            if layer == int(n_blocks) - 1:
+                prev_layer = LSTM(bilstm_nodes, dropout=dropout, activation='tanh')(prev_layer)
+            else:
+                prev_layer = LSTM(bilstm_nodes, dropout=dropout, activation='tanh', return_sequences=True)(prev_layer)
+        out_layer = self._output_layers_parameters(prev_layer, dropout_value=float(dropout), activation="tanh")
+        return out_layer
 
     def _get_model(self):
         return self.recursive_block
@@ -263,44 +246,39 @@ class StackedBiLSTM(Base):
 
 
 class EncDecLSTM(Base):
-    def __init__(self, data_object, n_in_steps, n_out_steps: int, n_in_features: int, n_mov_features: int,
-                 gpu, plot_layers=False,
-                 parameters=None):
-        """ Create encoder decoder LSTM model
+    def __init__(self, data_object: DataObject, input_shape, output_shape,
+                 gpu, plot_layers=False, parameters=None):
+        """ Create EncDecLSTM model
 
         Args:
             data_object: information retrieved from the data
-            n_in_steps: number of input time steps
-            n_out_steps: number of output time steps
-            n_in_features: number of input features
-            n_mov_features: number of movement features
+            input_shape: Shape of input
+            output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
         super().__init__(data_object=data_object,
-                         n_in_steps=n_in_steps,
-                         n_out_steps=n_out_steps,
-                         n_in_features=n_in_features,
-                         n_mov_features=n_mov_features,
+                         input_shape=input_shape,
+                         output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    @staticmethod
-    def encdec_mapper(input_layer, units_mapper, dropout, **kwargs):
+    def encdec_mapper(self, input_layer, units_mapper, dropout, **kwargs):
         units_mapper = int(units_mapper)
         dropout = float(dropout)
         bp_encoder, enc_state_h, enc_state_c = layers.LSTM(units_mapper, dropout=dropout, return_sequences=True,
                                                            return_state=True,
                                                            name="translate_encoder")(input_layer)
-        bp_decoder, dec_state_h, dec_state_c = layers.LSTM(units_mapper, dropout=dropout, return_sequences=True,
+        bp_decoder, dec_state_h, dec_state_c = layers.LSTM(units_mapper, dropout=dropout,
                                                            return_state=True,
                                                            name="translate_decoder")(bp_encoder,
                                                                                      initial_state=[enc_state_h,
                                                                                                     enc_state_c])
-        return bp_decoder
+        out_layer = self._output_layers_parameters(bp_decoder, dropout_value=float(dropout), activation="tanh")
+        return out_layer
 
     def _get_model(self):
         return self.encdec_mapper
@@ -324,33 +302,27 @@ class EncDecLSTM(Base):
 
 
 class EncDecAttLSTM(Base):
-    def __init__(self, data_object, n_in_steps, n_out_steps: int, n_in_features: int, n_mov_features: int,
-                 gpu, plot_layers=False,
-                 parameters=None):
-        """ Create encoder decoder attention LSTM model
+    def __init__(self, data_object: DataObject, input_shape, output_shape,
+                 gpu, plot_layers=False, parameters=None):
+        """ Create EncDecAttLSTM model
 
         Args:
             data_object: information retrieved from the data
-            n_in_steps: number of input time steps
-            n_out_steps: number of output time steps
-            n_in_features: number of input features
-            n_mov_features: number of movement features
+            input_shape: Shape of input
+            output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
         super().__init__(data_object=data_object,
-                         n_in_steps=n_in_steps,
-                         n_out_steps=n_out_steps,
-                         n_in_features=n_in_features,
-                         n_mov_features=n_mov_features,
+                         input_shape=input_shape,
+                         output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    @staticmethod
-    def encdecatt_mapper(input_layer, units_mapper, dropout, **kwargs):
+    def encdecatt_mapper(self, input_layer, units_mapper, dropout, **kwargs):
         units_mapper = int(units_mapper)
         dropout = float(dropout)
         bp_encoder, enc_state_h, enc_state_c = layers.LSTM(units_mapper, dropout=dropout, return_sequences=True,
@@ -363,7 +335,9 @@ class EncDecAttLSTM(Base):
                                                                                                     enc_state_c])
         attn_out = layers.Attention(name='attention_layer')([bp_encoder, bp_decoder])
         decoder_concat_input = layers.Concatenate(axis=-1, name='concat_layer')([bp_decoder, attn_out])
-        return decoder_concat_input
+        lstm_layer = LSTM(int(units_mapper), dropout=float(dropout))(decoder_concat_input)
+        out_layer = self._output_layers_parameters(lstm_layer, dropout_value=float(dropout), activation="tanh")
+        return out_layer
 
     def _get_model(self):
         return self.encdecatt_mapper
