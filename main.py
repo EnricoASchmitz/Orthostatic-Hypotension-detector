@@ -12,6 +12,7 @@ import sys
 import warnings
 
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 from Detector.Task.Optimize_model import optimize_model
 from Detector.Task.Preprocessing import preprocessing
@@ -21,13 +22,13 @@ from Detector.enums import MLModelType
 
 warnings.simplefilter(action='ignore', category=UserWarning)
 warnings.simplefilter(action='ignore', category=RuntimeWarning)
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.ERROR)
 # variables
 dataset_name = "klop"
 save_file = False
 plot_BP = False
 plot_features = False
-OP = False
+OP = True
 FI = True
 LoopModels = False
 
@@ -38,10 +39,14 @@ def main(argv):
 
     # create an object containing info from json
     info_object = create_info_object(dataset_name, info_dict)
+
     # preprocess the data
     data_object, X, info_dataset, parameters, full_curve = preprocessing(info_object)
     assert not np.any(np.isnan(X))
     assert not np.any(np.isnan(full_curve))
+
+    data_object.scaler = MinMaxScaler(feature_range=(-1, 1))
+
     # if LoopModels is true we perform it on all models
     if LoopModels:
         models = MLModelType
@@ -54,6 +59,12 @@ def main(argv):
         if LoopModels:
             model = model.value
         info_object.model = model
+
+        # set model type correct
+        if info_object.model in ["deepar", "nbeats"]:
+            info_object.parameter_model = False
+        else:
+            info_object.parameter_model = True
 
         # optimize a model
         if Optimize:

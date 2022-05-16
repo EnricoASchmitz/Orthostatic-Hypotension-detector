@@ -2,23 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Optimize_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Optimize_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Predict_future.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Task/Train_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Train_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Decision_trees/XGBoost.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Decision_trees/XGBoost.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/Architecture/AbstractArchitecture.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/Architecture/DeepAR.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/DeepAR.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/Architecture/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/Architecture/basic.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/Architecture/nbeats.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/nbeats.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/BaseLine.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/CNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/CNN.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/LSTM.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/LSTM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Model_creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Model_creator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/DeepAR.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/DeepAR.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/nbeats.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/nbeats.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/abstractmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/abstractmodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Plotting/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Plotting/plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/PydanticObject.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/PydanticObject.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/enums.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -120,13 +116,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Detector/Utility/Models/Decision_trees/XGBoost.py</url>
-          <line>103</line>
+          <line>66</line>
           <option name="timeStamp" value="43" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Detector/Utility/Plotting/plotting.py</url>
-          <line>162</line>
-          <option name="timeStamp" value="67" />
+          <url>file://$PROJECT_DIR$/Detector/Utility/Task/optimizer.py</url>
+          <line>147</line>
+          <option name="timeStamp" value="70" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

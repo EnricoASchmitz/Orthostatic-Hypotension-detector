@@ -18,6 +18,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split, KFold
 
 # Variables
+from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Models.Model_creator import ModelCreator
 from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction
 from Detector.Utility.PydanticObject import DataObject, InfoObject
@@ -53,10 +54,18 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
     else:
         parameters = None
     logger.info(f"creating model {info_object.model}")
+
+    X_unscaled = X
+    X, x_scalers = scale3d(X_unscaled.copy(), data_object)
+
     if info_object.parameter_model:
-        output = np.array(parameters_values)
+        output_unscaled = np.array(parameters_values)
+        output, out_scaler = scale2d(output_unscaled.copy(), data_object)
+        out_scalers = None
     else:
-        output = full_curve
+        output_unscaled = full_curve
+        output, out_scalers = scale3d(output_unscaled.copy(), data_object)
+        out_scaler = None
 
     with mlflow.start_run(experiment_id=serializer.experiment_id, run_name=info_object.model):
         mlflow.set_tag("phase", "training")
@@ -113,9 +122,15 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
 
         prediction, std, time = predicting(model, logger, X[test_indexes])
 
+        # Scale back the prediction
+        if out_scalers is None and out_scaler is not None:
+            prediction = reverse_scale2d(prediction, out_scaler)
+        else:
+            prediction = reverse_scale3d(prediction, out_scalers)
+
         if info_object.parameter_model:
             plot_comparison(info_object.model, info_dataset.iloc[test_indexes], list(parameters_values.columns),
-                            prediction, output[test_indexes], folder_name="figure/")
+                            prediction, output_unscaled[test_indexes], folder_name="figure/")
         else:
             for i in range(prediction.shape[0]):
                 for target_index, target_name in enumerate(data_object.target_col):
@@ -123,8 +138,12 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
                     sample = test_indexes[i]
                     information = info_dataset.iloc[sample]
                     path = f"{information.ID}_{information.challenge}_{int(information['repeat'])}"
+                    if std is not None:
+                        std_target = std[i]
+                    else:
+                        std_target = None
                     plot_prediction(
-                            target_name, target_index, prediction[i], output[sample], std=std[i],
+                            target_name, target_index, prediction[i], output[sample], std=std_target,
                         title= f"{target_name} {path}".replace('_', ' '), folder_name=path)
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())

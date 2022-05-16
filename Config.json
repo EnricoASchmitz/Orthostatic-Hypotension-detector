@@ -2,8 +2,7 @@
   "klop": {
     "dataset": "klop",
     "nirs_input": true,
-    "parameter_model": false,
-    "model": "deepar",
+    "model": "lstm",
     "smooth": true,
     "file_loc": "C:\\Users\\enric\\Documents\\Master thesis\\Scripts_master\\Data\\More markers\\"
   }

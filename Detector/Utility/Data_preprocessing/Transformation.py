@@ -117,3 +117,23 @@ def scale_df(df: pd.DataFrame, columns: Optional[list] = None) -> Tuple[pd.DataF
     # scale data of the columns
     df[columns] = scaler.fit_transform(cdf)
     return df, scaler
+
+def scale3d(data, data_object):
+    scalers = {}
+    for i in range(data.shape[1]):
+        scalers[i] = data_object.scaler
+        data[:, i, :] = scalers[i].fit_transform(data[:, i, :])
+    return data, scalers
+
+def reverse_scale3d(data, scalers):
+    for i in range(data.shape[1]):
+        data[:, i, :] = scalers[i].inverse_transform(data[:, i, :])
+    return data
+
+def scale2d(data, data_object):
+    scaler = data_object.scaler
+    data = scaler.fit_transform(data)
+    return data, scaler
+
+def reverse_scale2d(data, scaler):
+    return scaler.inverse_transform(data)

@@ -12,36 +12,40 @@ from pathlib import Path
 from typing import Optional
 
 import mlflow
+import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 
-from Detector.Utility.PydanticObject import DataObject, InfoObject, TagsObject
+from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.optimizer import Optimizer
 
 
-def optimize_model(df: pd.DataFrame, data_object: DataObject, info_object: InfoObject, scaler: MinMaxScaler,
-                   n_in_steps: int, n_out_steps: int, n_features: int,
-                   tags: TagsObject):
+def optimize_model(X: np.ndarray, info_dataset: pd.DataFrame,
+                parameters_values: pd.DataFrame, full_curve: np.ndarray,
+                data_object: DataObject, info_object: InfoObject):
     """ Optimizing a model with optuna, save best parameters to MLflow
 
     Args:
-        df: Dataframe to use for the model
+        X: Dataframe containing input to use for the model
+        info_dataset: Dataframe containing information about the subjects
+        parameters_values: Dataframe containing output to use for the model when predicting parameters
+        full_curve: Dataframe containing output to use for the model when predicting full curve
         data_object: information retrieved from the data
         info_object: information from config
-        scaler: scaler used to transform data
-        n_in_steps: number of input steps
-        n_out_steps: number of output steps
-        n_features: number of features
-        tags: tags to add to mlflow
     """
-    storage = f"study_{info_object.model}_{data_object.id}.db"
-    serializer = MLflowSerializer(dataset_name=info_object.dataset, data_object=data_object, sample_tags=tags.sample,
-                                  n_in_steps=n_in_steps, n_out_steps=n_out_steps)
+    storage = f"study_{info_object.model}.db"
+    serializer = MLflowSerializer(dataset_name=info_object.dataset, data_object=data_object,
+                                  parameter_expiriment=info_object.parameter_model, sample_tags={})
     old_run = check_for_optimized_run(serializer, name=info_object.model, storage_file=storage)
+
+    if info_object.parameter_model:
+        output = np.array(parameters_values)
+    else:
+        output = full_curve
+
     with mlflow.start_run(experiment_id=serializer.experiment_id, run_name=info_object.model):
         # Create Optuna optimizer
-        optimizer = Optimizer(df, info_object, data_object, scaler, n_in_steps, n_out_steps, n_features)
+        optimizer = Optimizer(X, output, info_object, data_object)
         # Perform optuna studies, and get the optuna study
         study = optimizer.optimize_parameters(storage=storage)
         # get the best trail
@@ -49,10 +53,6 @@ def optimize_model(df: pd.DataFrame, data_object: DataObject, info_object: InfoO
 
         # write to mlflow
         mlflow.set_tag("phase", "Optimizing")
-        mlflow.set_tag("input_steps", n_in_steps)
-        mlflow.set_tag("output_steps", n_out_steps)
-        mlflow.set_tag("n_features", n_features)
-        mlflow.set_tags(tags.tags)
         mlflow.log_params(trial.params)
         mlflow.log_params(trial.system_attrs)
         mlflow.log_params(trial.user_attrs)

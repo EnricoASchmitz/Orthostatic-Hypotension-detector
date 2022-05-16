@@ -16,7 +16,7 @@ from Detector.enums import Parameters
 
 class NBeats(KerasModel):
     def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 plot_layers, parameters=None, **kwargs):
+                 plot_layers= False, parameters=None, **kwargs):
         super().__init__()
         self.data_object = data_object
         self.input_shape = input_shape

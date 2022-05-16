@@ -13,17 +13,16 @@ from numpy.random import normal
 from tensorflow.keras import Input
 from tensorflow.keras import backend as K
 from tensorflow.keras.initializers import glorot_normal
-from tensorflow.keras.layers import LSTM, Lambda, TimeDistributed, Dense, Add, RepeatVector
+from tensorflow.keras.layers import LSTM, TimeDistributed, Dense, RepeatVector
 from tensorflow.keras.layers import Layer
 from tensorflow.python.framework.ops import disable_eager_execution
 from tensorflow.python.keras.utils.vis_utils import plot_model
 
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
-from Detector.Utility.Models.abstractmodel import Model
 
 
 class DeepAR(KerasModel):
-    def __init__(self, input_shape, output_shape, parameters, data_object, plot_layers, **kwargs):
+    def __init__(self, input_shape, output_shape, parameters, data_object, plot_layers=False, **kwargs):
         super().__init__()
         disable_eager_execution()
 

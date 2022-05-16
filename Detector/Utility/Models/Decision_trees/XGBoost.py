@@ -8,7 +8,6 @@
 import logging
 import os.path
 import pickle
-from copy import deepcopy
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -18,12 +17,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputRegressor, _fit_estimator
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import has_fit_parameter, _check_fit_params
-from tqdm import tqdm
 from xgboost import XGBRegressor
 
-from Detector.Utility.Models.abstractmodel import Model, get_movement
+from Detector.Utility.Models.abstractmodel import Model
 from Detector.Utility.PydanticObject import DataObject
-from Detector.Utility.Task.setup_data import split_series
 from Detector.enums import Parameters
 
 
@@ -51,40 +48,6 @@ class XGB(Model):
         model = MyMultiOutputRegressor(xgb)
 
         self.model = model
-
-    def get_copy(self):
-        return deepcopy(self.model)
-
-    def get_data(self, data, train_index, target_index, val_set, test_set):
-        timeserie_X, timeserie_y = split_series(data, self.n_in_steps, 1, train_index, target_index)
-        if val_set or test_set:
-            data_X = self._split_data(timeserie_X, val_set, test_set)
-            data_y = self._split_data(timeserie_y, val_set, test_set)
-            data_output = []
-            for set_i in range(len(data_X)):
-                data_output.append((data_X[set_i], data_y[set_i]))
-
-            return data_output
-        else:
-            return timeserie_X, timeserie_y
-
-    def _split_data(self, timeserie, val_set: bool, test_set: bool):
-        datasets = []
-        train_set = None
-        if test_set:
-            train_set, test_set = train_test_split(timeserie, test_size=0.2, random_state=1, shuffle=False)
-            test_start = train_set[-self.n_in_steps:]
-            test_with_start = np.concatenate((test_start, test_set), axis=0)
-            datasets.append(test_with_start.squeeze())
-        if val_set:
-            if train_set is None:
-                train_set = timeserie
-            train_set, val_set = train_test_split(train_set, test_size=0.2, random_state=1, shuffle=False)
-            datasets.append(val_set.squeeze())
-        datasets.append(train_set.squeeze())
-        # the data set will start with the test set and then all other sets
-        datasets.reverse()
-        return datasets
 
     def fit(self, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list, **kwargs) -> int:
         """ Fit XGBoost model
@@ -114,41 +77,6 @@ class XGB(Model):
         prediction = self.model.predict(data)
 
         return prediction, None
-
-    def predict_future(self, data, num_prediction):
-
-        prediction_list = data[-1]
-        out_list = []
-        Output_full = []
-        past_mov = prediction_list[self.n_in_features:]
-        past_mov = past_mov.reshape(1, self.n_mov_features)
-        for _ in tqdm(range(num_prediction)):
-            if prediction_list.ndim == 2:
-                x = prediction_list[-1:]
-            else:
-                x = prediction_list.copy()
-            x = x.reshape((1, self.n_features))
-            out, _ = self.predict(x)
-            # save output
-            output = list(out[:, :len(self.data_object.target_col)])
-            out_features = list(out[:, len(self.data_object.target_col):])
-            Output_full.append(output)
-            out_list.append(out_features)
-            # remove features that are not needed for the input
-            remove_index = list(range(0, len(self.data_object.target_col)))
-            input_next_run = np.delete(out, remove_index, axis=1)
-            # add movement
-            past_mov = get_movement(past_mov, input_next_run)
-            next_mov = past_mov[-self.n_in_steps:]
-
-            input_next_run = np.hstack([input_next_run, next_mov])
-            input_next_run = input_next_run.reshape((1, self.n_features))
-            prediction_list = np.vstack([prediction_list, input_next_run])
-        # add output to the prediction
-        Output_full = np.array(Output_full)
-        out_list = np.array(out_list)
-        prediction_list = np.dstack((Output_full, out_list)).squeeze()
-        return prediction_list, None
 
     def get_parameters(self):
         return self.parameters

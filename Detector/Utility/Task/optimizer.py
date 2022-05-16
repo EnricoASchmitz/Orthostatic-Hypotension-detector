@@ -14,37 +14,32 @@ from typing import Optional, Tuple
 
 import numpy as np
 import optuna
-import pandas as pd
 from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 from tensorflow.python.framework.errors_impl import ResourceExhaustedError
 
-from Detector.Utility.Data_preprocessing.Outlier_detection.Outlier_detection import outlier_detection
+from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Metrics.Losses import Loss
 from Detector.Utility.Models.Decision_trees.XGBoost import XGB
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
 from Detector.Utility.PydanticObject import InfoObject, DataObject
-from Detector.Utility.Task.model_functions import check_gpu, fitting, predicting
-from Detector.Utility.Task.setup_data import prepare_data, inverse_scale
+from Detector.Utility.Task.model_functions import check_gpu
 from Detector.enums import Parameters
 
 
 class Optimizer:
     """ Optimize a model with optuna """
 
-    def __init__(self, df: pd.DataFrame, info_object: InfoObject, data_object: DataObject, scaler: MinMaxScaler,
-                 n_in_steps: int, n_out_steps: int, n_features: int):
-        self.scaler = scaler
-        self.n_features = n_features
-        self.n_out_steps = n_out_steps
-        self.n_in_steps = n_in_steps
-        self.df = df
+    def __init__(self, X, output, info_object: InfoObject, data_object: DataObject):
+
+        self.input = X
+        self.output = output
         self.info_object = info_object
         self.data_object = data_object
-        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        #optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.logger = logging.getLogger(__name__)
 
     def load_study(self, storage) -> Optional[Study]:
@@ -103,40 +98,26 @@ class Optimizer:
         """
         use_gpu = check_gpu()
 
-        try:
-            # make a model
-            n_in_features = self.n_features - len(self.data_object.movement_features) - len(
-                self.data_object.target_col)
-            # movement
-            n_mov_features = len(self.data_object.movement_features)
-            model = ModelCreator.create_model(self.info_object.model,
-                                              data_object=self.data_object,
-                                              n_in_steps=self.n_in_steps,
-                                              n_out_steps=self.n_out_steps,
-                                              n_in_features=n_in_features,
-                                              n_mov_features=n_mov_features,
-                                              gpu=use_gpu,
-                                              parameters=trial
-                                              )
-            # get data
-            # filter data with a OD algorithm
-            # outlier detection
-            algorithms = [None, "knn", "iqr", "if", "lof"]
-            od_alg = trial.suggest_categorical("Outlier detection", algorithms)
-            if od_alg is not None:
-                self.df = outlier_detection(algo_name=od_alg, df=self.df, columns=list(self.df.columns))
-                self.df.drop(columns="outliers", inplace=True)
+        X_unscaled = self.input
+        X, x_scalers = scale3d(X_unscaled.copy(), self.data_object)
 
-            train_index, target_index, input_data = prepare_data(model,
-                                                                 self.df,
-                                                                 self.data_object,
-                                                                 val_set=True,
-                                                                 test_set=True
-                                                                 )
-            train_set, test_set, val_set = input_data
-            fit_X = np.vstack([train_set[0], val_set[0]])
-            fit_y = np.vstack([train_set[1], val_set[1]])
-            fitting_set = [fit_X, fit_y]
+        if self.output.ndim == 2:
+            output_unscaled = np.array(self.output)
+            output, out_scaler = scale2d(output_unscaled.copy(), self.data_object)
+            out_scalers = None
+        else:
+            output_unscaled = np.array(self.output)
+            output, out_scalers = scale3d(output_unscaled.copy(), self.data_object)
+            out_scaler = None
+
+        train, test = train_test_split(range(len(X)))
+        try:
+            model = ModelCreator.create_model(self.info_object.model, data_object=self.data_object,
+                                                   input_shape=X.shape[1:],
+                                                   output_shape=output.shape[1:],
+                                                   gpu=use_gpu,
+                                                   parameters=trial)
+
             if isinstance(model, KerasModel):
                 callbacks = [TFKerasPruningCallback(trial, "val_loss")]
             elif isinstance(model, XGB):
@@ -144,25 +125,19 @@ class Optimizer:
             else:
                 callbacks = []
 
-            # fit model
-            movement_index = {}
-            for movement_col in self.data_object.movement_features:
-                movement_index[movement_col] = train_index[movement_col]
-            n_iterations, training_time = fitting(model=model, logger=self.logger, train_set=train_set, val_set=val_set,
-                                                  movement_index=movement_index, callbacks=callbacks)
+            model.fit(X[train], output[train], callbacks)
+            prediction, std = model.predict(X[test])
 
-            # predict with model
-            prediction, std, predict_time = predicting(model=model, logger=self.logger, test_set=test_set,
-                                                       n_out_steps=self.n_out_steps, movement_index=movement_index)
-
-            # inverse scaling
-            train, test, prediction = inverse_scale(scaler=self.scaler, train=fitting_set,
-                                                    test=test_set, prediction=prediction)
+            # Scale back the prediction
+            if out_scalers is None and out_scaler is not None:
+                prediction = reverse_scale2d(prediction, out_scaler)
+            else:
+                prediction = reverse_scale3d(prediction, out_scalers)
 
             del model
             # return mae
             mae = Loss().get_loss_metric("mae")
-            mae = round(mae(test, prediction), 4)
+            mae = round(mae(output_unscaled[test], prediction), 4)
         except ValueError as e:
             self.logger.warning(e)
             mae = 1e+10

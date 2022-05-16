@@ -22,10 +22,6 @@ class Model(ABC):
         self.m_eager = True
 
     @abstractmethod
-    def get_copy(self):
-        raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
-
-    @abstractmethod
     def fit(self, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list) -> int:
         """ Fit the model
 
@@ -93,28 +89,3 @@ class Model(ABC):
     def load_model(self, folder_name):
         """ load model """
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
-
-
-def get_movement(past_mov, pred_y_xy):
-    """ Get the future movement for the next step
-
-    Args:
-        past_mov: previous movement data to save the new movement to
-        pred_y_xy: prediction for oxy and dxy used as a proximity for movement
-
-    Returns:
-        Movement data in the shape [predictions, timesteps, n_movement_features ]
-    """
-    # dxy is a good proxy for standing up
-    oxy, dxy = pred_y_xy[0, ..., 0], pred_y_xy[0, ..., 1]
-    oxy = np.expand_dims(oxy, axis=-1)
-    dxy = np.expand_dims(dxy, axis=-1)
-    oxy_reverse = -oxy + 1
-    if oxy_reverse.ndim == 1:
-        movement_data = np.concatenate([oxy_reverse, dxy])
-        movement_data = np.expand_dims(movement_data, axis=0)
-        past_mov = np.vstack([past_mov, movement_data])
-    else:
-        movement_data = np.mean(np.array([oxy_reverse, dxy]), axis=1).squeeze()
-        past_mov = np.vstack([past_mov, movement_data])
-    return past_mov

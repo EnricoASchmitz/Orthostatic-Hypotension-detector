@@ -5,7 +5,7 @@
 # Script: Pydantic object models to assure, all needed data is specified
 
 # Imports
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from pydantic import BaseModel
 
@@ -19,7 +19,7 @@ class InfoObject(BaseModel):
     smooth: bool
     model: str
     nirs_input: bool
-    parameter_model: bool
+    parameter_model: bool = None
     time_row: Optional[int] = Parameters.time_row_ms.value
 
 
@@ -30,6 +30,7 @@ class DataObject(BaseModel):
     target_col: List[str]
     hz: int
     reindex: bool = False
+    scaler: Any = None
 
     # features: List[str]
     # train_features: Optional[List[str]] = []
