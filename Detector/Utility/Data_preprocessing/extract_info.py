@@ -108,7 +108,7 @@ def get_full_curve(BP_dict, BP_type, BP, start, end, baseline_length=40, seconds
     resampled_BP.index = [time.timestamp() for time in resampled_BP.index]
     start_int = round(start, 0)
     # Get the BP up until 180 seconds into the future
-    BP_dict[BP_type] = resampled_BP[start_int - baseline_length:start_int + 180]
+    BP_dict[BP_type] = resampled_BP.interpolate()[start_int - baseline_length:start_int + 180]
     return BP_dict
 
 

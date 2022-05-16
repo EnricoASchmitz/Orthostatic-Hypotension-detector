@@ -82,7 +82,7 @@ class KerasModel(Model):
                                  batch_size=self.parameters["batch_size"],
                                  shuffle=True,
                                  callbacks=callbacks,
-                                 verbose=0)
+                                 verbose=1)
         # get intermediate values from architecture if needed
         self.get_intermediate = self.get_intermediate_values(self.model)
 

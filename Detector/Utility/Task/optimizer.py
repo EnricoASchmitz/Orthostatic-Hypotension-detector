@@ -138,6 +138,8 @@ class Optimizer:
             # return mae
             mae = Loss().get_loss_metric("mae")
             mae = round(mae(output_unscaled[test], prediction), 4)
+            if mae is np.nan:
+                mae = 1e+10
         except ValueError as e:
             self.logger.warning(e)
             mae = 1e+10

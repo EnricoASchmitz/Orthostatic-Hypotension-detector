@@ -57,15 +57,18 @@ def resample(df: pd.DataFrame, data_object: DataObject, info_object: InfoObject)
 
 
 def get_stolic(BP: pd.Series, data_object, info_object) -> pd.Series:
-    BP_Q3 = BP.rolling(250, min_periods=1, center=True).quantile(0.90)
-    BP_recenterd = BP - BP_Q3
+    BP_90 = BP.rolling(250, min_periods=1, center=True).quantile(0.90)
+    BP_recenterd = BP - BP_90
     peaks_index, _ = find_peaks(BP_recenterd, height=(0, BP_recenterd.max()))
     peaks = BP.iloc[peaks_index]
     # get same length as BP
     peaks[BP.index[0]] = peaks.iloc[0]
     peaks[BP.index[-1]] = peaks.iloc[-1]
     peaks = peaks.sort_index()
+
     stolic_BP, data_object = resample(peaks, data_object, info_object)
+    if stolic_BP.isnull().values.any():
+        print("NAN")
     return stolic_BP, data_object
 
 
