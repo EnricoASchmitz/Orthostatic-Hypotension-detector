@@ -20,7 +20,10 @@ logger = logging.getLogger(__name__)
 
 def get_baseline(BP, start):
     # Get baseline BP of a window of 30 seconds ending 10 seconds before standing up
-    return BP[start - 40:start - 10].mean()
+    bl = BP[start - 40:start - 10].mean()
+    if np.isnan(bl):
+        print("NAN BASE")
+    return bl
 
 
 def get_drop(BP, baseline_BP, start):
@@ -59,8 +62,12 @@ def get_recovery(BP, baseline, start, window_start, window_end, printing=False):
 
 def get_recovery_rate(BP, baseline, start, drop_index, time=60):
     # Get recovery value at certain time after the drop, calculate by getting the mean of BP[time-10: time]
-    BP_later = BP[start + drop_index + time - 10:start + drop_index + time].mean()
-    return BP_later / baseline
+    BP_window = BP[start + time - 10:start + time]
+    BP_later = BP_window.mean()
+    rr = BP_later / baseline
+    if np.isnan(rr):
+        print("NAN RECOVERY")
+    return rr
 
 
 def resample_hz(df, seconds=1):
@@ -108,7 +115,7 @@ def get_full_curve(BP_dict, BP_type, BP, start, end, baseline_length=40, seconds
     resampled_BP.index = [time.timestamp() for time in resampled_BP.index]
     start_int = round(start, 0)
     # Get the BP up until 180 seconds into the future
-    BP_dict[BP_type] = resampled_BP.interpolate()[start_int - baseline_length:start_int + 180]
+    BP_dict[BP_type] = resampled_BP[start_int - baseline_length:start_int + 180]
     return BP_dict
 
 
@@ -138,10 +145,11 @@ def extract_values(data_object, df, stand_index, baseline_length, stop_index, ti
     # get values for systolic and diastolic
     for BP_type in data_object.target_col:
         # get the data
-        BP_data = df[BP_type]
+        BP_data = df[BP_type].ffill().bfill()
         # get x values for corresponding data
         bp = BP_data[starting_index:stop_index].copy()
         smooth_bp = butter_lowpass_filter(bp, cutoff=0.2, fs=100, order=2)
+
         x = get_x_values(x, smooth_bp, BP_type)
         # get parameters about the standing part
         par = get_y_values(par, BP_data.copy(), time, stand_index, BP_type)
@@ -163,6 +171,7 @@ def extract_values(data_object, df, stand_index, baseline_length, stop_index, ti
     # get values for oxy and dxy
     for Nirs_type in data_object.nirs_col:
         nirs = df[Nirs_type][starting_index:stop_index].copy()
+        nirs = nirs.ffill().bfill()
         smooth_nirs = butter_lowpass_filter(nirs, cutoff=0.5, fs=100, order=2)
         x_nirs = get_x_values(x_nirs, smooth_nirs, Nirs_type)
 
@@ -171,14 +180,18 @@ def extract_values(data_object, df, stand_index, baseline_length, stop_index, ti
 
 def convert_dict(x, x_nirs, bp_dict, baseline_length, standing_length, future_steps):
     # Convert dictionary to dataframe and then to numpy array
-    x_df = pd.DataFrame(x).interpolate().fillna(0)
+    x_df = pd.DataFrame(x).ffill().bfill()
     x_array = np.array(x_df)[:baseline_length + standing_length]
-
-    x_nirs_df = pd.DataFrame(x_nirs).interpolate().fillna(0)
+    if np.any(np.isnan(x_array)):
+        print()
+    x_nirs_df = pd.DataFrame(x_nirs).ffill().bfill()
     x_nirs_array = np.array(x_nirs_df)[:baseline_length + standing_length]
-
-    y_curve = pd.DataFrame(bp_dict).interpolate()
+    if np.any(np.isnan(x_nirs_array)):
+        print()
+    y_curve = pd.DataFrame(bp_dict).ffill().bfill()
     y_curve_array = np.array(y_curve)[:future_steps + baseline_length]
+    if np.any(np.isnan(y_curve_array)):
+        print()
     return x_array, x_nirs_array, y_curve_array
 
 
@@ -217,12 +230,17 @@ def make_datasets(data_object, sub, info, baseline_length, standing_length, time
                                                                      seconds,
                                                                      standing_length,
                                                                      future_steps)
-
+        # continue if all are nan
+        if np.all(np.isnan(x_array)) or np.all(np.isnan(x_nirs_array)) or np.all(np.isnan(y_curve_array)):
+            continue
         # Make sure data is in the right format or we skip the repeat
         if x_array.shape[0] == baseline_length + standing_length and y_curve_array.shape[
             0] == future_steps + baseline_length:
             x_dataframes.append(x_array)
-            x_oxy_dxy.append(x_nirs_array - x_nirs_array.mean(axis=0))
+            nirs_mean = x_nirs_array.mean(axis=0)
+            if np.any(np.isnan(nirs_mean)):
+                print("NAN")
+            x_oxy_dxy.append(x_nirs_array - nirs_mean)
             y_curves.append(y_curve_array)
             infs.append(inf)
             parameters.append(par)

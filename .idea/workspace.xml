@@ -3,11 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/enums.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/study_lstm.db" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,19 +110,39 @@
           <option name="timeStamp" value="43" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Detector/Utility/Task/optimizer.py</url>
-          <line>149</line>
-          <option name="timeStamp" value="70" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py</url>
           <line>70</line>
           <option name="timeStamp" value="72" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Detector/Utility/Task/optimizer.py</url>
-          <line>140</line>
-          <option name="timeStamp" value="74" />
+          <url>file://$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py</url>
+          <line>68</line>
+          <option name="timeStamp" value="80" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py</url>
+          <line>24</line>
+          <option name="timeStamp" value="82" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py</url>
+          <line>241</line>
+          <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py</url>
+          <line>185</line>
+          <option name="timeStamp" value="86" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py</url>
+          <line>193</line>
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py</url>
+          <line>189</line>
+          <option name="timeStamp" value="88" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

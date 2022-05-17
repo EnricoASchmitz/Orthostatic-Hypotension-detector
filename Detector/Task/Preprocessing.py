@@ -89,7 +89,7 @@ def preprocessing(info_object: InfoObject) -> dict:
                 df, data_object = add_diastolic_systolic_bp(df, data_object, info_object)
 
                 # Remove missing values
-                df.dropna(inplace=True)
+                #df.dropna(inplace=True)
 
                 challenges[challenge] = df
 
