@@ -1,6 +1,8 @@
 # Ignore file types
 *.pyc
+*.db
 
 # Ignore folders
 klop/
 __pycache__/
+

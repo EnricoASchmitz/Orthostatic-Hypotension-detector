@@ -7,7 +7,7 @@
 # Imports
 import logging
 from abc import ABC, abstractmethod
-from typing import Union, Optional
+from typing import Union, Optional, Tuple
 
 import numpy as np
 from optuna import Trial
@@ -22,11 +22,12 @@ class Model(ABC):
         self.m_eager = True
 
     @abstractmethod
-    def fit(self, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list) -> int:
+    def fit(self, x_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list) -> int:
         """ Fit the model
 
         Args:
-            train_set: Training set to use
+            x_train_inputs: Training input to use
+            y_train_outputs: Training output to use
             callbacks: callbacks to use
 
         Returns:
@@ -35,7 +36,7 @@ class Model(ABC):
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 
     @abstractmethod
-    def predict(self, data: np.ndarray) -> Union[np.ndarray, Optional[np.ndarray]]:
+    def predict(self, data: np.ndarray) -> Tuple[np.ndarray, Optional[np.ndarray]]:
         """ Predict with model
 
         Args:
@@ -46,7 +47,7 @@ class Model(ABC):
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 
     @abstractmethod
-    def get_parameters(self):
+    def get_parameters(self) -> dict:
         """ get parameters from model
 
         Returns:

@@ -2,7 +2,7 @@
 # Master Thesis Data science
 # Project: Applications of Deep Learning on Orthostatic Hypotension detection
 # Assignment of: Donders Institute for Brain, Cognition and Behaviour
-# Script: Preprocessor for Klops dataset
+# Script: Preprocessor for Klop dataset
 
 # Imports
 import os

@@ -15,9 +15,10 @@ from tensorflow import config
 
 from Detector.Utility.Metrics.Losses import Loss
 from Detector.Utility.Models.abstractmodel import Model
+from Detector.Utility.PydanticObject import InfoObject
 
 
-def fitting(model: Model, logger: Logger, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray,
+def fitting(model: Model, logger: Logger, x_train_inputs: np.ndarray, y_train_outputs: np.ndarray,
             callbacks: Optional[list] = None) -> \
         Tuple[int, float]:
     """ Fit model and track time needed
@@ -25,8 +26,8 @@ def fitting(model: Model, logger: Logger, X_train_inputs: np.ndarray, y_train_ou
     Args:
         model: model to fit
         logger: logger
-        train_set: training set to use for fit
-        val_set: validation set to use for fit
+        x_train_inputs: Training input to use
+        y_train_outputs: Training output to use
         callbacks: callbacks to use
 
     Returns:
@@ -34,37 +35,52 @@ def fitting(model: Model, logger: Logger, X_train_inputs: np.ndarray, y_train_ou
     """
     logger.info("fitting model")
     start = time.perf_counter()
-    n_iterations = model.fit(X_train_inputs, y_train_outputs, callbacks=callbacks)
+    n_iterations = model.fit(x_train_inputs, y_train_outputs, callbacks=callbacks)
     return n_iterations, (time.perf_counter() - start)
 
 
-def predicting(model: Model, logger: Logger, input: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
+def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
     """ Predict with model and track time needed
 
         Args:
             model: model to fit
             logger: logger
             test_set: Testing set to use for fit
-            n_out_steps: number of outputs for model
 
         Returns:
             number of iterations, time needed for fitting
         """
     logger.info(f"predicting with model")
     start = time.perf_counter()
-    prediction, std = model.predict(input)
+    prediction, std = model.predict(test_set)
     return prediction, std, (time.perf_counter() - start)
 
 
-def fit_and_predict(info_object, logger, input_values, output_values, indexes, model, step):
+def fit_and_predict(info_object: InfoObject, logger:Logger,
+                    input_values:np.ndarray, output_values:np.ndarray,
+                    indexes: Tuple[list, list], model: Model, step: int):
+    """ Fit and predict with a model
+
+    Args:
+        info_object: configuration information
+        logger: logger
+        input_values: X values
+        output_values: y values
+        indexes: indexes for (training, testing)
+        model: Model
+        step: CV step
+
+    Returns:
+        Model, loss_values
+    """
     train_index, test_index = indexes
 
-    n_iterations, training_time = fitting(model=model, logger=logger, X_train_inputs=input_values[train_index],
+    n_iterations, training_time = fitting(model=model, logger=logger, x_train_inputs=input_values[train_index],
                                           y_train_outputs=output_values[train_index])
     mlflow.log_metric("Training time", training_time, step=step)
 
     # predict with model
-    prediction, std, predict_time = predicting(model=model, logger=logger, input=input_values[test_index])
+    prediction, std, predict_time = predicting(model=model, logger=logger, test_set=input_values[test_index])
 
     mlflow.log_metric("Prediction time", predict_time, step=step)
 

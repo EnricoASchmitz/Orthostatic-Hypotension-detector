@@ -14,7 +14,7 @@ class Files(Enum):
 
 class Parameters(Enum):
     """ Available parameters """
-    iterations = 1
+    iterations = 10
     n_trials = 2
     batch_size = 16
     validation_split = 0.2
@@ -22,10 +22,15 @@ class Parameters(Enum):
     minutes = 3
     time_row_ms = 10
     default_units = 128
+    time = 60
+    baseline_length = 40
+    standing_length = 150
+    future_seconds = 150
 
 
 class MLModelType(Enum):
     """ Available models """
+    xgboost = 'xgb'
     LSTM = 'lstm'
     StackedLSTM = 'stackedlstm'
     biLSTM = 'bilstm'
@@ -33,7 +38,6 @@ class MLModelType(Enum):
     enc_dec_LSTM = 'enc_dec_lstm'
     enc_dec_att_LSTM = 'enc_dec_att_lstm'
     cnn = 'cnn'
-    xgboost = 'xgb'
     nbeats = "nbeats"
     deepar = "deepar"
 

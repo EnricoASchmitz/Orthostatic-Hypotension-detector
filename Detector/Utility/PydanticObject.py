@@ -32,27 +32,6 @@ class DataObject(BaseModel):
     reindex: bool = False
     scaler: Any = None
 
-    # features: List[str]
-    # train_features: Optional[List[str]] = []
-    # movement_features: Optional[List[str]] = []
-    # tags: Optional[dict] = None
-    # rows_per_beat: Optional[float] = None
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def calculate_rows_per_beat(self) -> float:
-        """  Calculate the numbers of rows within one heartbeat. Safe in the object.
-
-        :return: number of rows in each beat
-        """
-        # convert bpm to bps
-        avg_bps = Parameters.avg_bpm.value / 60
-
-        # divide the number of rows in a second with the bps to get the rows for each beat
-        self.rows_per_beat = self.hz / avg_bps
-        return self.rows_per_beat
-
 
 class TagsObject(BaseModel):
     """ Data to add to MLflow """

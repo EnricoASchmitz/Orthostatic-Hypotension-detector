@@ -3,6 +3,7 @@
 # Project: Applications of Deep Learning on Orthostatic Hypotension detection
 # Assignment of: Donders Institute for Brain, Cognition and Behaviour
 # Script:Create the needed preprocessing method
+# based on https://github.com/OpenSTEF/openstef/blob/main/openstef/model/model_creator.py
 
 # Imports
 from typing import Union

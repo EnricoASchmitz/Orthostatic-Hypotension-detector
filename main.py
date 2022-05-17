@@ -11,7 +11,6 @@ import os
 import sys
 import warnings
 
-import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 from Detector.Task.Optimize_model import optimize_model
@@ -30,7 +29,7 @@ plot_BP = False
 plot_features = False
 OP = True
 FI = True
-LoopModels = False
+LoopModels = True
 
 
 def main(argv):
@@ -42,8 +41,6 @@ def main(argv):
 
     # preprocess the data
     data_object, X, info_dataset, parameters, full_curve = preprocessing(info_object)
-    assert not np.any(np.isnan(X))
-    assert not np.any(np.isnan(full_curve))
 
     data_object.scaler = MinMaxScaler(feature_range=(-1, 1))
 
@@ -59,7 +56,7 @@ def main(argv):
         if LoopModels:
             model = model.value
         info_object.model = model
-
+        print(info_object.model)
         # set model type correct
         if info_object.model in ["deepar", "nbeats"]:
             info_object.parameter_model = False
@@ -68,33 +65,25 @@ def main(argv):
 
         # optimize a model
         if Optimize:
-            optimize_model(X, info_dataset, parameters, full_curve, data_object, info_object)
+            optimize_model(X, parameters, full_curve, data_object, info_object)
         if Fit or Optimize:
             # fit a model
             train_model(X, info_dataset, parameters, full_curve, data_object, info_object)
-        # predict future
-        # predict_future(df, n_in_steps, n_out_steps, n_features, info_object, data_object, tags, scaler)
 
 
 def parse_arguments(argv):
-    usage = 'main.py -i <input_steps> -o <output_steps> -d <dataset_name> ' \
-            '-m <model> -a <outlier_detection> ' \
-            '-s <resample>  -w <rolling_window> ' \
-            '-l <lagging>  -f <file_loc>'
+    usage = 'main.py -d <dataset_name> -m <model> ' \
+            '-o <optimize> -f <fit>' \
+            '-s <smooth>   -l <file_loc>'
     Optimize = None
     Fit = None
     try:
         opts, args = getopt.getopt(argv,
-                                   "hiodmaswlfpt",
+                                   "hdmofsl",
                                    [
-                                       "input_steps=",
-                                       "output_steps=",
                                        "dataset=",
                                        "model=",
-                                       "outlier_detection=",
-                                       "resample=",
-                                       "rolling_window=",
-                                       "lagging=",
+                                       "smooth=",
                                        "file_loc=",
                                        "optimize=",
                                        "fit="
@@ -108,27 +97,17 @@ def parse_arguments(argv):
             if opt == '-h':
                 print(usage)
                 sys.exit()
-            elif opt in ("-i", "--input_steps"):
-                info_dict["input_steps"] = arg
-            elif opt in ("-o", "--output_steps"):
-                info_dict["output_steps"] = arg
             elif opt in ("-d", "--dataset"):
                 info_dict["dataset"] = arg
             elif opt in ("-m", "--model"):
                 info_dict["model"] = arg
-            elif opt in ("-a", "--outlier_detection"):
-                info_dict["outlier_algo"] = arg
-            elif opt in ("-s", "--resample"):
-                info_dict["resample"] = arg
-            elif opt in ("-w", "--rolling_window"):
-                info_dict["rolling_window"] = arg
-            elif opt in ("-l", "--lagging"):
-                info_dict["lagging"] = arg
-            elif opt in ("-f", "--file_loc"):
+            elif opt in ("-s", "--smooth"):
+                info_dict["smooth"] = arg
+            elif opt in ("-l", "--file_loc"):
                 info_dict["file_loc"] = arg
-            elif opt in ("-p", "--optimize"):
+            elif opt in ("-o", "--optimize"):
                 Optimize = parse_bool(opt, arg)
-            elif opt in ("-t", "--fit"):
+            elif opt in ("-f", "--fit"):
                 Fit = parse_bool(opt, arg)
     if Optimize is None:
         Optimize = OP

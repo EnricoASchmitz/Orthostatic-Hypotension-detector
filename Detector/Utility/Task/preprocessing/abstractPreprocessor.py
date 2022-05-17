@@ -6,7 +6,6 @@
 
 # Imports
 from abc import ABC, abstractmethod
-from typing import Any
 from typing import Tuple
 
 import pandas as pd
@@ -25,7 +24,7 @@ class Preprocessor(ABC):
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 
     @abstractmethod
-    def get_tags(self, file) -> tuple[Any, TagsObject]:
+    def get_tags(self, file) -> TagsObject:
         """ Get extra tags to add to MLflow
 
         Returns:

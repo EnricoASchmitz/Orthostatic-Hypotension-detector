@@ -49,27 +49,31 @@ class XGB(Model):
 
         self.model = model
 
-    def fit(self, X_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list, **kwargs) -> int:
-        """ Fit XGBoost model
+    def fit(self, x_train_inputs, y_train_outputs, callbacks, **kwargs):
+        index_train, index_val = train_test_split(range(len(x_train_inputs)), test_size=0.33, random_state=42)
 
-        :param train_set: timeseries training data
-        :param callbacks: callbacks to use
-        :return: number of used estimators
-        """
-        index_train, index_val = train_test_split(range(len(X_train_inputs)), test_size=0.33, random_state=42)
-        X_train, X_val = X_train_inputs[index_train], X_train_inputs[index_val]
+        print("Reshaping data input")
+        # reshape X to 2d by adding timesteps as a feature
+        x_train_inputs = self._add_timestep_as_feature(x_train_inputs)
+        print("Reshaped input")
+
+        X_train, X_val = x_train_inputs[index_train], x_train_inputs[index_val]
         y_train, y_val = y_train_outputs[index_train], y_train_outputs[index_val]
 
-        # reshape X to 2d by adding timesteps as a feature
-        X_train = self._add_timestep_as_feature(X_train)
-        X_val = self._add_timestep_as_feature(X_val)
-
+        print("sets made")
         self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric="mae", callbacks=callbacks,
                        verbose=0)
         return self.parameters["n_estimators"]
 
-    def _add_timestep_as_feature(self, X):
-        return X.reshape(X.shape[0], -1)
+    @staticmethod
+    def _add_timestep_as_feature(x: np.ndarray) -> np.ndarray:
+        """ Make 3D dataframe to 2D
+
+        Args:
+            x: 3D dataframe, will add all time steps as features
+
+        """
+        return x.reshape(x.shape[0], -1)
 
     def predict(self, data, **kwargs):
         data = self._add_timestep_as_feature(data)

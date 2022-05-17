@@ -2,7 +2,8 @@
 # Master Thesis Data science
 # Project: Applications of Deep Learning on Orthostatic Hypotension detection
 # Assignment of: Donders Institute for Brain, Cognition and Behaviour
-# Script: Script to create a model
+# Script: Script to create a model,
+# based on https://github.com/OpenSTEF/openstef/blob/main/openstef/model/model_creator.py
 
 # Imports
 from typing import Union

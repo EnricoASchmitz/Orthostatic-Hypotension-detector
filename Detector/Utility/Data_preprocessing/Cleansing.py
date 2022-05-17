@@ -6,19 +6,30 @@
 
 # Imports
 import logging
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks, butter, filtfilt
 
-# Variables
 from Detector.Utility.PydanticObject import DataObject
 
+# Variables
 Threshold = 1  # Threshold for minimal difference
 logger = logging.getLogger(__name__)
 
 
-def identify_flatliners(target_array, future=10):
+def identify_flatliners(target_array: np.ndarray, future: int = 10) -> np.ndarray:
+    """ Identify flatliners in data
+
+    Args:
+        target_array: The data to identify flatliners in.
+        future: number of measurements to take as point 2
+
+    Returns:
+        array with the slope values, calculated between point (n) and the future point (n+future)
+
+    """
     # Calculate the slope to identify flat lines
     slopes = []
     # calculate slope between point BP_0 until BP_future
@@ -63,7 +74,7 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
     df["signal"] = True
     peaks, peak_plateaus = find_peaks(- y, plateau_size=data_object.hz * seconds_per_plateau)
     if len(peak_plateaus['plateau_sizes']) == 0:
-        logger.warning("No plateau found")
+        logger.info("No plateau found")
 
     # since sometimes a plateau will not end at the lowest value, we cut off until we are at the lowest value
     for i in range(len(peak_plateaus['plateau_sizes'])):
@@ -104,7 +115,9 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
         # set signal to false if we identify it as a plateau
         flatliners = df.index[le_index:re_index]
         df.at[flatliners, 'signal'] = False
-    logger.warning(f"Removing {len(peak_plateaus['plateau_sizes'])} plateaus")
+    n_peaks = len(peak_plateaus['plateau_sizes'])
+    if n_peaks > 0 :
+        logger.warning(f"Removing {n_peaks} plateaus")
 
     # remove flatliners
     df = df.where(df["signal"])
@@ -113,7 +126,17 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
     return df
 
 
-def slope(point1, point2):
+def slope(point1: Tuple[int, int], point2: Tuple[int, int]) -> float:
+    """ Calculate the slope between two points
+
+    Args:
+        point1: Tuple (x,y)
+        point2: Tuple (x,y)
+
+    Returns:
+        slope between point1 and point2
+
+    """
     x1, y1 = point1
     x2, y2 = point2
     if x1 == x2:
@@ -121,7 +144,19 @@ def slope(point1, point2):
     return (y2 - y1) / (x2 - x1)
 
 
-def butter_lowpass_filter(data, cutoff, fs, order):
+def butter_low_pass_filter(data: pd.Series, cutoff: float, fs: int, order: int) -> pd.Series:
+    """ Perform butter worth smoothing
+
+    Args:
+        data: The data to perform smoothing on
+        cutoff: Hz cutoff
+        fs: frequency of data (Hz)
+        order: polynomial order
+
+    Returns:
+        Smoothed data
+
+    """
     index = data.index
     nyq = 0.5 * fs  # Nyquist Frequency
     normal_cutoff = cutoff / nyq

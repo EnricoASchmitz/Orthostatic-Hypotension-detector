@@ -12,13 +12,11 @@ from typing import Optional
 import mlflow
 import pandas as pd
 
-from Detector.Utility.PydanticObject import DataObject
-
 
 class MLflowSerializer:
     """ Save information to MLflow """
 
-    def __init__(self, dataset_name: str, data_object: DataObject, parameter_expiriment: bool, sample_tags: dict):
+    def __init__(self, dataset_name: str, parameter_expiriment: bool, sample_tags: dict):
         # setup
         self.uri_start = "file://"
         pwd = os.getcwd()

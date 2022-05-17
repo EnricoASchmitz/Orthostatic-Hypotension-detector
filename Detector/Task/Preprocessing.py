@@ -9,9 +9,12 @@ import logging
 import os
 from collections import defaultdict
 from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
+from numpy import ndarray
+from pandas import DataFrame
 
 from Detector.Utility.Data_preprocessing.Cleansing import remove_flatliners
 from Detector.Utility.Data_preprocessing.Transformation import resample, add_diastolic_systolic_bp
@@ -20,27 +23,25 @@ from Detector.Utility.PydanticObject import InfoObject, DataObject
 from Detector.Utility.Task.preprocessing.Preprocessor_creator import PreprocessorCreator
 from Detector.Utility.Util import nan_helper, get_markers
 
-o = 1
 # Variables
 plot_resample_vs_decimate = False
-time = 60
-baseline_length = 40
-future = 150
-standing_length = 150
 seconds = 1
 
 
-def preprocessing(info_object: InfoObject) -> dict:
+def preprocessing(info_object: InfoObject) -> Tuple[DataObject, ndarray, DataFrame, DataFrame, ndarray]:
     """ Perform preprocessing
 
     Args:
         info_object: Object containing all needed information (set in Config.json)
 
     Returns:
-         Dataframe, Markers, tags
+         data_object, X Dataframe, subject information dataframe, parameter dataset, full BPP curve dataframe
     """
     # Make a logger
     logger = logging.getLogger(__name__)
+
+    # Data object placeholder
+    data_object = None
 
     # Get the preprocessor we need for our current dataset
     Preprocessor = PreprocessorCreator.get_preprocessor(info_object.dataset, logger=logger, info_object=info_object)
@@ -57,7 +58,7 @@ def preprocessing(info_object: InfoObject) -> dict:
         challenges = {}
         markers = {}
         subject_path = Path(os.path.join(info_object.file_loc, subject))
-        print(subject)
+        logger.info(subject)
         for challenge_file in os.listdir(subject_path):
             mat_file = Path(os.path.join(subject_path, challenge_file))
             challenge = Path(challenge_file).stem.split("_")[-1]
@@ -88,9 +89,6 @@ def preprocessing(info_object: InfoObject) -> dict:
                 # add diastolic and systolic values
                 df, data_object = add_diastolic_systolic_bp(df, data_object, info_object)
 
-                # Remove missing values
-                #df.dropna(inplace=True)
-
                 challenges[challenge] = df
 
                 # get the protocol markers standing or sitting
@@ -106,13 +104,10 @@ def preprocessing(info_object: InfoObject) -> dict:
                         "info": tags.sample
                         }
 
+                # Get the data
                 x_dataframes, x_oxy_dxy, y_curves, infs, parameters = make_datasets(data_object,
                                                                                     subject,
                                                                                     info,
-                                                                                    baseline_length,
-                                                                                    standing_length,
-                                                                                    time,
-                                                                                    future,
                                                                                     seconds,
                                                                                     (x_dataframes,
                                                                                      x_oxy_dxy,
@@ -122,8 +117,8 @@ def preprocessing(info_object: InfoObject) -> dict:
                                                                                     )
 
             except ValueError as e:
-                print(f"{subject}:{challenge}: contains invalid data")
-                print(e)
+                logger.error(f"{subject}:{challenge}: contains invalid data")
+                logger.error(e)
                 continue
 
     dd = defaultdict(list)

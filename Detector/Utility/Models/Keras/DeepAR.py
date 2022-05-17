@@ -40,7 +40,7 @@ class DeepAR(KerasModel):
     def _architecture(self, lstm_units_architecture, optimizer, **kwargs):
         lstm_units = int(lstm_units_architecture)
         inputs = Input(shape=self.input_shape,
-                           name='inputs')
+                       name='inputs')
 
         # First branch: process the sequence
         rnn_out, rnn_state_h, rnn_state_c = LSTM(lstm_units, return_sequences=True,
@@ -112,6 +112,7 @@ class DeepAR(KerasModel):
         samples = np.array(samples)[..., 0]
         std = np.array(std)
         return samples, std
+
 
 class GaussianLayer(Layer):
     def __init__(self, output_dim, **kwargs):

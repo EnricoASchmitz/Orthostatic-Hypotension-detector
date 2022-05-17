@@ -20,24 +20,30 @@ from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.optimizer import Optimizer
 
 
-def optimize_model(X: np.ndarray, info_dataset: pd.DataFrame,
-                parameters_values: pd.DataFrame, full_curve: np.ndarray,
-                data_object: DataObject, info_object: InfoObject):
-    """ Optimizing a model with optuna, save best parameters to MLflow
+def optimize_model(x: np.ndarray,
+                   parameters_values: pd.DataFrame, full_curve: np.ndarray,
+                   data_object: DataObject, info_object: InfoObject):
+    """ Optimizing a model with optuna, save the best parameters to MLflow
 
     Args:
-        X: Dataframe containing input to use for the model
-        info_dataset: Dataframe containing information about the subjects
+        x: Dataframe containing input to use for the model
         parameters_values: Dataframe containing output to use for the model when predicting parameters
         full_curve: Dataframe containing output to use for the model when predicting full curve
         data_object: information retrieved from the data
         info_object: information from config
     """
     storage = f"study_{info_object.model}.db"
-    serializer = MLflowSerializer(dataset_name=info_object.dataset, data_object=data_object,
-                                  parameter_expiriment=info_object.parameter_model, sample_tags={})
+
+    # get tags
+    keys_to_extract = ["index_col", "nirs_col", "target_col", "hz"]
+    do = data_object.dict()
+    tags = {key: do[key] for key in keys_to_extract}
+
+    serializer = MLflowSerializer(dataset_name=info_object.dataset,
+                                  parameter_expiriment=info_object.parameter_model, sample_tags=tags)
     old_run = check_for_optimized_run(serializer, name=info_object.model, storage_file=storage)
 
+    # Check which output we want
     if info_object.parameter_model:
         output = np.array(parameters_values)
     else:
@@ -45,7 +51,7 @@ def optimize_model(X: np.ndarray, info_dataset: pd.DataFrame,
 
     with mlflow.start_run(experiment_id=serializer.experiment_id, run_name=info_object.model):
         # Create Optuna optimizer
-        optimizer = Optimizer(X, output, info_object, data_object)
+        optimizer = Optimizer(x, output, info_object, data_object)
         # Perform optuna studies, and get the optuna study
         study = optimizer.optimize_parameters(storage=storage)
         # get the best trail

@@ -5,34 +5,10 @@
 # Script: Get information from the data
 
 # Imports
-
-
-# Variables
 from typing import Union, Tuple, Any
 
 import numpy as np
 import pandas as pd
-
-from Detector.Utility.PydanticObject import DataObject
-
-
-def get_target_df(df: pd.DataFrame, data_object: DataObject) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """ Retrieve blood pressure from data frame. And make sure index is in datetime format.
-
-    Args:
-        df: Dataframe containing blood pressure
-        data_object: Object containing all the needed information
-
-    Returns:
-        dataframe index with datetime, blood pressure dataframe index with datetime
-    """
-    # if we haven't reindex change index to datetime
-    if not data_object.reindex:
-        df = df.set_index("datetime")
-    target = df[data_object.target_col].copy()
-    # drop BP from the dataframe
-    df.drop(data_object.target_col, axis=1, inplace=True)
-    return df, target
 
 
 def get_value(nested_value: Union[list, np.ndarray]) -> Union[int, str]:

@@ -16,7 +16,7 @@ from Detector.enums import Parameters
 
 class NBeats(KerasModel):
     def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 plot_layers= False, parameters=None, **kwargs):
+                 plot_layers=False, parameters=None, **kwargs):
         super().__init__()
         self.data_object = data_object
         self.input_shape = input_shape
@@ -59,11 +59,11 @@ class NBeats(KerasModel):
 
     def _set_default_parameters(self):
         model_parameters = {"nb_blocks_per_stack": 3,
-                "generic_dim": 0,
-                "trend_dim": 4,
-                "seasonality_dim": 8,
-                "units_architecture": int(Parameters.default_units.value)
-                }
+                            "generic_dim": 0,
+                            "trend_dim": 4,
+                            "seasonality_dim": 8,
+                            "units_architecture": int(Parameters.default_units.value)
+                            }
         self.parameters.update(model_parameters)
 
     def _set_optuna_parameters(self, trial):

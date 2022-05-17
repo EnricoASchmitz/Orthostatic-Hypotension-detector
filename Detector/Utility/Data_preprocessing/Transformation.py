@@ -5,24 +5,23 @@
 # Script: Functions to transform the raw input data
 
 # Imports
-from typing import Tuple, Optional
+from typing import Tuple, Union, Any
 
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
-from sklearn.preprocessing import MinMaxScaler
 
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 
 
-def time_as_datetime(df: pd.DataFrame) -> pd.DataFrame:
+def time_as_datetime(df: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
     """ Convert index seconds to datetime column
 
     Args:
         df: Dataframe
 
     Returns:
-         dataframe with datetime column
+         dataframe with datetime index
     """
     # convert seconds to TimedeltaIndex
     datetime = pd.TimedeltaIndex(pd.to_timedelta(df.index.get_level_values(0), 'seconds'))
@@ -32,7 +31,7 @@ def time_as_datetime(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def resample(df: pd.DataFrame, data_object: DataObject, info_object: InfoObject) -> \
-        Tuple[pd.DataFrame, DataObject]:
+        Tuple[Union[pd.Series, pd.DataFrame], DataObject]:
     """ Resample the dataframe
 
     Args:
@@ -56,25 +55,33 @@ def resample(df: pd.DataFrame, data_object: DataObject, info_object: InfoObject)
     return df, data_object
 
 
-def get_stolic(BP: pd.Series, data_object, info_object) -> pd.Series:
-    BP_90 = BP.rolling(250, min_periods=1, center=True).quantile(0.90)
-    BP_recenterd = BP - BP_90
-    peaks_index, _ = find_peaks(BP_recenterd, height=(0, BP_recenterd.max()))
-    peaks = BP.iloc[peaks_index]
-    # get same length as BP
-    peaks[BP.index[0]] = peaks.iloc[0]
-    peaks[BP.index[-1]] = peaks.iloc[-1]
+def get_stolic(bp: pd.Series, data_object: DataObject, info_object: InfoObject) -> Tuple[pd.Series, DataObject]:
+    """ Get Systolic or Diastolic data
+
+    Args:
+        bp: BP data, needs to be reversed for diastolic (-BP)
+        data_object: object containing information about the data
+        info_object: object containing configuration info
+
+    Returns:
+        Resampled Systolic or Diastolic data, data_object
+    """
+    bp_90 = bp.rolling(250, min_periods=1, center=True).quantile(0.90)
+    bp_recenter = bp - bp_90
+    peaks_index, _ = find_peaks(bp_recenter, height=(0, bp_recenter.max()))
+    peaks = bp.iloc[peaks_index]
+    # get same length as bp
+    peaks[bp.index[0]] = peaks.iloc[0]
+    peaks[bp.index[-1]] = peaks.iloc[-1]
     peaks = peaks.sort_index()
 
-    stolic_BP, data_object = resample(peaks, data_object, info_object)
-    if stolic_BP.isnull().values.any():
-        print("NAN")
-    return stolic_BP, data_object
+    stolic_bp, data_object = resample(peaks, data_object, info_object)
+    return stolic_bp, data_object
 
 
 def add_diastolic_systolic_bp(target_df: pd.DataFrame, data_object: DataObject, info_object: InfoObject) -> \
         Tuple[pd.DataFrame, type(InfoObject)]:
-    """ Add systolic and diastolic BP to the BP dataframe
+    """ Add systolic and diastolic bp to the bp dataframe
 
     Args:
         target_df: The dataframe containing the blood pressure
@@ -85,15 +92,15 @@ def add_diastolic_systolic_bp(target_df: pd.DataFrame, data_object: DataObject, 
         dataframe with systolic and diastolic blood pressure, info_object
     """
     # Keep track of the names for diastolic and systolic column
-    BP_name = data_object.target_col[0]
-    dia_name = f"{BP_name}_diastolic"
-    sys_name = f"{BP_name}_systolic"
+    bp_name = data_object.target_col[0]
+    dia_name = f"{bp_name}_diastolic"
+    sys_name = f"{bp_name}_systolic"
 
-    BP = target_df[BP_name]
+    bp = target_df[bp_name]
     # get systolic values
-    target_df[sys_name], data_object = get_stolic(BP, data_object, info_object)
+    target_df[sys_name], data_object = get_stolic(bp, data_object, info_object)
     # get diastolic values
-    target_df[dia_name], data_object = get_stolic(-BP, data_object, info_object)
+    target_df[dia_name], data_object = get_stolic(-bp, data_object, info_object)
     target_df[dia_name] = abs(target_df[dia_name])
     # save new target
     data_object.target_col = [sys_name, dia_name]
@@ -101,42 +108,62 @@ def add_diastolic_systolic_bp(target_df: pd.DataFrame, data_object: DataObject, 
     return target_df, data_object
 
 
-def scale_df(df: pd.DataFrame, columns: Optional[list] = None) -> Tuple[pd.DataFrame, MinMaxScaler]:
-    """ Scale the dataframe columns
+def scale3d(data: np.ndarray, data_object: DataObject) -> Tuple[np.ndarray, dict]:
+    """ Scale 3D dataframe
 
     Args:
-        df: dataframe
-        columns: Which columns to use, if None use all
+        data: 3D data to scale
+        data_object: Object containing information about the data
 
     Returns:
-        dataframe with scaled columns
+        Rescaled data, scalers
     """
-    # if no columns are specified we perform it on all columns
-    if columns is None:
-        columns = df.columns
-    # get a minmax scaler
-    scaler = MinMaxScaler()
-    cdf = df[columns].copy()
-    # scale data of the columns
-    df[columns] = scaler.fit_transform(cdf)
-    return df, scaler
-
-def scale3d(data, data_object):
     scalers = {}
     for i in range(data.shape[1]):
         scalers[i] = data_object.scaler
         data[:, i, :] = scalers[i].fit_transform(data[:, i, :])
     return data, scalers
 
-def reverse_scale3d(data, scalers):
+
+def reverse_scale3d(data: np.ndarray, scalers: dict[Any]) -> np.ndarray:
+    """ Reverse 3d scaling
+
+    Args:
+        data: data to inverse scale
+        scalers: scalers to use
+
+    Returns:
+        Inverse scaled data
+    """
     for i in range(data.shape[1]):
         data[:, i, :] = scalers[i].inverse_transform(data[:, i, :])
     return data
 
-def scale2d(data, data_object):
+
+def scale2d(data: Union[np.ndarray, pd.DataFrame], data_object: DataObject) \
+        -> Tuple[Union[np.ndarray, pd.DataFrame], Any]:
+    """ Scale 2D dataframe
+
+    Args:
+        data: 2D data to scale
+        data_object: Object containing information about the data
+
+    Returns:
+        Rescaled data, scaler
+    """
     scaler = data_object.scaler
     data = scaler.fit_transform(data)
     return data, scaler
 
-def reverse_scale2d(data, scaler):
+
+def reverse_scale2d(data: Union[np.ndarray, pd.DataFrame], scaler: Any) -> Union[np.ndarray, pd.DataFrame]:
+    """ Reverse 2d scaling
+
+        Args:
+            data: data to inverse scale
+            scaler: scaler to use
+
+        Returns:
+            Inverse scaled data
+        """
     return scaler.inverse_transform(data)

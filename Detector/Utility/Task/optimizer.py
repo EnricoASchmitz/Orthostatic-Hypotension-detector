@@ -39,7 +39,7 @@ class Optimizer:
         self.output = output
         self.info_object = info_object
         self.data_object = data_object
-        #optuna.logging.set_verbosity(optuna.logging.WARNING)
+        # optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.logger = logging.getLogger(__name__)
 
     def load_study(self, storage) -> Optional[Study]:
@@ -113,10 +113,10 @@ class Optimizer:
         train, test = train_test_split(range(len(X)))
         try:
             model = ModelCreator.create_model(self.info_object.model, data_object=self.data_object,
-                                                   input_shape=X.shape[1:],
-                                                   output_shape=output.shape[1:],
-                                                   gpu=use_gpu,
-                                                   parameters=trial)
+                                              input_shape=X.shape[1:],
+                                              output_shape=output.shape[1:],
+                                              gpu=use_gpu,
+                                              parameters=trial)
 
             if isinstance(model, KerasModel):
                 callbacks = [TFKerasPruningCallback(trial, "val_loss")]

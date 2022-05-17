@@ -2,9 +2,4 @@
 # Master Thesis Data science
 # Project: Applications of Deep Learning on Orthostatic Hypotension detection
 # Assignment of: Donders Institute for Brain, Cognition and Behaviour
-# Script: 
-
-# Imports
-
-
-# Variables
+# Script:

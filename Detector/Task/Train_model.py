@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split, KFold
 
-# Variables
 from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Models.Model_creator import ModelCreator
 from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction
@@ -28,13 +27,13 @@ from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, pr
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
-def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
+def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
                 parameters_values: pd.DataFrame, full_curve: np.ndarray,
                 data_object: DataObject, info_object: InfoObject):
     """ Train a model, save to MLflow
 
     Args:
-        X: Dataframe containing input to use for the model
+        x: Dataframe containing input to use for the model
         info_dataset: Dataframe containing information about the subjects
         parameters_values: Dataframe containing output to use for the model when predicting parameters
         full_curve: Dataframe containing output to use for the model when predicting full curve
@@ -45,8 +44,13 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
 
     logger = logging.getLogger(__name__)
 
-    serializer = MLflowSerializer(dataset_name=info_object.dataset, data_object=data_object,
-                                  parameter_expiriment=info_object.parameter_model, sample_tags={})
+    # get tags
+    keys_to_extract = ["index_col", "nirs_col", "target_col", "hz"]
+    do = data_object.dict()
+    tags = {key: do[key] for key in keys_to_extract}
+
+    serializer = MLflowSerializer(dataset_name=info_object.dataset,
+                                  parameter_expiriment=info_object.parameter_model, sample_tags=tags)
     last_optimized_run = serializer.get_last_optimized_run(info_object.model)
     if last_optimized_run is not None:
         run = mlflow.get_run(last_optimized_run.run_id)
@@ -55,8 +59,8 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
         parameters = None
     logger.info(f"creating model {info_object.model}")
 
-    X_unscaled = X
-    X, x_scalers = scale3d(X_unscaled.copy(), data_object)
+    X_unscaled = x
+    x, x_scalers = scale3d(X_unscaled.copy(), data_object)
 
     if info_object.parameter_model:
         output_unscaled = np.array(parameters_values)
@@ -78,21 +82,21 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
         loss_dicts = []
         models_list = []
 
-        fit_indexes, test_indexes = train_test_split(range(len(X)))
+        fit_indexes, test_indexes = train_test_split(range(len(x)))
 
         for indexes in tscv.split(fit_indexes):
-            logger.warning(f"start cv: {step}")
+            logger.info(f"start cv: {step}")
             # collect
             gc.collect()
-            print(info_object.model)
+            logger.info(info_object.model)
             model_copy = ModelCreator.create_model(info_object.model, data_object=data_object,
-                                                   input_shape=X.shape[1:],
+                                                   input_shape=x.shape[1:],
                                                    output_shape=output.shape[1:],
                                                    gpu=use_gpu, plot_layers=True,
                                                    parameters=parameters)
             model_copy, loss_values = fit_and_predict(info_object=info_object,
                                                       logger=logger,
-                                                      input_values=X,
+                                                      input_values=x,
                                                       output_values=output,
                                                       model=model_copy,
                                                       step=step,
@@ -120,7 +124,7 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
 
         mlflow.log_metrics(avg_loss)
 
-        prediction, std, time = predicting(model, logger, X[test_indexes])
+        prediction, std, time = predicting(model, logger, x[test_indexes])
 
         # Scale back the prediction
         if out_scalers is None and out_scaler is not None:
@@ -143,8 +147,8 @@ def train_model(X: np.ndarray, info_dataset: pd.DataFrame,
                     else:
                         std_target = None
                     plot_prediction(
-                            target_name, target_index, prediction[i], output[sample], std=std_target,
-                        title= f"{target_name} {path}".replace('_', ' '), folder_name=path)
+                        target_name, target_index, prediction[i], output[sample], std=std_target,
+                        title=f"{target_name} {path}".replace('_', ' '), folder_name=path)
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())
 
