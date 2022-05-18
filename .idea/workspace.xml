@@ -2,37 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Orthostatic-Hypotension-detector.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Orthostatic-Hypotension-detector.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Task/Optimize_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Optimize_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Task/Train_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Train_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Outlier_detection/OD_algorithms.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Outlier_detection/OD_creator.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Outlier_detection/Outlier_detection.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Outlier_detection/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/predict_reconstruct.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Decision_trees/XGBoost.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Decision_trees/XGBoost.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/DeepAR.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/DeepAR.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/nbeats.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/nbeats.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Model_creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Model_creator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/abstractmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/abstractmodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/PydanticObject.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/PydanticObject.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Serializer/Serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Serializer/Serializer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/KlopPreprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/KlopPreprocessor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/Preprocessor_creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/Preprocessor_creator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/abstractPreprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/abstractPreprocessor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/setup_data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Util.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Util.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/enums.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
