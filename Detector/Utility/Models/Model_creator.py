@@ -9,7 +9,7 @@
 from typing import Union
 
 from Detector.Utility.Models.Decision_trees.XGBoost import XGB
-from Detector.Utility.Models.Keras.CNN import CNN
+from Detector.Utility.Models.Keras.CNN import CNN_LSTM
 from Detector.Utility.Models.Keras.DeepAR import DeepAR
 from Detector.Utility.Models.Keras.LSTM import SimpleLSTM, StackedLSTM, BiLSTM, StackedBiLSTM, EncDecLSTM, \
     EncDecAttLSTM
@@ -29,7 +29,7 @@ class ModelCreator:
         MLModelType.StackedBiLSTM: StackedBiLSTM,
         MLModelType.enc_dec_LSTM: EncDecLSTM,
         MLModelType.enc_dec_att_LSTM: EncDecAttLSTM,
-        MLModelType.cnn: CNN,
+        MLModelType.cnn_lstm: CNN_LSTM,
         MLModelType.xgboost: XGB,
         MLModelType.nbeats: NBeats,
         MLModelType.deepar: DeepAR,

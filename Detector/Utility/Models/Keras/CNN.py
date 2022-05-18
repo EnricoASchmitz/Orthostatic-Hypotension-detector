@@ -14,7 +14,7 @@ from Detector.Utility.PydanticObject import DataObject
 from Detector.enums import Parameters
 
 
-class CNN(Base):
+class CNN_LSTM(Base):
     """ Basic CNN model """
 
     # todo fix Call to CreateProcess failed. Error code: 2
