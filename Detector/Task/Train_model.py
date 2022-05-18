@@ -141,13 +141,13 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
 
                     sample = test_indexes[i]
                     information = info_dataset.iloc[sample]
-                    path = f"{information.ID}_{information.challenge}_{int(information['repeat'])}"
+                    path = f"prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
                     if std is not None:
                         std_target = std[i]
                     else:
                         std_target = None
                     plot_prediction(
-                        target_name, target_index, prediction[i], output[sample], std=std_target,
+                        target_name, target_index, prediction[i], output_unscaled[sample], std=std_target,
                         title=f"{target_name} {path}".replace('_', ' '), folder_name=path)
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())

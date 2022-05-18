@@ -29,7 +29,7 @@ plot_BP = False
 plot_features = False
 OP = True
 FI = True
-LoopModels = True
+LoopModels = False
 
 
 def main(argv):
