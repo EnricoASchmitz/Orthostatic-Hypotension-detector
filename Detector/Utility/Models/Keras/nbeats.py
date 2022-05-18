@@ -44,6 +44,7 @@ class NBeats(KerasModel):
         if seasonality_dim > 0:
             stack_types.append("seasonality")
             thetas_dim.append(seasonality_dim)
+        # todo: gave key error
         nbeats = NBeatsKeras(input_dim=self.input_shape[-1],  # oxy, dxy
                              output_dim=self.output_shape[-1],  # oxy, dxy
                              forecast_length=self.input_shape[0],  # future time steps
