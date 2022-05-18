@@ -14,8 +14,8 @@ class Files(Enum):
 
 class Parameters(Enum):
     """ Available parameters """
-    iterations = 50
-    n_trials = 5
+    iterations = 100
+    n_trials = 20
     batch_size = 16
     validation_split = 0.2
     avg_bpm = 80

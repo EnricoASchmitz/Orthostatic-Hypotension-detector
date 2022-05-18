@@ -4,6 +4,6 @@
     "nirs_input": true,
     "model": "xgb",
     "smooth": true,
-    "file_loc": "C:\\Users\\enric\\Documents\\Master thesis\\Scripts_master\\Data\\More markers\\"
+    "file_loc": "/home/eschmitz/Data/"
   }
 }
