@@ -6,7 +6,7 @@
 
 # Imports
 import logging
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 import pandas as pd
@@ -236,7 +236,7 @@ def get_indices(sitting: pd.Series, stand: pd.Series, stop_index: float) -> Tupl
 def extract_values(data_object: DataObject, df: pd.Series,
                    stand_index: float, stop_index: float,
                    seconds: int, future_steps: int,
-                   warning: str) -> Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray], dict]:
+                   warning: str, i: int = 0) -> Optional[Tuple[Tuple[np.ndarray, np.ndarray, np.ndarray], dict]]:
     """ Extract values from df
 
     Args:
@@ -247,6 +247,7 @@ def extract_values(data_object: DataObject, df: pd.Series,
         seconds: Seconds to resample to
         future_steps: number of future seconds to use for standing (used for output)
         warning: Message to give as warning
+        i: recursive count, default = 0
 
     Returns:
         (input data BP, input data NIRS, full curve BP), dictionary with parameters
@@ -262,7 +263,7 @@ def extract_values(data_object: DataObject, df: pd.Series,
     # get values for systolic and diastolic
     for bp_type in data_object.target_col:
         # get the data
-        bp_data = df[bp_type].ffill().bfill()
+        bp_data = df[bp_type].copy().ffill().bfill()
         # get x values for corresponding data
         bp = bp_data[starting_index:stop_index].copy()
         smooth_bp = butter_low_pass_filter(bp, cutoff=0.2, fs=100, order=2)
@@ -272,17 +273,19 @@ def extract_values(data_object: DataObject, df: pd.Series,
         par = get_y_values(par, bp_data.copy(), stand_index, bp_type)
         drop_timestamp = par[f"{bp_type}_drop_index"]
         if drop_timestamp <= 1:
-            # If the bp drop is within 1 second of standing up we assume wrong markers
+            # If the BP drop is within 1 second of standing up we assume wrong markers
             stand_index = stand_index - 1
             if drop_timestamp <= 0:
                 logger.warning(warning)
-                logger.warning(f"Drop before marker, index {drop_timestamp};")
-                stand_index = stand_index + drop_timestamp
-
-            return extract_values(data_object=data_object, df=df,
-                                  stand_index=stand_index, stop_index=stop_index,
-                                  seconds=seconds, future_steps=future_steps,
-                                  warning=warning)
+                logger.warning(f"Drop before marker, {bp_type} index {drop_timestamp};")
+                stand_index = stand_index - drop_timestamp
+            if i < 10:
+                return extract_values(data_object=data_object, df=df,
+                                      stand_index=stand_index, stop_index=stop_index,
+                                      seconds=seconds, future_steps=future_steps,
+                                      warning=warning, i=i + 1)
+            else:
+                return None
 
         # Get the full bp during standing
         bp_dict = get_full_curve(bp_dict, bp_type, bp_data.copy(), stand_index, seconds)
@@ -363,10 +366,30 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
         # calculate expected rows in the dataframe
         future_steps = int(Parameters.future_seconds.value / seconds)
 
-        (x_array, x_nirs_array, y_curve_array), par = extract_values(data_object=data_object, df=df,
-                                                                     stand_index=stand_index, stop_index=stop_index,
-                                                                     seconds=seconds, future_steps=future_steps,
-                                                                     warning=warning)
+        ext = extract_values(data_object=data_object, df=df,
+                             stand_index=stand_index, stop_index=stop_index,
+                             seconds=seconds, future_steps=future_steps,
+                             warning=warning)
+        if ext is not None:
+            (x_array, x_nirs_array, y_curve_array), par = ext
+        else:
+            logger.warning(warning)
+            logger.warning("Markers incorrect")
+            continue
+
+        if np.min(y_curve_array) < 0:
+            logger.warning(warning)
+            logger.warning("BP can't be lower than zero")
+            continue
+        elif y_curve_array[:, 0].min() < 20:
+            logger.warning(warning)
+            logger.warning("SBP can't be lower than 20")
+            continue
+
+        elif y_curve_array[:, 1].min() < 10:
+            logger.warning(warning)
+            logger.warning("DBP can't be lower than 10")
+            continue
 
         # Make sure data is in the right format, or we skip the repeat
         baseline_length = Parameters.baseline_length.value

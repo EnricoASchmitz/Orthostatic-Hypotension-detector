@@ -11,11 +11,11 @@ import numpy as np
 import tensorflow as tf
 from numpy.random import normal
 from tensorflow.keras import Input
-from tensorflow.keras import backend as K
+from tensorflow.keras import backend as bknd
 from tensorflow.keras.initializers import glorot_normal
 from tensorflow.keras.layers import LSTM, TimeDistributed, Dense, RepeatVector
-from tensorflow.keras.layers import Layer
 from tensorflow.python.framework.ops import disable_eager_execution
+from tensorflow.python.keras.engine.keras_tensor import KerasTensor
 from tensorflow.python.keras.utils.vis_utils import plot_model
 
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
@@ -33,18 +33,18 @@ class DeepAR(KerasModel):
         self.input_shape = input_shape
         self.output_shape = output_shape
         self.set_parameters(parameters)
-        self.model = self._architecture(**self.parameters)
+        self.model = self._model(**self.parameters)
         if plot_layers:
             plot_model(self.model, show_shapes=True, to_file="model.png")
 
-    def _architecture(self, lstm_units_architecture, optimizer, **kwargs):
-        lstm_units = int(lstm_units_architecture)
+    def _model(self, units_layer, optimizer, **kwargs):
+        lstm_units = int(units_layer)
         inputs = Input(shape=self.input_shape,
                        name='inputs')
 
         # First branch: process the sequence
         rnn_out, rnn_state_h, rnn_state_c = LSTM(lstm_units, return_sequences=True,
-                                                 name='rnn_layer_architecture', return_state=True)(inputs)
+                                                 name='rnn_layer', return_state=True)(inputs)
 
         encoder, enc_state_h, enc_state_c = LSTM(int(lstm_units),
                                                  dropout=0.1,
@@ -71,17 +71,17 @@ class DeepAR(KerasModel):
         return model
 
     def _set_default_parameters(self):
-        model_parameters = {"lstm_units_architecture": 32}
+        model_parameters = {"units_layer": 32}
 
         self.parameters.update(model_parameters)
 
     def _set_optuna_parameters(self, trial):
-        lstm_units = trial.suggest_int("lstm_units_architecture", 8, 64, step=8)
-        model_parameters = {"lstm_units_architecture": lstm_units}
+        lstm_units = trial.suggest_int("units_layer", 8, 64, step=8)
+        model_parameters = {"units_layer": lstm_units}
         self.parameters.update(model_parameters)
 
     def get_intermediate_values(self, model):
-        return K.function(
+        return bknd.function(
             inputs=[model.input],
             outputs=model.get_layer(self._intermediate_layer_name).output,
         )
@@ -114,7 +114,7 @@ class DeepAR(KerasModel):
         return samples, std
 
 
-class GaussianLayer(Layer):
+class GaussianLayer(KerasTensor):
     def __init__(self, output_dim, **kwargs):
         """Init."""
 
@@ -153,9 +153,9 @@ class GaussianLayer(Layer):
 
     def call(self, x, **kwargs):
         """Do the layer computation."""
-        output_mu = K.dot(x, self.kernel_1) + self.bias_1
-        output_sig = K.dot(x, self.kernel_2) + self.bias_2
-        output_sig_pos = K.log(1 + K.exp(output_sig)) + 1e-06
+        output_mu = bknd.dot(x, self.kernel_1) + self.bias_1
+        output_sig = bknd.dot(x, self.kernel_2) + self.bias_2
+        output_sig_pos = bknd.log(1 + bknd.exp(output_sig)) + 1e-06
         return [output_mu, output_sig_pos]
 
     def compute_output_shape(self, input_shape):

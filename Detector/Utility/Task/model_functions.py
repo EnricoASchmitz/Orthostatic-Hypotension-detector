@@ -56,8 +56,8 @@ def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.n
     return prediction, std, (time.perf_counter() - start)
 
 
-def fit_and_predict(info_object: InfoObject, logger:Logger,
-                    input_values:np.ndarray, output_values:np.ndarray,
+def fit_and_predict(info_object: InfoObject, logger: Logger,
+                    input_values: np.ndarray, output_values: np.ndarray,
                     indexes: Tuple[list, list], model: Model, step: int):
     """ Fit and predict with a model
 

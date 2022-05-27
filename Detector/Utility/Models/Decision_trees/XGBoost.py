@@ -35,15 +35,12 @@ class XGB(Model):
         if gpu:
             logger = logging.getLogger()
             logger.debug("using GPU")
-            tree_method = 'gpu_hist'
-        else:
-            tree_method = 'hist'
         self.data_object = data_object
 
         # fill parameters
         self.set_parameters(parameters)
 
-        xgb = XGBRegressor(tree_method=tree_method, eval_metric='mae', verbosity=1, **self.parameters)
+        xgb = XGBRegressor(eval_metric='mae', verbosity=1, **self.parameters)
 
         model = MyMultiOutputRegressor(xgb)
 
@@ -52,15 +49,12 @@ class XGB(Model):
     def fit(self, x_train_inputs, y_train_outputs, callbacks, **kwargs):
         index_train, index_val = train_test_split(range(len(x_train_inputs)), test_size=0.33, random_state=42)
 
-        print("Reshaping data input")
         # reshape X to 2d by adding timesteps as a feature
         x_train_inputs = self._add_timestep_as_feature(x_train_inputs)
-        print("Reshaped input")
 
         X_train, X_val = x_train_inputs[index_train], x_train_inputs[index_val]
         y_train, y_val = y_train_outputs[index_train], y_train_outputs[index_val]
 
-        print("sets made")
         self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric="mae", callbacks=callbacks,
                        verbose=0)
         return self.parameters["n_estimators"]
@@ -114,20 +108,20 @@ class XGB(Model):
     def _set_optuna_parameters(self, trial):
         param = {
             "booster": trial.suggest_categorical("booster", ["gbtree", "gblinear", "dart"]),
-            "lambda": trial.suggest_float("lambda", 1e-8, 1.0, log=True),
-            "alpha": trial.suggest_float("alpha", 1e-8, 1.0, log=True),
+            "lambda": trial.suggest_loguniform("lambda", 1e-8, 1.0),
+            "alpha": trial.suggest_loguniform("alpha", 1e-8, 1.0),
         }
 
         if param["booster"] == "gbtree" or param["booster"] == "dart":
             param["max_depth"] = trial.suggest_int("max_depth", 4, 31, step=4)
-            param["eta"] = trial.suggest_float("eta", 1e-8, 1.0, log=True)
-            param["gamma"] = trial.suggest_float("gamma", 1e-8, 1.0, log=True)
+            param["eta"] = trial.suggest_loguniform("eta", 1e-8, 1.0)
+            param["gamma"] = trial.suggest_loguniform("gamma", 1e-8, 1.0)
             param["grow_policy"] = trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
         if param["booster"] == "dart":
             param["sample_type"] = trial.suggest_categorical("sample_type", ["uniform", "weighted"])
             param["normalize_type"] = trial.suggest_categorical("normalize_type", ["tree", "forest"])
-            param["rate_drop"] = trial.suggest_float("rate_drop", 1e-8, 1.0, log=True)
-            param["skip_drop"] = trial.suggest_float("skip_drop", 1e-8, 1.0, log=True)
+            param["rate_drop"] = trial.suggest_loguniform("rate_drop", 1e-8, 1.0)
+            param["skip_drop"] = trial.suggest_loguniform("skip_drop", 1e-8, 1.0)
         self.parameters.update(param)
 
     def save_model(self):
@@ -139,23 +133,26 @@ class XGB(Model):
 
 
 class MyMultiOutputRegressor(MultiOutputRegressor):
+    def __init__(self, estimator):
+        super().__init__(estimator)
+        self.estimators_ = None
+
     def fit(self, x: np.ndarray, y: np.ndarray, sample_weight: np.ndarray = None, **fit_params) -> None:
         """ Fit the model to data.
         Fit a separate model for each output variable.
         Allows us to fit a validation set.
 
-        :param x: {array-like, sparse matrix} of shape (n_samples, n_features)
-        Data.
-        :param y: {array-like, sparse matrix} of shape (n_samples, n_outputs)
-        Multi-output targets. An indicator matrix turns on multilabel
-        estimation.
-        :param sample_weight: array-like of shape (n_samples,), default=None
-        Sample weights. If None, then samples are equally weighted.
-        Only supported if the underlying regressor supports sample
-        weights.
-        :param fit_params: dict of string -> object
-        Parameters passed to the ``estimator.fit`` method of each step.
-        :return: None
+        Args:
+            x: {array-like, sparse matrix} of shape (n_samples, n_features) Data.
+
+            y: {array-like, sparse matrix} of shape (n_samples, n_outputs) Multi-output targets.
+
+            sample_weight: array-like of shape (n_samples,), default=None
+
+            fit_params: dict of string -> object; Parameters passed to the ``estimator.fit`` method of each step.
+
+        Returns:
+            None
         """
         if not hasattr(self.estimator, "fit"):
             raise ValueError("The base estimator should implement"

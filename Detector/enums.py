@@ -18,8 +18,6 @@ class Parameters(Enum):
     n_trials = 20
     batch_size = 16
     validation_split = 0.2
-    avg_bpm = 80
-    minutes = 3
     time_row_ms = 10
     default_units = 128
     time = 60
@@ -31,6 +29,7 @@ class Parameters(Enum):
 class MLModelType(Enum):
     """ Available models """
     xgboost = 'xgb'
+    Dense = "dense"
     LSTM = 'lstm'
     StackedLSTM = 'stackedlstm'
     biLSTM = 'bilstm'
@@ -42,22 +41,6 @@ class MLModelType(Enum):
     deepar = "deepar"
 
 
-class ODAlgorithm(Enum):
-    """ Available Outlier detection methods """
-    KNN = "knn"
-    LOF = "lof"
-    IF = "if"
-    IQR = "iqr"
-
-
 class PreProcessorMethod(Enum):
     """ Available Preprocessor methods """
     KLOP = 'klop'
-    NILVAD = 'nilvad'
-
-
-class Architectures(Enum):
-    """ Available architectures """
-    basic = "basic"
-    nbeats = "nbeats"
-    deepAR = "deepar"

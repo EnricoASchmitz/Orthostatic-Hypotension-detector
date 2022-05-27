@@ -7,7 +7,7 @@
 # Imports
 import os
 from abc import abstractmethod
-from typing import Optional, Union, Any
+from typing import Optional, Union
 
 import numpy as np
 from optuna import Trial
@@ -37,12 +37,12 @@ class KerasModel(Model):
         self.model_loss = None
         self.fig = True
 
-    def compile_model(self, mapper_function: callable, inputs: KerasTensor, prev_layer: KerasTensor,
+    def compile_model(self, model_function: callable, inputs: KerasTensor, prev_layer: KerasTensor,
                       optimizer: str, loss: str, model_loss: callable, **kwargs):
         """ Compile the model
 
         Args:
-            mapper_function: function which add layers
+            model_function: function which add layers
             inputs: input layer
             prev_layer: last layer
             optimizer: optimizer
@@ -50,10 +50,7 @@ class KerasModel(Model):
             model_loss: model_loss function
 
         """
-        if mapper_function:
-            bp_out = mapper_function(prev_layer, **kwargs)
-        else:
-            bp_out = prev_layer
+        bp_out = model_function(prev_layer, **kwargs)
         # model
         model = keras.Model(inputs=inputs, outputs=bp_out,
                             name='BP_model')
@@ -91,18 +88,18 @@ class KerasModel(Model):
                                  shuffle=True,
                                  callbacks=callbacks,
                                  verbose=0)
-        # get intermediate values from architecture if needed
+        # get intermediate values from model if needed
         self.get_intermediate = self.get_intermediate_values(self.model)
 
         return len(history.history["loss"])
 
     def _make_prediction(self, inputs):
         if self.get_intermediate:
-            architecture_pred, std = self.use_intermediate_values(inputs, self.get_intermediate)
+            model_pred, std = self.use_intermediate_values(inputs, self.get_intermediate)
         else:
-            architecture_pred = self.model.predict(x=inputs)
+            model_pred = self.model.predict(x=inputs)
             std = None
-        return architecture_pred, std
+        return model_pred, std
 
     def predict(self, data):
         # use intermediate values for making the prediction
@@ -164,7 +161,6 @@ class KerasModel(Model):
             keras_parameters = {
                 "epochs": epochs,
                 "batch_size": batch_size,
-                "activation": 'relu',
                 "optimizer": opti(),
                 "loss": loss
             }
@@ -172,7 +168,6 @@ class KerasModel(Model):
             keras_parameters = {
                 "epochs": epochs,
                 "batch_size": batch_size,
-                "activation": 'relu',
                 "optimizer": args["optimizer"],
                 "loss": args["loss"]
             }
@@ -181,8 +176,6 @@ class KerasModel(Model):
             keras_parameters = {
                 "epochs": epochs,
                 "batch_size": batch_size,
-                "activation": 'relu',
-                "sep_mapper": True,
                 "optimizer": "adam",
                 "loss": "mse"
             }
@@ -195,13 +188,13 @@ class KerasModel(Model):
         # contains bug
         file_name = os.path.join(folder_name, "model.h5")
         self.model.load_weights(file_name)
-        # get intermediate values from architecture if needed
+        # get intermediate values from model if needed
         self.get_intermediate = self.get_intermediate_values(self.model)
 
     def get_intermediate_values(self, model):
         pass
 
-    def use_intermediate_values(self, inputs, get_intermediate):
+    def use_intermediate_values(self, inputs, get_intermediate) -> Union[np.ndarray, np.ndarray]:
         pass
 
 
@@ -218,15 +211,14 @@ class Base(KerasModel):
         self.data_object = data_object
 
         # fill parameters
-        # todo: get_keras_parameters called twice and not all parameters are copied from the optimization run
         self.set_parameters(parameters)
 
-        self.model = self._architecture(**self.parameters)
+        self.model = self._model(**self.parameters)
         if plot_layers:
             plot_model(self.model, show_shapes=True, to_file="model.png")
 
-    def _architecture(self, optimizer: str, loss: str,
-                      **kwargs):
+    def _model(self, optimizer: str, loss: str,
+               **kwargs):
         """ Make model
 
        Args:
@@ -242,19 +234,27 @@ class Base(KerasModel):
         model = self.compile_model(self._get_model(), inputs, last_layer, optimizer, loss, model_loss, **kwargs)
         return model
 
-    def _output_layers_parameters(self, prev_layer, dropout_value, activation) -> Any:
+    def _output_layers_parameters(self, prev_layer, n_dense_layers, dropout, activation_out, **kwargs) -> KerasTensor:
         """ Create output layers
 
         Args:
              prev_layer: previous layer
-             dropout_value: dropout value
+             n_dense_layers: number of Dense layers to use
+             dropout: dropout value
              activation: activation to use for final layer
         """
-        dense_layer = Dense(64, activation="relu", name='Dense')(prev_layer)
-        BN = BatchNormalization()(dense_layer)
-        dropout = Dropout(dropout_value, name='dropout_out')(BN)
+        n_dense_layers = int(n_dense_layers)
+        dropout_value = float(dropout)
+
         out_units = self.output_shape[-1]
-        out_layer = Dense(units=out_units, name='BP_out', activation=activation)(dropout)
+        input_shape = prev_layer.shape[-1]
+
+        layer_units = np.flip(np.linspace(out_units, input_shape, num=n_dense_layers))
+        for i in range(n_dense_layers):
+            dense_layer = Dense(layer_units[i], activation="relu", name=f'Dense_{i}')(prev_layer)
+            BN = BatchNormalization(name=f"BN_{i}")(dense_layer)
+            prev_layer = Dropout(dropout_value, name=f'dropout_out_{i}')(BN)
+        out_layer = Dense(units=out_units, name='BP_out', activation=activation_out)(prev_layer)
         return out_layer
 
     @abstractmethod
