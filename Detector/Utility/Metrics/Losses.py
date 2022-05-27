@@ -6,6 +6,7 @@
 
 # Imports
 from statistics import mean
+from typing import Dict
 
 import numpy as np
 from sklearn import metrics
@@ -15,7 +16,7 @@ class Loss:
     """ Object containing loss functions"""
 
     def __init__(self):
-        self.loss_dict = {
+        self.loss_dict: Dict[callable] = {
             "mae": self.mean_absolute_error,
             "mape": self.mean_absolute_percentage_error,
             "mse": self.mean_squared_error,

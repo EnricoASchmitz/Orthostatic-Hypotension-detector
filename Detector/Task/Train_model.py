@@ -157,10 +157,10 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
 
         # remove file, since it is saved in MLflow
         for file in os.listdir('.'):
-            if (fnmatch.fnmatch(file, 'model.png')) or (fnmatch.fnmatch(file, 'mapper.png')):
+            if fnmatch.fnmatch(file, 'model.png'):
                 mlflow.log_artifact(file, "figure")
                 os.remove(file)
-            elif (fnmatch.fnmatch(file, 'model.*')) or (fnmatch.fnmatch(file, 'mapper.h5')):
+            elif fnmatch.fnmatch(file, 'model.*'):
                 mlflow.log_artifact(file, "model")
                 os.remove(file)
 

@@ -276,14 +276,14 @@ def extract_values(data_object: DataObject, df: pd.Series,
             # If the BP drop is within 1 second of standing up we assume wrong markers
             stand_index = stand_index - 1
             if drop_timestamp <= 0:
-                print(warning)
-                print(f"Drop before marker, {bp_type} index {drop_timestamp};")
+                logger.warning(warning)
+                logger.warning(f"Drop before marker, {bp_type} index {drop_timestamp};")
                 stand_index = stand_index - drop_timestamp
             if i < 10:
                 return extract_values(data_object=data_object, df=df,
-                   stand_index=stand_index, stop_index=stop_index,
-                   seconds=seconds, future_steps=future_steps,
-                   warning=warning, i = i+1)
+                                      stand_index=stand_index, stop_index=stop_index,
+                                      seconds=seconds, future_steps=future_steps,
+                                      warning=warning, i=i + 1)
             else:
                 return None
 
@@ -373,22 +373,22 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
         if ext is not None:
             (x_array, x_nirs_array, y_curve_array), par = ext
         else:
-            print(warning)
-            print("Markers incorrect")
+            logger.warning(warning)
+            logger.warning("Markers incorrect")
             continue
 
         if np.min(y_curve_array) < 0:
-            print(warning)
-            print("BP can't be lower than zero")
+            logger.warning(warning)
+            logger.warning("BP can't be lower than zero")
             continue
         elif y_curve_array[:, 0].min() < 20:
-            print(warning)
-            print("SBP can't be lower than 20")
+            logger.warning(warning)
+            logger.warning("SBP can't be lower than 20")
             continue
 
         elif y_curve_array[:, 1].min() < 10:
-            print(warning)
-            print("DBP can't be lower than 10")
+            logger.warning(warning)
+            logger.warning("DBP can't be lower than 10")
             continue
 
         # Make sure data is in the right format, or we skip the repeat

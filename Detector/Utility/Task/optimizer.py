@@ -18,7 +18,6 @@ from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
 from sklearn.model_selection import train_test_split
-from tensorflow.python.framework.errors_impl import ResourceExhaustedError
 
 from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Metrics.Losses import Loss
@@ -33,9 +32,9 @@ from Detector.enums import Parameters
 class Optimizer:
     """ Optimize a model with optuna """
 
-    def __init__(self, X, output, info_object: InfoObject, data_object: DataObject):
+    def __init__(self, x, output, info_object: InfoObject, data_object: DataObject):
 
-        self.input = X
+        self.input = x
         self.output = output
         self.info_object = info_object
         self.data_object = data_object
@@ -142,10 +141,6 @@ class Optimizer:
                 mae = 1e+10
         except ValueError as e:
             self.logger.warning(e)
-            mae = 1e+10
-        except ResourceExhaustedError as ie:
-            self.logger.warning("OOM")
-            self.logger.warning(f"Parameters= {model.get_parameters()}")
             mae = 1e+10
         return mae
 

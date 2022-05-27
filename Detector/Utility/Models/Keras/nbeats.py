@@ -22,13 +22,13 @@ class NBeats(KerasModel):
         self.input_shape = input_shape
         self.output_shape = output_shape
         self.set_parameters(parameters)
-        self.model = self._architecture(**self.parameters)
+        self.model = self._model(**self.parameters)
         if plot_layers:
             plot_model(self.model, show_shapes=True, to_file="model.png")
 
-    def _architecture(self, nb_blocks_per_stack, units_architecture,
-                      generic_dim, trend_dim, seasonality_dim,
-                      optimizer, loss, **kwargs):
+    def _model(self, nb_blocks_per_stack, units_layer,
+               generic_dim, trend_dim, seasonality_dim,
+               optimizer, loss, **kwargs):
         # nbeats part
         stack_types = []
         thetas_dim = []
@@ -53,7 +53,7 @@ class NBeats(KerasModel):
                              # different stacks to use ("generic", "trend", "seasonality")
                              thetas_dim=thetas_dim,  # need to match with stack types len
                              nb_blocks_per_stack=int(nb_blocks_per_stack),
-                             hidden_layer_units=int(units_architecture)
+                             hidden_layer_units=int(units_layer)
                              )
         nbeats.compile(optimizer=optimizer, loss=loss, metrics=['mae'], run_eagerly=self.m_eager)
         return nbeats
@@ -63,19 +63,19 @@ class NBeats(KerasModel):
                             "generic_dim": 0,
                             "trend_dim": 4,
                             "seasonality_dim": 8,
-                            "units_architecture": int(Parameters.default_units.value)
+                            "units_layer": int(Parameters.default_units.value)
                             }
         self.parameters.update(model_parameters)
 
     def _set_optuna_parameters(self, trial):
         nb_blocks = trial.suggest_int("nb_blocks_per_stack", 1, 3)
-        units = trial.suggest_int("units_architecture", 32, int(Parameters.default_units.value * 2), step=32)
+        units = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
         generic_dim = trial.suggest_int("generic_dim", 0, 1)
         trend_dim = trial.suggest_int("trend_dim", 0, 6)
         seasonality_dim = trial.suggest_int("seasonality_dim", 0, 10)
         model_parameters = {
             "nb_blocks_per_stack": nb_blocks,
-            "units_architecture": units,
+            "units_layer": units,
             "generic_dim": generic_dim,
             "trend_dim": trend_dim,
             "seasonality_dim": seasonality_dim

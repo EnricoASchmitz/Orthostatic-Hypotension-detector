@@ -2,7 +2,7 @@
   "klop": {
     "dataset": "klop",
     "nirs_input": true,
-    "model": "xgb",
+    "model": "dense",
     "smooth": true,
     "file_loc": "C:\\Users\\enric\\Documents\\Master thesis\\Scripts_master\\Data\\More markers\\"
   }

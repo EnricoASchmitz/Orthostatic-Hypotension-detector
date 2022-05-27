@@ -116,7 +116,7 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
         flatliners = df.index[le_index:re_index]
         df.at[flatliners, 'signal'] = False
     n_peaks = len(peak_plateaus['plateau_sizes'])
-    if n_peaks > 0 :
+    if n_peaks > 0:
         logger.warning(f"Removing {n_peaks} plateaus")
 
     # remove flatliners

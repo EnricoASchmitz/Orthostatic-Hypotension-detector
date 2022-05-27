@@ -109,9 +109,10 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
     """ Plot the prediction
 
     Args:
+        std:
+        folder_name:
         target_name: name to add to the plot
         target_index: column to plot
-        train: training data
         true:  test data
         prediction: Predicted values
         title: title of the plot
@@ -125,11 +126,11 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
     mae = Loss().get_loss_metric("mae")
     mae = round(mae(true, prediction), 4)
 
-    def get_correct_shape(data, target_index):
+    def get_correct_shape(data, target_i):
         if data.ndim > 2:
-            data = data[:, -1, target_index]
+            data = data[:, -1, target_i]
         else:
-            data = data[:, target_index]
+            data = data[:, target_i]
         return data
 
     prediction = get_correct_shape(prediction, target_index)
