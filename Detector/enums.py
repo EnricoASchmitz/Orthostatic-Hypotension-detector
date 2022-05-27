@@ -8,8 +8,8 @@ from enum import Enum
 
 
 class Files(Enum):
-    config = "./Config.json"
-    tags = "./Castor_export_agesex.csv"
+    config = "/home/eschmitz/Orthostatic-Hypotension-detector/Config.json"
+    tags = "/home/eschmitz/Orthostatic-Hypotension-detector/Castor_export_agesex.csv"
 
 
 class Parameters(Enum):
