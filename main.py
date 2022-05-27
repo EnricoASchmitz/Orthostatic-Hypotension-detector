@@ -19,8 +19,8 @@ from Detector.Task.Train_model import train_model
 from Detector.Utility.Task.preprocessing.PreprocessingFunctions import create_info_object
 from Detector.enums import MLModelType
 
-warnings.simplefilter(action='ignore', category=UserWarning)
-warnings.simplefilter(action='ignore', category=RuntimeWarning)
+warnings.simplefilter(action="ignore", category=UserWarning)
+warnings.simplefilter(action="ignore", category=RuntimeWarning)
 logging.basicConfig(level=logging.ERROR)
 # variables
 dataset_name = "klop"
@@ -72,9 +72,9 @@ def main(argv):
 
 
 def parse_arguments(argv):
-    usage = 'main.py -d <dataset_name> -m <model> ' \
-            '-o <optimize> -f <fit>' \
-            '-s <smooth>   -l <file_loc>'
+    usage = "main.py -d <dataset_name> -m <model> " \
+            "-o <optimize> -f <fit>" \
+            "-s <smooth>   -l <file_loc>"
     Optimize = None
     Fit = None
     try:
@@ -94,7 +94,7 @@ def parse_arguments(argv):
     info_dict = {}
     if opts:
         for opt, arg in opts:
-            if opt == '-h':
+            if opt == "-h":
                 print(usage)
                 sys.exit()
             elif opt in ("-d", "--dataset"):
@@ -126,6 +126,6 @@ def parse_bool(opt, arg):
     return arg
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     os.chdir(os.getcwd())
     main(sys.argv[1:])

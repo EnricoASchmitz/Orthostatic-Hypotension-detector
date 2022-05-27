@@ -40,7 +40,7 @@ class XGB(Model):
         # fill parameters
         self.set_parameters(parameters)
 
-        xgb = XGBRegressor(eval_metric='mae', verbosity=1, **self.parameters)
+        xgb = XGBRegressor(eval_metric="mae", verbosity=1, **self.parameters)
 
         model = MyMultiOutputRegressor(xgb)
 
@@ -102,7 +102,7 @@ class XGB(Model):
     def _set_default_parameters(self, parameters=None):
         self.parameters = {
             "n_estimators": (Parameters.iterations.value * 10),
-            "objective": 'reg:squarederror'
+            "objective": "reg:squarederror"
         }
 
     def _set_optuna_parameters(self, trial):
@@ -170,12 +170,12 @@ class MyMultiOutputRegressor(MultiOutputRegressor):
                              "multi-output regression but has only one.")
 
         if (sample_weight is not None and
-                not has_fit_parameter(self.estimator, 'sample_weight')):
+                not has_fit_parameter(self.estimator, "sample_weight")):
             raise ValueError("Underlying estimator does not support"
                              " sample weights.")
 
         fit_params_validated = _check_fit_params(X, fit_params)
-        [(X_test, Y_test)] = fit_params_validated.pop('eval_set')
+        [(X_test, Y_test)] = fit_params_validated.pop("eval_set")
         self.estimators_ = Parallel(n_jobs=self.n_jobs)(
             delayed(_fit_estimator)(
                 self.estimator,

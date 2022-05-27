@@ -3,6 +3,26 @@
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Optimize_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Optimize_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Train_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Train_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Transformation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Decision_trees/XGBoost.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Decision_trees/XGBoost.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/DeepAR.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/DeepAR.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/nbeats.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/nbeats.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/parameter_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/parameter_models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Plotting/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Plotting/plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/KlopPreprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/KlopPreprocessor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/PreprocessingFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/PreprocessingFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Util.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Util.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/enums.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rewrite_mlflow_yaml.py" beforeDir="false" afterPath="$PROJECT_DIR$/rewrite_mlflow_yaml.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

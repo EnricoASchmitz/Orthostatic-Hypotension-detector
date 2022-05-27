@@ -28,19 +28,19 @@ class Parameters(Enum):
 
 class MLModelType(Enum):
     """ Available models """
-    xgboost = 'xgb'
+    xgboost = "xgb"
     Dense = "dense"
-    LSTM = 'lstm'
-    StackedLSTM = 'stackedlstm'
-    biLSTM = 'bilstm'
-    StackedBiLSTM = 'stackedbilstm'
-    enc_dec_LSTM = 'enc_dec_lstm'
-    enc_dec_att_LSTM = 'enc_dec_att_lstm'
-    cnn_lstm = 'cnn_lstm'
+    LSTM = "lstm"
+    StackedLSTM = "stackedlstm"
+    biLSTM = "bilstm"
+    StackedBiLSTM = "stackedbilstm"
+    enc_dec_LSTM = "enc_dec_lstm"
+    enc_dec_att_LSTM = "enc_dec_att_lstm"
+    cnn_lstm = "cnn_lstm"
     nbeats = "nbeats"
     deepar = "deepar"
 
 
 class PreProcessorMethod(Enum):
     """ Available Preprocessor methods """
-    KLOP = 'klop'
+    KLOP = "klop"

@@ -73,13 +73,13 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
     # Find plateaus by reversing find_peaks
     df["signal"] = True
     peaks, peak_plateaus = find_peaks(- y, plateau_size=data_object.hz * seconds_per_plateau)
-    if len(peak_plateaus['plateau_sizes']) == 0:
+    if len(peak_plateaus["plateau_sizes"]) == 0:
         logger.info("No plateau found")
 
     # since sometimes a plateau will not end at the lowest value, we cut off until we are at the lowest value
-    for i in range(len(peak_plateaus['plateau_sizes'])):
-        le_index = peak_plateaus['left_edges'][i]
-        re_index = peak_plateaus['right_edges'][i]
+    for i in range(len(peak_plateaus["plateau_sizes"])):
+        le_index = peak_plateaus["left_edges"][i]
+        re_index = peak_plateaus["right_edges"][i]
 
         # cut off until we reached the lowest point
         lowest_point_r = {"index": None, "Value": np.inf}
@@ -114,8 +114,8 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
         logger.debug(f"Found plateau between {round(df.index[le_index], 3)} and {round(df.index[re_index], 3)}")
         # set signal to false if we identify it as a plateau
         flatliners = df.index[le_index:re_index]
-        df.at[flatliners, 'signal'] = False
-    n_peaks = len(peak_plateaus['plateau_sizes'])
+        df.at[flatliners, "signal"] = False
+    n_peaks = len(peak_plateaus["plateau_sizes"])
     if n_peaks > 0:
         logger.warning(f"Removing {n_peaks} plateaus")
 
@@ -161,6 +161,6 @@ def butter_low_pass_filter(data: pd.Series, cutoff: float, fs: int, order: int) 
     nyq = 0.5 * fs  # Nyquist Frequency
     normal_cutoff = cutoff / nyq
     # Get the filter coefficients
-    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    b, a = butter(order, normal_cutoff, btype="low", analog=False)
     y = filtfilt(b, a, data)
     return pd.Series(y, index=index)

@@ -53,7 +53,7 @@ class KerasModel(Model):
         bp_out = model_function(prev_layer, **kwargs)
         # model
         model = keras.Model(inputs=inputs, outputs=bp_out,
-                            name='BP_model')
+                            name="BP_model")
         if self.m_eager:
             run_eager = True
         else:
@@ -64,7 +64,7 @@ class KerasModel(Model):
         self.optimizer = optimizer
         self.model_loss = model_loss
 
-        model.compile(optimizer=optimizer, loss=model_loss, metrics=['mae'], run_eagerly=run_eager)
+        model.compile(optimizer=optimizer, loss=model_loss, metrics=["mae"], run_eagerly=run_eager)
 
         return model
 
@@ -202,7 +202,7 @@ class Base(KerasModel):
     def __init__(self, data_object: DataObject, input_shape, output_shape, parameters: Optional[dict],
                  plot_layers: bool,
                  gpu):
-        get_logger().setLevel('ERROR')
+        get_logger().setLevel("ERROR")
         super().__init__()
         self.logger.debug(f"GPU: {gpu}")
 
@@ -227,7 +227,7 @@ class Base(KerasModel):
        """
         # Creating the layers
         inputs = Input(shape=self.input_shape,
-                       name='BP_in')
+                       name="BP_in")
         last_layer = BatchNormalization()(inputs)
         model_loss = None
 
@@ -251,10 +251,10 @@ class Base(KerasModel):
 
         layer_units = np.flip(np.linspace(out_units, input_shape, num=n_dense_layers))
         for i in range(n_dense_layers):
-            dense_layer = Dense(layer_units[i], activation="relu", name=f'Dense_{i}')(prev_layer)
+            dense_layer = Dense(layer_units[i], activation="relu", name=f"Dense_{i}")(prev_layer)
             BN = BatchNormalization(name=f"BN_{i}")(dense_layer)
-            prev_layer = Dropout(dropout_value, name=f'dropout_out_{i}')(BN)
-        out_layer = Dense(units=out_units, name='BP_out', activation=activation_out)(prev_layer)
+            prev_layer = Dropout(dropout_value, name=f"dropout_out_{i}")(BN)
+        out_layer = Dense(units=out_units, name="BP_out", activation=activation_out)(prev_layer)
         return out_layer
 
     @abstractmethod

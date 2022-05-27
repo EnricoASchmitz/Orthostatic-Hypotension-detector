@@ -64,7 +64,7 @@ def optimize_model(x: np.ndarray,
         mlflow.log_params(trial.user_attrs)
         mlflow.log_metric("mae", trial.value)
         mlflow.log_metric("trials", len(study.trials))
-        mlflow.log_artifact(storage, 'study')
+        mlflow.log_artifact(storage, "study")
         # clean up old files
         os.remove(Path(storage))
         if old_run is not None:
@@ -92,7 +92,7 @@ def check_for_optimized_run(serializer: MLflowSerializer, name: str, storage_fil
     # remove uri suffix
     artifact_uri = artifact_uri.removeprefix(serializer.uri_start)
     # get the run path
-    run_path = artifact_uri.removesuffix('artifacts')
+    run_path = artifact_uri.removesuffix("artifacts")
     # get the study file
     artifact_uri = os.path.join(artifact_uri, f"study/{storage_file}")
     # copy to pwd for easier use

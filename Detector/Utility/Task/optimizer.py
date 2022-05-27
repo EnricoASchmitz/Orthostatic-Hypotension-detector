@@ -51,7 +51,7 @@ class Optimizer:
             if the storage file exists and contains the study, return loaded study
         """
         file = os.path.basename(storage)
-        file_path = Path(file.removeprefix('sqlite:///'))
+        file_path = Path(file.removeprefix("sqlite:///"))
         # check if the file exists
         if file_path.exists():
             try:

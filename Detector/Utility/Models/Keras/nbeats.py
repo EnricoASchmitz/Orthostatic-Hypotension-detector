@@ -55,7 +55,7 @@ class NBeats(KerasModel):
                              nb_blocks_per_stack=int(nb_blocks_per_stack),
                              hidden_layer_units=int(units_layer)
                              )
-        nbeats.compile(optimizer=optimizer, loss=loss, metrics=['mae'], run_eagerly=self.m_eager)
+        nbeats.compile(optimizer=optimizer, loss=loss, metrics=["mae"], run_eagerly=self.m_eager)
         return nbeats
 
     def _set_default_parameters(self):

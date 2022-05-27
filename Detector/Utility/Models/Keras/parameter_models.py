@@ -271,7 +271,8 @@ class StackedBiLSTM(Base):
                          parameters=parameters
                          )
 
-    def recursive_block(self, prev_layer: KerasTensor, n_blocks: int, units_layer: int, dropout: float, **kwargs) -> KerasTensor:
+    def recursive_block(self, prev_layer: KerasTensor, n_blocks: int, units_layer: int, dropout: float,
+                        **kwargs) -> KerasTensor:
         """ Create a stacked bilstm-lstm block
 
         Args:
@@ -348,13 +349,13 @@ class EncDecLSTM(Base):
         units_layer = int(units_layer)
         dropout = float(dropout)
         bp_encoder, enc_state_h, enc_state_c = LSTM(units_layer, dropout=dropout, return_sequences=True,
-                                                           return_state=True,
-                                                           name="translate_encoder")(input_layer)
+                                                    return_state=True,
+                                                    name="translate_encoder")(input_layer)
         bp_decoder, dec_state_h, dec_state_c = LSTM(units_layer, dropout=dropout,
-                                                           return_state=True,
-                                                           name="translate_decoder")(bp_encoder,
-                                                                                     initial_state=[enc_state_h,
-                                                                                                    enc_state_c])
+                                                    return_state=True,
+                                                    name="translate_decoder")(bp_encoder,
+                                                                              initial_state=[enc_state_h,
+                                                                                             enc_state_c])
         bp_out = self._output_layers_parameters(bp_decoder, dropout=dropout, **kwargs)
         return bp_out
 
@@ -410,15 +411,15 @@ class EncDecAttLSTM(Base):
         units_layer = int(units_layer)
         dropout = float(dropout)
         bp_encoder, enc_state_h, enc_state_c = LSTM(units_layer, dropout=dropout, return_sequences=True,
-                                                           return_state=True,
-                                                           name="translate_encoder")(input_layer)
+                                                    return_state=True,
+                                                    name="translate_encoder")(input_layer)
         bp_decoder, dec_state_h, dec_state_c = LSTM(units_layer, dropout=dropout, return_sequences=True,
-                                                           return_state=True,
-                                                           name="translate_decoder")(bp_encoder,
-                                                                                     initial_state=[enc_state_h,
-                                                                                                    enc_state_c])
-        attn_out = Attention(name='attention_layer')([bp_encoder, bp_decoder])
-        decoder_concat_input = Concatenate(axis=-1, name='concat_layer')([bp_decoder, attn_out])
+                                                    return_state=True,
+                                                    name="translate_decoder")(bp_encoder,
+                                                                              initial_state=[enc_state_h,
+                                                                                             enc_state_c])
+        attn_out = Attention(name="attention_layer")([bp_encoder, bp_decoder])
+        decoder_concat_input = Concatenate(axis=-1, name="concat_layer")([bp_decoder, attn_out])
         lstm_layer = LSTM(int(units_layer), dropout=float(dropout))(decoder_concat_input)
         bp_out = self._output_layers_parameters(lstm_layer, dropout=dropout, **kwargs)
         return bp_out
