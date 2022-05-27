@@ -105,7 +105,7 @@ def check_gpu() -> bool:
         boolean, gpu available
     """
     use_gpu = False
-    gpus = config.list_physical_devices('GPU')
+    gpus = config.list_physical_devices("GPU")
     if gpus:
         use_gpu = True
         for gpu in gpus:

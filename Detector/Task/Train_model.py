@@ -24,7 +24,7 @@ from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, predicting
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
 def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
@@ -108,7 +108,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         # Get best model
         mae_loss = []
         for k in loss_dicts:
-            mae_loss.append(k['mae'])
+            mae_loss.append(k["mae"])
         best_k = np.array(mae_loss).argmin()
 
         model = models_list[best_k]
@@ -148,7 +148,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
                         std_target = None
                     plot_prediction(
                         target_name, target_index, prediction[i], output_unscaled[sample], std=std_target,
-                        title=f"{target_name} {path}".replace('_', ' '), folder_name=path)
+                        title=f"{target_name} {path}".replace("_", " "), folder_name=path)
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())
 
@@ -156,11 +156,11 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         model.save_model()
 
         # remove file, since it is saved in MLflow
-        for file in os.listdir('.'):
-            if fnmatch.fnmatch(file, 'model.png'):
+        for file in os.listdir("."):
+            if fnmatch.fnmatch(file, "model.png"):
                 mlflow.log_artifact(file, "figure")
                 os.remove(file)
-            elif fnmatch.fnmatch(file, 'model.*'):
+            elif fnmatch.fnmatch(file, "model.*"):
                 mlflow.log_artifact(file, "model")
                 os.remove(file)
 

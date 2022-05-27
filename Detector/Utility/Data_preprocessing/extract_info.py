@@ -127,7 +127,7 @@ def resample_hz(df: pd.Series, seconds: int = 1) -> Resampler:
 
     """
     df = time_as_datetime(df)
-    resample_object = df.resample(f"{seconds}s", label='right', closed='right')
+    resample_object = df.resample(f"{seconds}s", label="right", closed="right")
     return resample_object
 
 
@@ -144,10 +144,10 @@ def get_x_values(x: dict, df: pd.Series, type_id: str) -> dict:
 
     """
     resample_object = resample_hz(df)
-    x[f'{type_id}_mean'] = resample_object.mean()
-    x[f'{type_id}_std'] = resample_object.std()
-    x[f'{type_id}_max'] = resample_object.max()
-    x[f'{type_id}_min'] = resample_object.min()
+    x[f"{type_id}_mean"] = resample_object.mean()
+    x[f"{type_id}_std"] = resample_object.std()
+    x[f"{type_id}_max"] = resample_object.max()
+    x[f"{type_id}_min"] = resample_object.min()
     return x
 
 
@@ -181,9 +181,9 @@ def get_y_values(par: dict, df: pd.Series, start: float, bp_type: str) -> dict:
         name = f"{bp_type}_recovery_{point}"
         par[name] = get_recovery(df, baseline, start, window_start, window_end)
     # Calculate drop per second
-    par[f'{bp_type}_drop_per_sec'] = drop / drop_index
+    par[f"{bp_type}_drop_per_sec"] = drop / drop_index
     # get recovery rate at given time
-    par[f'{bp_type}_recovery_rate_{Parameters.time.value}'] = get_recovery_rate(df, baseline, start)
+    par[f"{bp_type}_recovery_rate_{Parameters.time.value}"] = get_recovery_rate(df, baseline, start)
     return par
 
 
@@ -343,9 +343,9 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
         lists with added data
     """
     x_dataframes, x_oxy_dxy, y_curves, infs, parameters = lists
-    df = info['Data'].copy()
+    df = info["Data"].copy()
     chal = info["Challenge"]
-    h_stages = df['stage']
+    h_stages = df["stage"]
     # Get protocol
     sitting = h_stages.str.contains("start", case=False)
     stand = h_stages.str.contains("stand", case=False)
@@ -379,16 +379,16 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
 
         if np.min(y_curve_array) < 0:
             logger.warning(warning)
-            logger.warning("BP can't be lower than zero")
+            logger.warning("BP can not be lower than zero")
             continue
         elif y_curve_array[:, 0].min() < 20:
             logger.warning(warning)
-            logger.warning("SBP can't be lower than 20")
+            logger.warning("SBP can not be lower than 20")
             continue
 
         elif y_curve_array[:, 1].min() < 10:
             logger.warning(warning)
-            logger.warning("DBP can't be lower than 10")
+            logger.warning("DBP can not be lower than 10")
             continue
 
         # Make sure data is in the right format, or we skip the repeat

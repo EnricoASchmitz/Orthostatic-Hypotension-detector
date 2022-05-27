@@ -80,7 +80,7 @@ def plot_stages(fig: Figure, stand_markers: pd.DataFrame) -> Figure:
         returns figure with stages
     """
     for index, row in stand_markers.iterrows():
-        fig.add_vrect(x0=row['begin'], x1=row['end'],
+        fig.add_vrect(x0=row["begin"], x1=row["end"],
                       annotation_text=index, annotation_position="top left",
                       fillcolor="green", opacity=0.25, line_width=0)
     return fig
@@ -146,15 +146,15 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
     trace2 = Scatter(
         x=date_test,
         y=prediction,
-        mode='lines',
-        name='Prediction',
+        mode="lines",
+        name="Prediction",
     )
     trace3 = Scatter(
         x=date_test,
         y=true,
         opacity=0.5,
-        mode='lines',
-        name='Ground Truth'
+        mode="lines",
+        name="Ground Truth"
     )
 
     plots = [trace2, trace3]
@@ -165,23 +165,23 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
             x=date_test,
             y=prediction + std,
             opacity=0.5,
-            mode='lines',
-            name='+STD'
+            mode="lines",
+            name="+STD"
         )
         plots.append(upper_std)
         lower_std = Scatter(
             x=date_test,
             y=prediction - std,
             opacity=0.5,
-            mode='lines',
-            name='-STD'
+            mode="lines",
+            name="-STD"
         )
         plots.append(lower_std)
 
     layout = Layout(
         title=f"{title}, Loss mae:{mae}",
-        xaxis={'title': "Date"},
-        yaxis={'title': f"{target_name}"}
+        xaxis={"title": "Date"},
+        yaxis={"title": f"{target_name}"}
     )
     fig = Figure(data=plots, layout=layout)
     if folder_name is not None:
@@ -207,20 +207,20 @@ def plot_comparison(model_name, info_df, names, rescaled_prediction, true, folde
             Scatter(x=true[:, col],
                     y=rescaled_prediction[:, col],
                     name=names[col],
-                    mode='markers',
+                    mode="markers",
                     showlegend=False,
-                    hovertemplate='<b>%{text}</b><br>' +
-                                  'True: %{x}<br>' +
-                                  'Pred: %{y}<br>',
+                    hovertemplate="<b>%{text}</b><br>" +
+                                  "True: %{x}<br>" +
+                                  "Pred: %{y}<br>",
                     text=IDS),
             row=row_n, col=col_n
         )
-        fig.add_shape(type='line',
+        fig.add_shape(type="line",
                       x0=min(true[:, col]),
                       y0=min(true[:, col]),
                       x1=max(true[:, col]),
                       y1=max(true[:, col]),
-                      line=dict(color='Red'),
+                      line=dict(color="Red"),
                       row=row_n, col=col_n)
 
         col_n += 1

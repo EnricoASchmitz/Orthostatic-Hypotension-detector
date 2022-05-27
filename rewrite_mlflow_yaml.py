@@ -50,14 +50,14 @@ def main(argv):
     for path in files:
         path = Path(path)
         # Read in the file
-        with open(path, 'r') as file:
+        with open(path, "r") as file:
             file_data = file.read()
 
         # Replace the target string
         file_data = file_data.replace(old_path, dir_name)
 
         # Write the file out again
-        with open(path, 'w') as file:
+        with open(path, "w") as file:
             file.write(file_data)
 
 
@@ -66,7 +66,7 @@ def not_specified(variable_name, usage, arguments):
 
 
 def parse_arguments(argv):
-    usage = 'rewrite_mlflow_yaml.py -i <dir_name> -m <mlflow_name> -o <old_path>'
+    usage = "rewrite_mlflow_yaml.py -i <dir_name> -m <mlflow_name> -o <old_path>"
     try:
         opts, args = getopt.getopt(argv,
                                    "himo",
@@ -82,7 +82,7 @@ def parse_arguments(argv):
     args_dict = {}
     if opts:
         for opt, arg in opts:
-            if opt == '-h':
+            if opt == "-h":
                 print(usage)
                 sys.exit()
             elif opt in ("-i", "--dir_name"):
@@ -94,5 +94,5 @@ def parse_arguments(argv):
     return args_dict, usage
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])

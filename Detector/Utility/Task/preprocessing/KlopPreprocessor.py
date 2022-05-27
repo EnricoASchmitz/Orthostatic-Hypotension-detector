@@ -71,7 +71,7 @@ class KlopPreprocessor(Preprocessor):
             if key in features:
                 # If the value is not in the same frequency we decimate it
                 if index_length not in value.shape:
-                    value = decimate(x=value, q=2, ftype='fir')
+                    value = decimate(x=value, q=2, ftype="fir")
                     value = value[:index_length]
                     if number_of_rows is None:
                         number_of_rows = value.shape[0]
@@ -135,9 +135,9 @@ class KlopPreprocessor(Preprocessor):
             raise ValueError("Data contains only NaN")
 
         # convert acc columns to 1 or 2 columns
-        acc_df = df.filter(like='ACC')
+        acc_df = df.filter(like="ACC")
         drop_cols = list(acc_df.columns)
-        Z = acc_df.filter(regex='Z').mean(axis=1)
+        Z = acc_df.filter(regex="Z").mean(axis=1)
         df.drop(drop_cols, axis=1, inplace=True)
         df["Z_movement"] = Z
 

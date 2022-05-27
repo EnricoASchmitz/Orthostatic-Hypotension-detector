@@ -2,7 +2,7 @@
   "klop": {
     "dataset": "klop",
     "nirs_input": true,
-    "model": "dense",
+    "model": "deepar",
     "smooth": true,
     "file_loc": "/ceph/csedu-scratch/project/eschmitz/Data/"
   }

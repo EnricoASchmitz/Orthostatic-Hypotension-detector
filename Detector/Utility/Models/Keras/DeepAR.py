@@ -15,8 +15,8 @@ from tensorflow.keras import backend as bknd
 from tensorflow.keras.initializers import glorot_normal
 from tensorflow.keras.layers import LSTM, TimeDistributed, Dense, RepeatVector
 from tensorflow.python.framework.ops import disable_eager_execution
-from tensorflow.python.keras.engine.keras_tensor import KerasTensor
 from tensorflow.python.keras.utils.vis_utils import plot_model
+from tensorflow.keras.layers import Layer
 
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 
@@ -40,11 +40,11 @@ class DeepAR(KerasModel):
     def _model(self, units_layer, optimizer, **kwargs):
         lstm_units = int(units_layer)
         inputs = Input(shape=self.input_shape,
-                       name='inputs')
+                       name="inputs")
 
         # First branch: process the sequence
         rnn_out, rnn_state_h, rnn_state_c = LSTM(lstm_units, return_sequences=True,
-                                                 name='rnn_layer', return_state=True)(inputs)
+                                                 name="rnn_layer", return_state=True)(inputs)
 
         encoder, enc_state_h, enc_state_c = LSTM(int(lstm_units),
                                                  dropout=0.1,
@@ -66,8 +66,8 @@ class DeepAR(KerasModel):
         loss = gaussian_likelihood(theta[1])
 
         model = tf.keras.Model(inputs=inputs, outputs=bp_out,
-                               name='BP_model')
-        model.compile(optimizer=optimizer, loss=loss, metrics=['mae'], run_eagerly=self.m_eager)
+                               name="BP_model")
+        model.compile(optimizer=optimizer, loss=loss, metrics=["mae"], run_eagerly=self.m_eager)
         return model
 
     def _set_default_parameters(self):
@@ -114,15 +114,15 @@ class DeepAR(KerasModel):
         return samples, std
 
 
-class GaussianLayer(KerasTensor):
-    def __init__(self, output_dim, **kwargs):
+class GaussianLayer(Layer):
+    def __init__(self, output_dim: int, **kwargs):
         """Init."""
 
         self.output_dim = output_dim
         self.kernel_1, self.kernel_2, self.bias_1, self.bias_2 = [], [], [], []
         super(GaussianLayer, self).__init__(**kwargs)
 
-    def build(self, input_shape):
+    def build(self, input_shape: tuple):
         """Build the weights and biases."""
         n_weight_rows = input_shape[2]
         self.kernel_1 = self.add_weight(
@@ -158,15 +158,15 @@ class GaussianLayer(KerasTensor):
         output_sig_pos = bknd.log(1 + bknd.exp(output_sig)) + 1e-06
         return [output_mu, output_sig_pos]
 
-    def compute_output_shape(self, input_shape):
+    def compute_output_shape(self, input_shape: tuple):
         """ Calculate the output dimensions """
         return [(input_shape[0], self.output_dim), (input_shape[0], self.output_dim)]
 
 
-def gaussian_likelihood(sigma):
+def gaussian_likelihood(sigma: float):
     """Likelihood as per the paper."""
 
-    def gaussian_loss(y_true, y_pred):
+    def gaussian_loss(y_true: np.ndarray, y_pred: np.ndarray):
         """Updated from paper.
         See DeepAR: Probabilistic Forecasting with Autoregressive Recurrent Networks.
         """

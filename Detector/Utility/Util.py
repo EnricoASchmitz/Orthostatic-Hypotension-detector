@@ -26,7 +26,7 @@ def get_value(nested_value: Union[list, np.ndarray]) -> Union[int, str]:
     return nested_value
 
 
-def get_markers(df: pd.DataFrame, markers_data: dict, prefix: str = 'stand') \
+def get_markers(df: pd.DataFrame, markers_data: dict, prefix: str = "stand") \
         -> Tuple[pd.DataFrame, pd.DataFrame]:
     """ Retrieve timestamps for markers
 
@@ -39,27 +39,27 @@ def get_markers(df: pd.DataFrame, markers_data: dict, prefix: str = 'stand') \
         dataframe with stage index, timestamps when marker happens
     """
     markers = {}
-    df.loc[:, "stage"] = 'remove'
+    df.loc[:, "stage"] = "remove"
     markers_data = {k: v for k, v in sorted(markers_data.items(), key=lambda item: item[1])}
     # get the markers with when it happens
     for i, stage in enumerate(markers_data):
         stage_value = markers_data[stage]
-        df.loc[stage_value:, 'stage'] = stage
+        df.loc[stage_value:, "stage"] = stage
         markers[stage] = stage_value
     # remove data points before the start and after the end
     df = df.loc[df.stage != "remove"].copy()
     df = df.loc[df.stage != "stop"].copy()
     # set stage a index
-    df.set_index('stage', append=True, inplace=True)
+    df.set_index("stage", append=True, inplace=True)
     # create a dataframe of markers
-    markers = pd.DataFrame.from_dict(markers, orient='index', columns=['begin'])
-    markers.sort_values(by=['begin'], inplace=True)
-    markers['end'] = markers['begin'].shift(periods=-1)
+    markers = pd.DataFrame.from_dict(markers, orient="index", columns=["begin"])
+    markers.sort_values(by=["begin"], inplace=True)
+    markers["end"] = markers["begin"].shift(periods=-1)
     # only get markers staring with stand
     result = [i for i in markers.index if prefix in i]
     stand_markers = markers.loc[result]
     stand_markers = stand_markers.clip(np.amin(df.index.get_level_values(0)), np.amax(df.index.get_level_values(0)))
-    stand_markers = stand_markers[stand_markers['begin'] != stand_markers['end']]
+    stand_markers = stand_markers[stand_markers["begin"] != stand_markers["end"]]
     return stand_markers
 
 

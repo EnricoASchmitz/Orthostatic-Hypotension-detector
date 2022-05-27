@@ -24,7 +24,7 @@ def time_as_datetime(df: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.
          dataframe with datetime index
     """
     # convert seconds to TimedeltaIndex
-    datetime = pd.TimedeltaIndex(pd.to_timedelta(df.index.get_level_values(0), 'seconds'))
+    datetime = pd.TimedeltaIndex(pd.to_timedelta(df.index.get_level_values(0), "seconds"))
     # convert TimedeltaIndex to datetime
     df.index = pd.to_datetime(datetime.view(np.int64))
     return df
@@ -44,8 +44,8 @@ def resample(df: pd.DataFrame, data_object: DataObject, info_object: InfoObject)
     """
     df = time_as_datetime(df)
     # resample
-    df = df.resample(f"{info_object.time_row}ms", kind="timestamp", origin="epoch", label='right',
-                     closed='right').interpolate()
+    df = df.resample(f"{info_object.time_row}ms", kind="timestamp", origin="epoch", label="right",
+                     closed="right").interpolate()
     # Revert datetime back to seconds
     df.index = [time.timestamp() for time in df.index]
     # change hz

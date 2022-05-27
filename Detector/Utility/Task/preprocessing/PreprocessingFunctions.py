@@ -14,7 +14,7 @@ from Detector.Utility.PydanticObject import InfoObject
 from Detector.enums import Files
 
 
-def fetch_matlab_struct_data(matlab, imported_data=None, key='data',
+def fetch_matlab_struct_data(matlab, imported_data=None, key="data",
                              level=1, parent_field=None, printing=False) -> Optional[dict]:
     """ Get the structure from a matlab file.
 
@@ -41,7 +41,7 @@ def fetch_matlab_struct_data(matlab, imported_data=None, key='data',
                     except KeyError:
                         continue
             except IndexError:
-                raise KeyError('Invalid key = {0:s}.'.format(key))
+                raise KeyError("Invalid key = {0:s}.".format(key))
 
         matlab_void = matlab[key]
     else:
@@ -56,15 +56,15 @@ def fetch_matlab_struct_data(matlab, imported_data=None, key='data',
             mat_fields = list(matlab_void.dtype.fields.keys())
             if mat_fields:
                 for field in mat_fields:
-                    indent = '  ' * level
+                    indent = "  " * level
                     child = matlab_void[field].squeeze()
                     if printing:
-                        print(indent + '{0:s}: shape = {1}'.format(field, child.shape))
+                        print(indent + "{0:s}: shape = {1}".format(field, child.shape))
                     if child.shape == (1, 1) and isinstance(child[0, 0], np.void):
                         fetch_matlab_struct_data(child, imported_data, level=level + 1, parent_field=field)
                     else:
                         if parent_field is not None:
-                            key = parent_field + ':' + field
+                            key = parent_field + ":" + field
                         else:
                             key = field
                         imported_data[key] = child
@@ -103,7 +103,7 @@ def create_info_object(dataset: Optional[str] = None, info_dict: Optional[dict] 
     if (dataset is None) and (info_dict is None):
         raise ValueError("Missing a dataset for config or a dict containing the information")
 
-    with open(Files.config.value, 'r') as f:
+    with open(Files.config.value, "r") as f:
         json_dict = json.load(f)[str(dataset)]
         json_dict.update(info_dict)
         info_dict = json_dict.copy()
