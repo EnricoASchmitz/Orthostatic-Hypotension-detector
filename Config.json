@@ -4,6 +4,6 @@
     "nirs_input": true,
     "model": "dense",
     "smooth": true,
-    "file_loc": "/home/eschmitz/Data/"
+    "file_loc": "/ceph/csedu-scratch/project/eschmitz/Data/"
   }
 }
