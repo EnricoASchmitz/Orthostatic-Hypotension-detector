@@ -47,7 +47,7 @@ class Dense(Base):
     def _set_default_parameters(self):
         model_parameters = {
             "n_dense_layers": 0,
-            "dropout_value": 0.0,
+            "dropout": 0.0,
             "activation_out": "linear",
             "batch_norm": True
         }
