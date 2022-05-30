@@ -4,3 +4,4 @@
 # Ignore folders
 klop/
 */__pycache__/
+*.pyc

@@ -12,9 +12,9 @@ import sys
 from pathlib import Path
 
 # Variables
-MLFLOW_NAME = None
-DIR_NAME = None
-OLD_PATH = None
+MLFLOW_NAME = 'klop'
+DIR_NAME = "C:/Users/enric/Desktop/"
+OLD_PATH = "/home/eschmitz/"
 FILE_TYPE = "*.yaml"
 
 
