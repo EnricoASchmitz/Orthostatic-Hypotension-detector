@@ -18,6 +18,7 @@ import pandas as pd
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.optimizer import Optimizer
+from Detector.enums import Parameters
 
 
 def optimize_model(x: np.ndarray,
@@ -45,7 +46,7 @@ def optimize_model(x: np.ndarray,
 
     # Check which output we want
     if info_object.parameter_model:
-        output = np.array(parameters_values)
+        output = parameters_values
     else:
         output = full_curve
 
@@ -62,7 +63,7 @@ def optimize_model(x: np.ndarray,
         mlflow.log_params(trial.params)
         mlflow.log_params(trial.system_attrs)
         mlflow.log_params(trial.user_attrs)
-        mlflow.log_metric("mae", trial.value)
+        mlflow.log_metric(Parameters.loss.value, trial.value)
         mlflow.log_metric("trials", len(study.trials))
         mlflow.log_artifact(storage, "study")
         # clean up old files

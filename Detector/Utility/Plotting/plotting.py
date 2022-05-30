@@ -13,10 +13,11 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from numpy import ceil
-from plotly.graph_objs import Figure, Layout, Scatter
+from plotly.graph_objs import Figure, Layout, Scatter, Histogram
 from plotly.subplots import make_subplots
 
 from Detector.Utility.Metrics.Losses import Loss
+from Detector.enums import Parameters
 
 
 def line_plot_with_stages(
@@ -123,8 +124,8 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
     logger = logging.Logger(__name__)
 
     # get only the target column
-    mae = Loss().get_loss_metric("mae")
-    mae = round(mae(true, prediction), 4)
+    loss_f = Loss().get_loss_metric(Parameters.loss.value)
+    loss_value = round(loss_f(true, prediction), 4)
 
     def get_correct_shape(data, target_i):
         if data.ndim > 2:
@@ -179,7 +180,7 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
         plots.append(lower_std)
 
     layout = Layout(
-        title=f"{title}, Loss mae:{mae}",
+        title=f"{title}, Loss {Parameters.loss.value}:{loss_value}",
         xaxis={"title": "Date"},
         yaxis={"title": f"{target_name}"}
     )
@@ -232,3 +233,53 @@ def plot_comparison(model_name, info_df, names, rescaled_prediction, true, folde
         mlflow.log_figure(fig, f"{folder_name}/{model_name}_comparision.html")
     else:
         fig.show()
+
+
+def plot_curves(sample, plot_index, reconstucted_curves_prediction, true_reconstucted_curve, target_index, BP_type, folder_name=None):
+    true = sample[:, target_index].copy()
+    baseline = true[:30].mean()
+    true = true - baseline
+
+    pred_curve = reconstucted_curves_prediction[plot_index]
+    true_curve = true_reconstucted_curve[plot_index]
+    x_list = list(np.arange(0, Parameters.future_seconds.value+0.01, step=0.01))
+
+    figure = Figure()
+    figure.add_trace(Scatter(
+        x=x_list,
+        y=pred_curve[target_index],
+        name=f'reconstructed predicted {BP_type}'
+    ))
+    figure.add_trace(Scatter(
+        x=x_list,
+        y=true_curve[target_index],
+        name=f'reconstructed \'true\' {BP_type}'
+    ))
+    figure.add_trace(Scatter(
+        x=list(range(-Parameters.baseline_length.value, Parameters.future_seconds.value, 1)),
+        y=true,
+        name=f'True {BP_type}'
+    ))
+    figure.update_layout(title_text=BP_type, xaxis_title="Seconds (After standing up)",
+                         yaxis_title="Difference from baseline (mmHg)")
+
+    if folder_name is not None:
+        mlflow.log_figure(figure, f"{folder_name}/{BP_type}_parameter_prediction.html")
+    else:
+        figure.show()
+
+
+def plot_bars(col_names, true, pred, train, folder_name=None):
+    for col, name in enumerate(col_names):
+        fig = Figure(data=[Histogram(x=true[:,col], histnorm='probability', name="True Test")])
+        fig.add_trace(
+                        Histogram(x=pred[:,col], histnorm='probability', name="Prediction Test")
+                    )
+        fig.add_trace(
+                        Histogram(x=train[:,col], histnorm='probability', name="Train")
+                    )
+        fig.update_layout(title_text=name)
+        if folder_name is not None:
+            mlflow.log_figure(fig, f"{folder_name}/{name}_parameter_bar_plot.html")
+        else:
+            fig.show()

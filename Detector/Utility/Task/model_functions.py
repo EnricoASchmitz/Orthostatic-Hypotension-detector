@@ -7,7 +7,7 @@
 # Imports
 import time
 from logging import Logger
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Any
 
 import mlflow
 import numpy as np
@@ -58,7 +58,8 @@ def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.n
 
 def fit_and_predict(info_object: InfoObject, logger: Logger,
                     input_values: np.ndarray, output_values: np.ndarray,
-                    indexes: Tuple[list, list], model: Model, step: int):
+                    indexes: Tuple[list, list], model: Model, step: int, scaler: Any,
+                                                      rescale_function: callable):
     """ Fit and predict with a model
 
     Args:
@@ -69,6 +70,8 @@ def fit_and_predict(info_object: InfoObject, logger: Logger,
         indexes: indexes for (training, testing)
         model: Model
         step: CV step
+        scaler: used scaler for rescaling
+        rescale_function: function to do rescaling
 
     Returns:
         Model, loss_values
@@ -82,6 +85,10 @@ def fit_and_predict(info_object: InfoObject, logger: Logger,
     # predict with model
     prediction, std, predict_time = predicting(model=model, logger=logger, test_set=input_values[test_index])
 
+    # scale data
+    prediction = rescale_function(prediction, scaler)
+    output_values_unscaled = rescale_function(output_values, scaler)
+
     mlflow.log_metric("Prediction time", predict_time, step=step)
 
     logger.info(f"plotting prediction from model {info_object.model}")
@@ -89,7 +96,7 @@ def fit_and_predict(info_object: InfoObject, logger: Logger,
     # save loss values for CV
     # todo decide if we want this along with the avg
     # get loss values
-    loss_values = Loss().get_loss_values(prediction, output_values[test_index])
+    loss_values = Loss().get_loss_values(prediction, output_values_unscaled[test_index])
     cv_loss = {}
     for loss_name in loss_values:
         cv_loss[f"cv_{loss_name}"] = loss_values[loss_name]
