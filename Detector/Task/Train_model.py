@@ -24,6 +24,7 @@ from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction,
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, predicting
+from Detector.enums import Parameters
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -111,10 +112,10 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
             models_list.append(model_copy)
 
         # Get best model
-        mae_loss = []
+        list_loss = []
         for k in loss_dicts:
-            mae_loss.append(k[Parameters.loss.value])
-        best_k = np.array(mae_loss).argmin()
+            list_loss.append(k[Parameters.loss.value])
+        best_k = np.array(list_loss).argmin()
 
         model = models_list[best_k]
 

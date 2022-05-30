@@ -18,6 +18,7 @@ import pandas as pd
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.optimizer import Optimizer
+from Detector.enums import Parameters
 
 
 def optimize_model(x: np.ndarray,
