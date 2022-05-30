@@ -155,6 +155,9 @@ class Optimizer:
             if loss_value is np.nan:
                 loss_value = 1e+10
         except ValueError as e:
-            self.logger.error(e)
+            self.logger.warning(e)
+            loss_value = 1e+10
+        except AssertionError as e:
+            self.logger.warning(e)
             loss_value = 1e+10
         return loss_value
