@@ -234,7 +234,7 @@ class Base(KerasModel):
         model = self.compile_model(self._get_model(), inputs, last_layer, optimizer, loss, model_loss, **kwargs)
         return model
 
-    def _output_layers_parameters(self, prev_layer, n_dense_layers, dropout, activation_out, **kwargs) -> KerasTensor:
+    def _output_layers_parameters(self, prev_layer, n_dense_layers, dropout, activation_out, batch_norm, **kwargs) -> KerasTensor:
         """ Create output layers
 
         Args:
@@ -252,8 +252,11 @@ class Base(KerasModel):
         layer_units = np.flip(np.linspace(out_units, input_shape, num=n_dense_layers))
         for i in range(n_dense_layers):
             dense_layer = Dense(layer_units[i], activation="relu", name=f"Dense_{i}")(prev_layer)
-            BN = BatchNormalization(name=f"BN_{i}")(dense_layer)
-            prev_layer = Dropout(dropout_value, name=f"dropout_out_{i}")(BN)
+            if batch_norm:
+                layer = BatchNormalization(name=f"BN_{i}")(dense_layer)
+            else:
+                layer = dense_layer
+            prev_layer = Dropout(dropout_value, name=f"dropout_out_{i}")(layer)
         out_layer = Dense(units=out_units, name="BP_out", activation=activation_out)(prev_layer)
         return out_layer
 

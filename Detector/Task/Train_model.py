@@ -18,8 +18,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split, KFold
 
 from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d, reverse_scale3d
+from Detector.Utility.Data_preprocessing.extract_info import make_curves
 from Detector.Utility.Models.Model_creator import ModelCreator
-from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction
+from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction, plot_curves, plot_bars
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, predicting
@@ -64,12 +65,14 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
 
     if info_object.parameter_model:
         output_unscaled = np.array(parameters_values)
-        output, out_scaler = scale2d(output_unscaled.copy(), data_object)
-        out_scalers = None
+        out_scale_function = scale2d
+        out_reverse_scale_function = reverse_scale2d
     else:
         output_unscaled = full_curve
-        output, out_scalers = scale3d(output_unscaled.copy(), data_object)
-        out_scaler = None
+        out_scale_function = scale3d
+        out_reverse_scale_function = reverse_scale3d
+
+    output, out_scaler = out_scale_function(output_unscaled.copy(), data_object)
 
     with mlflow.start_run(experiment_id=serializer.experiment_id, run_name=info_object.model):
         mlflow.set_tag("phase", "training")
@@ -100,7 +103,9 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
                                                       output_values=output,
                                                       model=model_copy,
                                                       step=step,
-                                                      indexes=indexes)
+                                                      indexes=indexes,
+                                                      scaler=out_scaler,
+                                                      rescale_function=out_reverse_scale_function)
             step += 1
             loss_dicts.append(loss_values)
             models_list.append(model_copy)
@@ -127,21 +132,32 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         prediction, std, time = predicting(model, logger, x[test_indexes])
 
         # Scale back the prediction
-        if out_scalers is None and out_scaler is not None:
-            prediction = reverse_scale2d(prediction, out_scaler)
-        else:
-            prediction = reverse_scale3d(prediction, out_scalers)
+        prediction_array = out_reverse_scale_function(prediction, out_scaler)
 
         if info_object.parameter_model:
             plot_comparison(info_object.model, info_dataset.iloc[test_indexes], list(parameters_values.columns),
-                            prediction, output_unscaled[test_indexes], folder_name="figure/")
+                            prediction_array, output_unscaled[test_indexes], folder_name="figure/")
+            prediction = pd.DataFrame(prediction_array, columns=parameters_values.columns).copy()
+            true_curve, pred_curve = make_curves(prediction, parameters_values, data_object.reconstruct_params,
+                                                 data_object.recovery_times, test_indexes)
+            for i in range(pred_curve.shape[0]):
+                for target_index, target_name in enumerate(data_object.target_col):
+
+                    plot_index = test_indexes[i]
+                    sample = full_curve[plot_index]
+                    information = info_dataset.iloc[plot_index]
+                    path = f"figure/prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
+                    plot_curves(sample, i, pred_curve, true_curve, target_index, target_name, folder_name=path)
+
+            plot_bars(list(parameters_values.columns), output_unscaled[test_indexes], prediction_array,
+                      output_unscaled[fit_indexes], folder_name="figure/bar_plots/")
         else:
             for i in range(prediction.shape[0]):
                 for target_index, target_name in enumerate(data_object.target_col):
 
                     sample = test_indexes[i]
                     information = info_dataset.iloc[sample]
-                    path = f"prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
+                    path = f"figure/prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
                     if std is not None:
                         std_target = std[i]
                     else:

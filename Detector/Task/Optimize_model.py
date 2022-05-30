@@ -45,7 +45,7 @@ def optimize_model(x: np.ndarray,
 
     # Check which output we want
     if info_object.parameter_model:
-        output = np.array(parameters_values)
+        output = parameters_values
     else:
         output = full_curve
 

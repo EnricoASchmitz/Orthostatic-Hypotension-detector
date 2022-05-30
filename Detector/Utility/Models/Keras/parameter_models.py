@@ -49,6 +49,7 @@ class Dense(Base):
             "n_dense_layers": 0,
             "dropout_value": 0.0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -59,11 +60,13 @@ class Dense(Base):
             dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
         else:
             dropout = 0
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
 
@@ -103,6 +106,7 @@ class SimpleLSTM(Base):
             "n_dense_layers": 0,
             "dropout": 0.0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -111,12 +115,14 @@ class SimpleLSTM(Base):
         units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
             "units_layer": units_layer,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
 
@@ -158,6 +164,7 @@ class BiLSTM(Base):
             "n_dense_layers": 0,
             "dropout_value": 0.0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -166,12 +173,14 @@ class BiLSTM(Base):
         units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
             "units_layer": units_layer,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
 
@@ -230,6 +239,7 @@ class StackedLSTM(Base):
             "n_dense_layers": 0,
             "dropout_value": 0.0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -239,13 +249,15 @@ class StackedLSTM(Base):
         n_blocks = trial.suggest_int("n_blocks", 1, 3)
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
             "units_layer": units_layer,
-            "n_blocks": n_blocks
+            "n_blocks": n_blocks,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
 
@@ -304,6 +316,7 @@ class StackedBiLSTM(Base):
             "dropout": 0.0,
             "n_dense_layers": 0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -313,13 +326,15 @@ class StackedBiLSTM(Base):
         n_blocks = trial.suggest_int("n_blocks", 1, 3)
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
             "units_layer": units_layer,
-            "n_blocks": n_blocks
+            "n_blocks": n_blocks,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
 
@@ -368,6 +383,7 @@ class EncDecLSTM(Base):
             "dropout": 0.0,
             "n_dense_layers": 0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -376,12 +392,14 @@ class EncDecLSTM(Base):
         units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
             "units_layer": units_layer,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
 
@@ -433,6 +451,7 @@ class EncDecAttLSTM(Base):
             "dropout": 0.0,
             "n_dense_layers": 0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -441,12 +460,14 @@ class EncDecAttLSTM(Base):
         units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
             "units_layer": units_layer,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
 
@@ -492,6 +513,7 @@ class CnnLSTM(Base):
             "n_dense_layers": 0,
             "dropout": 0,
             "activation_out": "linear",
+            "batch_norm": True
         }
         self.parameters.update(model_parameters)
 
@@ -501,6 +523,7 @@ class CnnLSTM(Base):
         kernel_size = trial.suggest_int("kernel_size", 2, 6, step=1)
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
@@ -508,5 +531,6 @@ class CnnLSTM(Base):
             "dropout": dropout,
             "units_layer": units_layer,
             "kernel_size": kernel_size,
+            "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)

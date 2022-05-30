@@ -31,6 +31,8 @@ class DataObject(BaseModel):
     hz: int
     reindex: bool = False
     scaler: Any = None
+    recovery_times: List[int] = Parameters.recovery_times.value
+    reconstruct_params: List[str] = None
 
 
 class TagsObject(BaseModel):

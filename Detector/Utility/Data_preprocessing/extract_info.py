@@ -6,7 +6,7 @@
 
 # Imports
 import logging
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 import numpy as np
 import pandas as pd
@@ -151,17 +151,20 @@ def get_x_values(x: dict, df: pd.Series, type_id: str) -> dict:
     return x
 
 
-def get_y_values(par: dict, df: pd.Series, start: float, bp_type: str) -> dict:
+def get_y_values(par: dict, reconstruct_params: list, df: pd.Series, start: float, bp_type: str,
+                 windows_reconstruction: List[int]) -> Tuple[dict,List[str]]:
     """ Extract parameters from df for output dataframe
 
     Args:
         par: dictionary with additional output data
+        reconstruct_params: parameters needed for reconstruction
         df: data to get the parameters from
         start: index when subject is standing
         bp_type: name of the current data
+        windows_reconstruction: recovery timestamps to get
 
     Returns:
-        Dictionary with the parameters
+        Dictionary with the parameters, parameters for reconstruction
 
     """
     baseline = get_baseline(df, start)
@@ -169,22 +172,28 @@ def get_y_values(par: dict, df: pd.Series, start: float, bp_type: str) -> dict:
     # Extract values
     drop, drop_rate, drop_index = get_drop(df, baseline, start)
     # save values to the dictionary
-    par[f"{bp_type}_drop"] = drop
-    par[f"{bp_type}_drop_index"] = drop_index
+    drop_col = f"{bp_type}_drop"
+    par[drop_col] = drop
+    reconstruct_params.append(drop_col)
+
+    drop_index_col = f"{bp_type}_drop_index"
+    par[drop_index_col] = drop_index
+    reconstruct_params.append(drop_index_col)
+
     par[f"{bp_type}_drop_rate"] = drop_rate
 
     # Calculate recover at certain time windows
-    windows_reconstruction = [(10, 20), (15, 25), (25, 35), (35, 45), (45, 55), (55, 65), (115, 125), (145, 155)]
     for recovery_window in windows_reconstruction:
-        window_start, window_end = recovery_window
-        point = int(np.array(recovery_window).mean())
-        name = f"{bp_type}_recovery_{point}"
+        window_start = recovery_window - 5
+        window_end = recovery_window + 5
+        name = f"{bp_type}_recovery_{recovery_window}"
         par[name] = get_recovery(df, baseline, start, window_start, window_end)
+        reconstruct_params.append(name)
     # Calculate drop per second
     par[f"{bp_type}_drop_per_sec"] = drop / drop_index
     # get recovery rate at given time
     par[f"{bp_type}_recovery_rate_{Parameters.time.value}"] = get_recovery_rate(df, baseline, start)
-    return par
+    return par, reconstruct_params
 
 
 def get_full_curve(bp_dict: dict, bp_type: str, bp: pd.Series, start: float, seconds: int) -> dict:
@@ -252,6 +261,9 @@ def extract_values(data_object: DataObject, df: pd.Series,
     Returns:
         (input data BP, input data NIRS, full curve BP), dictionary with parameters
     """
+    # parameters for reconstruction
+    reconstruct_params = []
+
     # Dicts
     par = {}
     x = {}
@@ -270,7 +282,8 @@ def extract_values(data_object: DataObject, df: pd.Series,
 
         x = get_x_values(x, smooth_bp, bp_type)
         # get parameters about the standing part
-        par = get_y_values(par, bp_data.copy(), stand_index, bp_type)
+        par, reconstruct_params = get_y_values(par, reconstruct_params, bp_data.copy(), stand_index, bp_type,
+                                               data_object.recovery_times)
         drop_timestamp = par[f"{bp_type}_drop_index"]
         if drop_timestamp <= 1:
             # If the BP drop is within 1 second of standing up we assume wrong markers
@@ -296,6 +309,8 @@ def extract_values(data_object: DataObject, df: pd.Series,
         nirs = nirs.ffill().bfill()
         smooth_nirs = butter_low_pass_filter(nirs, cutoff=0.5, fs=100, order=2)
         x_nirs = get_x_values(x_nirs, smooth_nirs, Nirs_type)
+
+    data_object.reconstruct_params = reconstruct_params
 
     return convert_dict(x, x_nirs, bp_dict, future_steps), par
 
@@ -412,3 +427,62 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
             logger.warning(warning)
             logger.warning(f"X incorrect/ insufficient data")
     return x_dataframes, x_oxy_dxy, y_curves, infs, parameters
+
+
+def create_curve(drop, drop_time, BP_timepoints):
+    BP = [0, drop] + list(BP_timepoints.values())
+    times = [0, drop_time] + list(BP_timepoints.keys())
+
+    data = pd.Series(BP, index=times)
+    # convert seconds to TimedeltaIndex
+    datetime = pd.TimedeltaIndex(pd.to_timedelta(data.index, 'seconds'))
+    # convert TimedeltaIndex to datetime
+    data.index = pd.to_datetime(datetime.view(np.int64))
+    data = data.resample("10ms").mean().interpolate()
+    data.index = [time.timestamp() for time in data.index]
+    data.sort_index(inplace=True)
+    return np.array(data)
+
+
+def get_info(y, index, first_col, timesteps):
+    column_number = 0
+    baseline = 0
+
+    drop_decrease = y[index, column_number + first_col]
+    column_number += 1
+
+    drop = -drop_decrease
+
+    drop_time_predicted = y[index, column_number + first_col]
+    column_number += 1
+
+    drop_time = drop_time_predicted
+
+    BP_timepoints = {}
+    for step in timesteps:
+        BP_timepoints[step] = baseline - y[index, column_number + first_col]
+        column_number += 1
+
+    return baseline, drop, drop_time, BP_timepoints
+
+
+def parameters_to_curve(y, index, timesteps):
+    curves = []
+    columns = int(y.shape[-1] / 2)
+    baseline, SBP_drop, SBP_drop_time, SBP_timepoints = get_info(y, index, 0, timesteps)
+    curves.append(create_curve(SBP_drop, SBP_drop_time, SBP_timepoints))
+    baseline, DBP_drop, DBP_drop_time, DBP_timepoints = get_info(y, index, columns, timesteps)
+    curves.append(create_curve(DBP_drop, DBP_drop_time, DBP_timepoints))
+    return np.array(curves)
+
+
+def make_curves(prediction, output, reconstruct_params, steps, test_indexes):
+    # resample the needed prediction parameters to 100Hz to get the curve
+    reconstruct_prediction = np.array(prediction[reconstruct_params])
+    reconstruct_out = np.array(output[reconstruct_params]).copy()
+    true_reconstucted_curve = []
+    reconstucted_curves_prediction = []
+    for i, value in enumerate(test_indexes):
+        true_reconstucted_curve.append(parameters_to_curve(reconstruct_out, value, steps))
+        reconstucted_curves_prediction.append(parameters_to_curve(reconstruct_prediction, i, steps))
+    return np.array(true_reconstucted_curve), np.array(reconstucted_curves_prediction)

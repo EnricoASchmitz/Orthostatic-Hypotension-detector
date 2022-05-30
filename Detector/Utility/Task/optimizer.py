@@ -14,16 +14,19 @@ from typing import Optional, Tuple
 
 import numpy as np
 import optuna
+import pandas as pd
 from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
 from sklearn.model_selection import train_test_split
 
 from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
+from Detector.Utility.Data_preprocessing.extract_info import parameters_to_curve, make_curves
 from Detector.Utility.Metrics.Losses import Loss
 from Detector.Utility.Models.Decision_trees.XGBoost import XGB
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
+from Detector.Utility.Plotting import plotting
 from Detector.Utility.PydanticObject import InfoObject, DataObject
 from Detector.Utility.Task.model_functions import check_gpu
 from Detector.enums import Parameters
@@ -102,12 +105,14 @@ class Optimizer:
 
         if self.output.ndim == 2:
             output_unscaled = np.array(self.output)
-            output, out_scaler = scale2d(output_unscaled.copy(), self.data_object)
-            out_scalers = None
+            out_scale_function = scale2d
+            out_reverse_scale_function = reverse_scale2d
         else:
             output_unscaled = np.array(self.output)
-            output, out_scalers = scale3d(output_unscaled.copy(), self.data_object)
-            out_scaler = None
+            out_scale_function = scale3d
+            out_reverse_scale_function = reverse_scale3d
+
+        output, out_scaler = out_scale_function(output_unscaled.copy(), self.data_object)
 
         train, test = train_test_split(range(len(X)))
         try:
@@ -128,30 +133,28 @@ class Optimizer:
             prediction, std = model.predict(X[test])
 
             # Scale back the prediction
-            if out_scalers is None and out_scaler is not None:
-                prediction = reverse_scale2d(prediction, out_scaler)
-            else:
-                prediction = reverse_scale3d(prediction, out_scalers)
+            prediction = out_reverse_scale_function(prediction, out_scaler)
 
             del model
-            # return mae
-            mae = Loss().get_loss_metric("mae")
-            mae = round(mae(output_unscaled[test], prediction), 4)
-            if mae is np.nan:
-                mae = 1e+10
-        except ValueError as e:
-            self.logger.warning(e)
-            mae = 1e+10
-        return mae
 
+            # Get loss function
+            loss = Loss().get_loss_metric("mae")
 
-@contextmanager
-def suppress_stdout():
-    """ Mute output """
-    with open(os.devnull, "w") as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
-        try:
-            yield
-        finally:
-            sys.stdout = old_stdout
+            # Compare parameter to full curve:
+            if self.info_object.parameter_model:
+                prediction = pd.DataFrame(prediction, columns=self.output.columns).copy()
+                true_curves, pred_curves = make_curves(prediction, self.output, self.data_object.reconstruct_params, self.data_object.recovery_times, test)
+                loss_value = round(loss(true_curves, pred_curves), 4)
+
+                # add the parameters loss not used for reconstruction
+                extra_params_pred = prediction.drop(self.data_object.reconstruct_params, axis=1)
+                extra_params_true = self.output.copy().drop(self.data_object.reconstruct_params, axis=1).iloc[test]
+                loss_value += round(loss(extra_params_true, extra_params_pred), 4)
+            else:
+                loss_value = round(loss(output_unscaled[test], prediction), 4)
+            if loss_value is np.nan:
+                loss_value = 1e+10
+        except KeyError as e:
+            self.logger.error(e)
+            loss_value = 1e+10
+        return loss_value

@@ -167,3 +167,5 @@ def reverse_scale2d(data: Union[np.ndarray, pd.DataFrame], scaler: Any) -> Union
             Inverse scaled data
         """
     return scaler.inverse_transform(data)
+
+
