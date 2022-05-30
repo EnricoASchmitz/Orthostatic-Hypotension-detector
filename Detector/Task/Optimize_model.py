@@ -62,7 +62,7 @@ def optimize_model(x: np.ndarray,
         mlflow.log_params(trial.params)
         mlflow.log_params(trial.system_attrs)
         mlflow.log_params(trial.user_attrs)
-        mlflow.log_metric("mae", trial.value)
+        mlflow.log_metric(Parameters.loss.value, trial.value)
         mlflow.log_metric("trials", len(study.trials))
         mlflow.log_artifact(storage, "study")
         # clean up old files

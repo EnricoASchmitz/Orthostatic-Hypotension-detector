@@ -25,6 +25,8 @@ class Parameters(Enum):
     standing_length = 150
     future_seconds = 150
     recovery_times = [15, 20, 30, 40, 50, 60, 120, 150]
+    loss = "mae"
+
 
 class MLModelType(Enum):
     """ Available models """

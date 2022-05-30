@@ -96,7 +96,7 @@ class Optimizer:
             trial: Optuna trial
 
         Returns:
-            mae loss score
+            loss score
         """
         use_gpu = check_gpu()
 
@@ -125,7 +125,7 @@ class Optimizer:
             if isinstance(model, KerasModel):
                 callbacks = [TFKerasPruningCallback(trial, "val_loss")]
             elif isinstance(model, XGB):
-                callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-mae")]
+                callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-{Parameters.loss.value}")]
             else:
                 callbacks = []
 
@@ -138,7 +138,7 @@ class Optimizer:
             del model
 
             # Get loss function
-            loss = Loss().get_loss_metric("mae")
+            loss = Loss().get_loss_metric(Parameters.loss.value)
 
             # Compare parameter to full curve:
             if self.info_object.parameter_model:

@@ -124,8 +124,8 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
     logger = logging.Logger(__name__)
 
     # get only the target column
-    mae = Loss().get_loss_metric("mae")
-    mae = round(mae(true, prediction), 4)
+    loss_f = Loss().get_loss_metric(Parameters.loss.value)
+    loss_value = round(loss_f(true, prediction), 4)
 
     def get_correct_shape(data, target_i):
         if data.ndim > 2:
@@ -180,7 +180,7 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
         plots.append(lower_std)
 
     layout = Layout(
-        title=f"{title}, Loss mae:{mae}",
+        title=f"{title}, Loss {Parameters.loss.value}:{loss_value}",
         xaxis={"title": "Date"},
         yaxis={"title": f"{target_name}"}
     )

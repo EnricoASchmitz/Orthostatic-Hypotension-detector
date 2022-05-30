@@ -155,7 +155,7 @@ class KerasModel(Model):
             else:
                 opti = Adam
 
-            loss = "mae"
+            loss = Parameters.loss.value
             args.set_user_attr("loss", loss)
 
             keras_parameters = {

@@ -113,7 +113,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         # Get best model
         mae_loss = []
         for k in loss_dicts:
-            mae_loss.append(k["mae"])
+            mae_loss.append(k[Parameters.loss.value])
         best_k = np.array(mae_loss).argmin()
 
         model = models_list[best_k]
