@@ -154,7 +154,7 @@ class Optimizer:
                 loss_value = round(loss(output_unscaled[test], prediction), 4)
             if loss_value is np.nan:
                 loss_value = 1e+10
-        except KeyError as e:
+        except ValueError as e:
             self.logger.error(e)
             loss_value = 1e+10
         return loss_value
