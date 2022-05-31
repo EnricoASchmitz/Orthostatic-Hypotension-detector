@@ -32,9 +32,9 @@ def get_baseline(bp: pd.Series, start: float) -> float:
         baseline value
     
     """
-    baseline_length = Parameters.baseline_length.value
+    baseline_start, baseline_end = Parameters.baseline_tuple.value
     # Get baseline bp of a window ending 10 seconds before standing up
-    bl = bp[start - baseline_length:start - 10].mean()
+    bl = bp[start - baseline_start:start - baseline_end].mean()
     return bl
 
 
@@ -152,7 +152,7 @@ def get_x_values(x: dict, df: pd.Series, type_id: str) -> dict:
 
 
 def get_y_values(par: dict, reconstruct_params: list, df: pd.Series, start: float, bp_type: str,
-                 windows_reconstruction: List[int]) -> Tuple[dict,List[str]]:
+                 windows_reconstruction: List[int]) -> Tuple[dict, List[str]]:
     """ Extract parameters from df for output dataframe
 
     Args:
@@ -209,7 +209,7 @@ def get_full_curve(bp_dict: dict, bp_type: str, bp: pd.Series, start: float, sec
         dictionary with the added curve
 
     """
-    baseline_length = Parameters.baseline_length.value
+    baseline_length = Parameters.baseline_tuple.value[0]
     # Extract the full bp curve
     resampled_bp = resample_hz(bp, seconds).mean()
     resampled_bp.index = [time.timestamp() for time in resampled_bp.index]
@@ -270,7 +270,8 @@ def extract_values(data_object: DataObject, df: pd.Series,
     x_nirs = {}
     bp_dict = {}
 
-    starting_index = stand_index - Parameters.baseline_length.value
+    starting_index = stand_index - Parameters.rest_length.value
+    starting_index = round(starting_index, 2)
 
     # get values for systolic and diastolic
     for bp_type in data_object.target_col:
@@ -328,16 +329,17 @@ def convert_dict(x: dict, x_nirs: dict,
     Returns:
         BP input data, NIRS input data, BP output data
     """
-    baseline_length = Parameters.baseline_length.value
+    base_length = Parameters.baseline_tuple.value[0]
+    rest_length = Parameters.rest_length.value
     standing_length = Parameters.standing_length.value
     x_df = pd.DataFrame(x).ffill().bfill()
-    x_array = np.array(x_df)[:baseline_length + standing_length]
+    x_array = np.array(x_df)[:rest_length + standing_length]
 
     x_nirs_df = pd.DataFrame(x_nirs).ffill().bfill()
-    x_nirs_array = np.array(x_nirs_df)[:baseline_length + standing_length]
+    x_nirs_array = np.array(x_nirs_df)[:rest_length + standing_length]
 
     y_curve = pd.DataFrame(bp_dict).ffill().bfill()
-    y_curve_array = np.array(y_curve)[:future_steps + baseline_length]
+    y_curve_array = np.array(y_curve)[:future_steps + base_length]
 
     return x_array, x_nirs_array, y_curve_array
 
@@ -407,10 +409,11 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
             continue
 
         # Make sure data is in the right format, or we skip the repeat
-        baseline_length = Parameters.baseline_length.value
+        base_length = Parameters.baseline_tuple.value[0]
+        rest_length = Parameters.rest_length.value
         standing_length = Parameters.standing_length.value
-        if x_array.shape[0] == baseline_length + standing_length and \
-                y_curve_array.shape[0] == future_steps + baseline_length:
+        if x_array.shape[0] == rest_length + standing_length and \
+                y_curve_array.shape[0] == base_length + future_steps:
 
             x_dataframes.append(x_array)
             nirs_mean = x_nirs_array.mean(axis=0)
@@ -419,7 +422,7 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
             y_curves.append(y_curve_array)
             infs.append(inf)
             parameters.append(par)
-        elif x_array.shape[0] == baseline_length + standing_length and \
+        elif x_array.shape[0] == rest_length + standing_length and \
                 y_curve_array.shape[0] != future_steps:
             logger.warning(warning)
             logger.warning(f"y curve not long enough; {y_curve_array.shape[0]}/{future_steps}")
