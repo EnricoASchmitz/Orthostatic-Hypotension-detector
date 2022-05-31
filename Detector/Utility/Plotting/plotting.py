@@ -235,14 +235,17 @@ def plot_comparison(model_name, info_df, names, rescaled_prediction, true, folde
         fig.show()
 
 
-def plot_curves(sample, plot_index, reconstucted_curves_prediction, true_reconstucted_curve, target_index, BP_type, folder_name=None):
+def plot_curves(sample, plot_index, reconstucted_curves_prediction, true_reconstucted_curve, target_index, BP_type,
+                folder_name=None):
     true = sample[:, target_index].copy()
-    baseline = true[:30].mean()
+    base_tuple = Parameters.baseline_tuple.value
+    base_length = base_tuple[0] - base_tuple[1]
+    baseline = true[:base_length].mean()
     true = true - baseline
 
     pred_curve = reconstucted_curves_prediction[plot_index]
     true_curve = true_reconstucted_curve[plot_index]
-    x_list = list(np.arange(0, Parameters.future_seconds.value+0.01, step=0.01))
+    x_list = list(np.arange(0, Parameters.future_seconds.value + 0.01, step=0.01))
 
     figure = Figure()
     figure.add_trace(Scatter(
@@ -256,7 +259,7 @@ def plot_curves(sample, plot_index, reconstucted_curves_prediction, true_reconst
         name=f'reconstructed \'true\' {BP_type}'
     ))
     figure.add_trace(Scatter(
-        x=list(range(-Parameters.baseline_length.value, Parameters.future_seconds.value, 1)),
+        x=list(range(-Parameters.baseline_tuple.value[0], Parameters.future_seconds.value, 1)),
         y=true,
         name=f'True {BP_type}'
     ))
@@ -271,13 +274,13 @@ def plot_curves(sample, plot_index, reconstucted_curves_prediction, true_reconst
 
 def plot_bars(col_names, true, pred, train, folder_name=None):
     for col, name in enumerate(col_names):
-        fig = Figure(data=[Histogram(x=true[:,col], histnorm='probability', name="True Test")])
+        fig = Figure(data=[Histogram(x=true[:, col], histnorm='probability', name="True Test")])
         fig.add_trace(
-                        Histogram(x=pred[:,col], histnorm='probability', name="Prediction Test")
-                    )
+            Histogram(x=pred[:, col], histnorm='probability', name="Prediction Test")
+        )
         fig.add_trace(
-                        Histogram(x=train[:,col], histnorm='probability', name="Train")
-                    )
+            Histogram(x=train[:, col], histnorm='probability', name="Train")
+        )
         fig.update_layout(title_text=name)
         if folder_name is not None:
             mlflow.log_figure(fig, f"{folder_name}/{name}_parameter_bar_plot.html")

@@ -7,8 +7,6 @@
 # Imports
 import logging
 import os
-import sys
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -21,12 +19,11 @@ from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
 from sklearn.model_selection import train_test_split
 
 from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
-from Detector.Utility.Data_preprocessing.extract_info import parameters_to_curve, make_curves
+from Detector.Utility.Data_preprocessing.extract_info import make_curves
 from Detector.Utility.Metrics.Losses import Loss
 from Detector.Utility.Models.Decision_trees.XGBoost import XGB
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
-from Detector.Utility.Plotting import plotting
 from Detector.Utility.PydanticObject import InfoObject, DataObject
 from Detector.Utility.Task.model_functions import check_gpu
 from Detector.enums import Parameters
@@ -143,7 +140,8 @@ class Optimizer:
             # Compare parameter to full curve:
             if self.info_object.parameter_model:
                 prediction = pd.DataFrame(prediction, columns=self.output.columns).copy()
-                true_curves, pred_curves = make_curves(prediction, self.output, self.data_object.reconstruct_params, self.data_object.recovery_times, test)
+                true_curves, pred_curves = make_curves(prediction, self.output, self.data_object.reconstruct_params,
+                                                       self.data_object.recovery_times, test)
                 loss_value = round(loss(true_curves, pred_curves), 4)
 
                 # add the parameters loss not used for reconstruction

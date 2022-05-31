@@ -143,7 +143,6 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
                                                  data_object.recovery_times, test_indexes)
             for i in range(pred_curve.shape[0]):
                 for target_index, target_name in enumerate(data_object.target_col):
-
                     plot_index = test_indexes[i]
                     sample = full_curve[plot_index]
                     information = info_dataset.iloc[plot_index]

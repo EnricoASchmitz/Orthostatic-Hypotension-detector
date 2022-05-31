@@ -55,7 +55,8 @@ class XGB(Model):
         X_train, X_val = x_train_inputs[index_train], x_train_inputs[index_val]
         y_train, y_val = y_train_outputs[index_train], y_train_outputs[index_val]
 
-        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric=Parameters.loss.value, callbacks=callbacks,
+        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric=Parameters.loss.value,
+                       callbacks=callbacks,
                        verbose=0)
         return self.parameters["n_estimators"]
 
