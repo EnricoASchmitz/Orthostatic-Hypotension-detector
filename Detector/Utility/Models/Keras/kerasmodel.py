@@ -234,7 +234,8 @@ class Base(KerasModel):
         model = self.compile_model(self._get_model(), inputs, last_layer, optimizer, loss, model_loss, **kwargs)
         return model
 
-    def _output_layers_parameters(self, prev_layer, n_dense_layers, dropout, activation_out, batch_norm, **kwargs) -> KerasTensor:
+    def _output_layers_parameters(self, prev_layer, n_dense_layers, dropout, activation_out, batch_norm,
+                                  **kwargs) -> KerasTensor:
         """ Create output layers
 
         Args:

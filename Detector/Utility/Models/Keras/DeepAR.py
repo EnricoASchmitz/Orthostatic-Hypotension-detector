@@ -14,9 +14,9 @@ from tensorflow.keras import Input
 from tensorflow.keras import backend as bknd
 from tensorflow.keras.initializers import glorot_normal
 from tensorflow.keras.layers import LSTM, TimeDistributed, Dense, RepeatVector
+from tensorflow.keras.layers import Layer
 from tensorflow.python.framework.ops import disable_eager_execution
 from tensorflow.python.keras.utils.vis_utils import plot_model
-from tensorflow.keras.layers import Layer
 
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 

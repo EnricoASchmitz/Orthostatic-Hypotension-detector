@@ -59,7 +59,7 @@ def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.n
 def fit_and_predict(info_object: InfoObject, logger: Logger,
                     input_values: np.ndarray, output_values: np.ndarray,
                     indexes: Tuple[list, list], model: Model, step: int, scaler: Any,
-                                                      rescale_function: callable):
+                    rescale_function: callable):
     """ Fit and predict with a model
 
     Args:
