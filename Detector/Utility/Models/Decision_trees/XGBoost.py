@@ -32,9 +32,11 @@ class XGB(Model):
         """ Create XGBoost model """
         super().__init__()
         self.n_in_steps = None
+        self.gpu = gpu
         if gpu:
             logger = logging.getLogger()
             logger.debug("using GPU")
+            self.parameters.update({"tree_method": "gpu_hist"})
         self.data_object = data_object
 
         # fill parameters
@@ -108,21 +110,19 @@ class XGB(Model):
 
     def _set_optuna_parameters(self, trial):
         param = {
-            "booster": trial.suggest_categorical("booster", ["gbtree", "gblinear", "dart"]),
-            "lambda": trial.suggest_loguniform("lambda", 1e-8, 1.0),
-            "alpha": trial.suggest_loguniform("alpha", 1e-8, 1.0),
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.1, 1, step=0.1),
+            "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.1, 1, step=0.1),
+            "max_bin": trial.suggest_int("max_bin", 64, 512, step=32),
+            "gamma": trial.suggest_loguniform("gamma", 1e-8, 1.0),
+            "grow_policy": trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
         }
+        if self.gpu:
+            param["sampling_method"] = trial.suggest_categorical("sampling_method", ["uniform", "gradient_based"]),
 
-        if param["booster"] == "gbtree" or param["booster"] == "dart":
-            param["max_depth"] = trial.suggest_int("max_depth", 4, 31, step=4)
-            param["eta"] = trial.suggest_loguniform("eta", 1e-8, 1.0)
-            param["gamma"] = trial.suggest_loguniform("gamma", 1e-8, 1.0)
-            param["grow_policy"] = trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
-        if param["booster"] == "dart":
-            param["sample_type"] = trial.suggest_categorical("sample_type", ["uniform", "weighted"])
-            param["normalize_type"] = trial.suggest_categorical("normalize_type", ["tree", "forest"])
-            param["rate_drop"] = trial.suggest_loguniform("rate_drop", 1e-8, 1.0)
-            param["skip_drop"] = trial.suggest_loguniform("skip_drop", 1e-8, 1.0)
+            if param["sampling_method"] == "gradient_based":
+                param["subsample"] = trial.suggest_float("subsample", 0.5, 1, step=0.1)
+        elif not self.gpu or param["sampling_method"] == "uniform":
+            param["subsample"] = trial.suggest_float("subsample", 0.1, 1, step=0.1)
         self.parameters.update(param)
 
     def save_model(self):
