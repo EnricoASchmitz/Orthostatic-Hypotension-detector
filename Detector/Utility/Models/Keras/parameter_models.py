@@ -472,7 +472,7 @@ class EncDecAttLSTM(Base):
         self.parameters.update(model_parameters)
 
 
-class CnnLSTM(Base):
+class Cnn(Base):
     """ Basic CNN model """
 
     # todo fix Call to CreateProcess failed. Error code: 2
@@ -497,10 +497,10 @@ class CnnLSTM(Base):
                          parameters=parameters
                          )
 
-    def cnn_layer(self, input_layer, units_layer, kernel_size, dropout=0.0, **kwargs):
+    def cnn_layer(self, input_layer, units_layer, kernel_size, **kwargs):
         cnn_layer = Conv1D(filters=int(units_layer), kernel_size=int(kernel_size), padding="same")(input_layer)
-        lstm_layer = LSTM(int(units_layer), dropout=float(dropout))(cnn_layer)
-        bp_out = self._output_layers_parameters(lstm_layer, dropout=dropout, **kwargs)
+        re = Reshape((-1,))(cnn_layer)
+        bp_out = self._output_layers_parameters(re, **kwargs)
         return bp_out
 
     def _get_model(self):
