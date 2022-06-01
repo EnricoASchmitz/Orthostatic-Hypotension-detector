@@ -15,7 +15,7 @@ from statistics import mean
 import mlflow
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import LeavePGroupsOut
+from sklearn.model_selection import LeaveOneGroupOut
 
 from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Data_preprocessing.extract_info import make_curves
@@ -83,16 +83,14 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         # cross val
         step = 0
         ids = info_dataset.iloc[fit_indexes].ID
-        unique_ids = np.unique(ids)
-        test_groups = int(np.ceil(len(unique_ids) * 0.2))
-        lpgo = LeavePGroupsOut(test_groups)
+        logo = LeaveOneGroupOut()
 
         loss_dicts = []
         models_list = []
 
-        lpgo.get_n_splits(groups=ids)
+        logo.get_n_splits(groups=ids)
 
-        for indexes in lpgo.split(fit_indexes, groups=ids):
+        for indexes in logo.split(fit_indexes, groups=ids):
             logger.info(f"start cv: {step}")
             # collect
             gc.collect()

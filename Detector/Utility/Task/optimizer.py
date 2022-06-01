@@ -16,7 +16,7 @@ import optuna
 from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
-from sklearn.model_selection import LeavePGroupsOut
+from sklearn.model_selection import LeaveOneGroupOut
 
 from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Models.Decision_trees.XGBoost import XGB
@@ -113,16 +113,14 @@ class Optimizer:
         # cross val
         step = 0
         ids = np.array(self.info_dataset.ID)
-        unique_ids = np.unique(ids)
-        test_groups = int(np.ceil(len(unique_ids) * 0.2))
-        lpgo = LeavePGroupsOut(test_groups)
+        logo = LeaveOneGroupOut()
 
         loss_dicts = []
 
-        lpgo.get_n_splits(groups=ids)
+        logo.get_n_splits(groups=ids)
         loss_value = np.nan
         try:
-            for indexes in lpgo.split(range(len(X)), groups=ids):
+            for indexes in logo.split(range(len(X)), groups=ids):
                 self.logger.info(f"start cv: {step}")
                 # collect
                 gc.collect()
