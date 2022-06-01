@@ -41,7 +41,10 @@ class XGB(Model):
         # fill parameters
         self.set_parameters(parameters)
 
-        xgb = XGBRegressor(eval_metric=Parameters.loss.value, verbosity=1, **self.parameters)
+        loss = Parameters.loss.value
+        if loss == "mse":
+            loss = "rmse"
+        xgb = XGBRegressor(eval_metric=loss, verbosity=1, **self.parameters)
 
         model = MyMultiOutputRegressor(xgb)
 
@@ -56,7 +59,10 @@ class XGB(Model):
         X_train, X_val = x_train_inputs[index_train], x_train_inputs[index_val]
         y_train, y_val = y_train_outputs[index_train], y_train_outputs[index_val]
 
-        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric=Parameters.loss.value,
+        loss = Parameters.loss.value
+        if loss == "mse":
+            loss = "rmse"
+        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric=loss,
                        callbacks=callbacks,
                        verbose=0)
         return self.parameters["n_estimators"]

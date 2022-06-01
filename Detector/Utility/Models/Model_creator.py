@@ -29,7 +29,7 @@ class ModelCreator:
         MLModelType.StackedBiLSTM: StackedBiLSTM,
         MLModelType.enc_dec_LSTM: EncDecLSTM,
         MLModelType.enc_dec_att_LSTM: EncDecAttLSTM,
-        MLModelType.cnn_lstm: Cnn,
+        MLModelType.cnn: Cnn,
         MLModelType.xgboost: XGB,
         MLModelType.nbeats: NBeats,
         MLModelType.deepar: DeepAR,
