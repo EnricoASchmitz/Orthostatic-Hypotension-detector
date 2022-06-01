@@ -36,7 +36,6 @@ class XGB(Model):
         if gpu:
             logger = logging.getLogger()
             logger.debug("using GPU")
-            self.parameters.update({"tree_method": "gpu_hist"})
         self.data_object = data_object
 
         # fill parameters
@@ -107,8 +106,11 @@ class XGB(Model):
             "n_estimators": (Parameters.iterations.value * 10),
             "objective": "reg:squarederror"
         }
+        if self.gpu:
+            self.parameters.update({"tree_method": "gpu_hist"})
 
     def _set_optuna_parameters(self, trial):
+
         param = {
             "colsample_bytree": trial.suggest_float("colsample_bytree", 0.1, 1, step=0.1),
             "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.1, 1, step=0.1),
@@ -117,7 +119,8 @@ class XGB(Model):
             "grow_policy": trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
         }
         if self.gpu:
-            param["sampling_method"] = trial.suggest_categorical("sampling_method", ["uniform", "gradient_based"]),
+            param["tree_method"] = "gpu_hist"
+            param["sampling_method"] = trial.suggest_categorical("sampling_method", ["uniform", "gradient_based"])
 
             if param["sampling_method"] == "gradient_based":
                 param["subsample"] = trial.suggest_float("subsample", 0.5, 1, step=0.1)
