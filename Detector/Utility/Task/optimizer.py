@@ -13,27 +13,24 @@ from typing import Optional, Tuple
 
 import numpy as np
 import optuna
-import pandas as pd
 from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
-from sklearn.model_selection import train_test_split, LeavePGroupsOut
+from sklearn.model_selection import LeavePGroupsOut
 
 from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
-from Detector.Utility.Data_preprocessing.extract_info import make_curves
-from Detector.Utility.Metrics.Losses import Loss
 from Detector.Utility.Models.Decision_trees.XGBoost import XGB
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
 from Detector.Utility.PydanticObject import InfoObject, DataObject
-from Detector.Utility.Task.model_functions import check_gpu, filter_out_test_subjects, fit_and_predict
+from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict
 from Detector.enums import Parameters
 
 
 class Optimizer:
     """ Optimize a model with optuna """
 
-    def __init__(self, x, output, info_dataset,  info_object: InfoObject, data_object: DataObject):
+    def __init__(self, x, output, info_dataset, info_object: InfoObject, data_object: DataObject):
 
         self.input = x
         self.output = output
@@ -115,9 +112,9 @@ class Optimizer:
 
         # cross val
         step = 0
-        ids = self.info_dataset.ID
+        ids = np.array(self.info_dataset.ID)
         unique_ids = np.unique(ids)
-        test_groups = np.ceil(len(unique_ids) * 0.2)
+        test_groups = int(np.ceil(len(unique_ids) * 0.2))
         lpgo = LeavePGroupsOut(test_groups)
 
         loss_dicts = []
@@ -130,10 +127,10 @@ class Optimizer:
                 # collect
                 gc.collect()
                 model = ModelCreator.create_model(self.info_object.model, data_object=self.data_object,
-                                                       input_shape=X.shape[1:],
-                                                       output_shape=output.shape[1:],
-                                                       gpu=use_gpu, plot_layers=True,
-                                                       parameters=trial)
+                                                  input_shape=X.shape[1:],
+                                                  output_shape=output.shape[1:],
+                                                  gpu=use_gpu, plot_layers=True,
+                                                  parameters=trial)
                 if isinstance(model, KerasModel):
                     callbacks = [TFKerasPruningCallback(trial, "val_loss")]
                 elif isinstance(model, XGB):
@@ -141,15 +138,16 @@ class Optimizer:
                 else:
                     callbacks = []
                 model, loss_values = fit_and_predict(info_object=self.info_object,
-                                                          logger=self.logger,
-                                                          input_values=X,
-                                                          output_values=output,
-                                                          model=model,
-                                                          step=step,
-                                                          indexes=indexes,
-                                                          scaler=out_scaler,
-                                                          rescale_function=out_reverse_scale_function,
-                                                          callbacks=callbacks)
+                                                     logger=self.logger,
+                                                     input_values=X,
+                                                     output_values=output,
+                                                     model=model,
+                                                     step=step,
+                                                     indexes=indexes,
+                                                     scaler=out_scaler,
+                                                     rescale_function=out_reverse_scale_function,
+                                                     callbacks=callbacks,
+                                                     loss_function=Parameters.loss.value)
                 step += 1
                 loss_dicts.append(loss_values)
                 del model

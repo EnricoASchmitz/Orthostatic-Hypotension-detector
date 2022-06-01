@@ -15,7 +15,7 @@ from statistics import mean
 import mlflow
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split, KFold, LeaveOneGroupOut, LeavePGroupsOut
+from sklearn.model_selection import LeavePGroupsOut
 
 from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Data_preprocessing.extract_info import make_curves
@@ -31,7 +31,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
                 parameters_values: pd.DataFrame, full_curve: np.ndarray,
-                data_object: DataObject, info_object: InfoObject, fit_indexes:list, test_indexes: list):
+                data_object: DataObject, info_object: InfoObject, fit_indexes: list, test_indexes: list):
     """ Train a model, save to MLflow
 
     Args:
@@ -84,7 +84,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         step = 0
         ids = info_dataset.iloc[fit_indexes].ID
         unique_ids = np.unique(ids)
-        test_groups = np.ceil(len(unique_ids)*0.2)
+        test_groups = int(np.ceil(len(unique_ids) * 0.2))
         lpgo = LeavePGroupsOut(test_groups)
 
         loss_dicts = []

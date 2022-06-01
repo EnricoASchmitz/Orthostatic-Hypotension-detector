@@ -144,4 +144,3 @@ def filter_out_test_subjects(info_dataset):
     train_indexes = info_dataset.index[~info_dataset.ID.isin(test_ids)].tolist()
     test_indexes = info_dataset.index[info_dataset.ID.isin(test_ids)].tolist()
     return train_indexes, test_indexes
-
