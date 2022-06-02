@@ -87,7 +87,8 @@ def plot_stages(fig: Figure, stand_markers: pd.DataFrame) -> Figure:
     return fig
 
 
-def simple_plot(y: np.array, y2: Union[list,np.array] = None, title: str = "plot", y2_name: Union[list,str] = "y2", mode: str = "lines") -> None:
+def simple_plot(y: np.array, y2: Union[list, np.array] = None, title: str = "plot", y2_name: Union[list, str] = "y2",
+                mode: str = "lines") -> None:
     """ Wrapper for plotly line function
 
     Args:
