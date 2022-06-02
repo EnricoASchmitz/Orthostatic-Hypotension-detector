@@ -12,7 +12,7 @@ from Detector.Utility.Models.Decision_trees.XGBoost import XGB
 from Detector.Utility.Models.Keras.DeepAR import DeepAR
 from Detector.Utility.Models.Keras.nbeats import NBeats
 from Detector.Utility.Models.Keras.parameter_models import SimpleLSTM, StackedLSTM, BiLSTM, StackedBiLSTM, EncDecLSTM, \
-    EncDecAttLSTM, CnnLSTM, Dense
+    EncDecAttLSTM, Cnn, Dense
 from Detector.Utility.Models.abstractmodel import Model
 from Detector.enums import MLModelType
 
@@ -29,7 +29,7 @@ class ModelCreator:
         MLModelType.StackedBiLSTM: StackedBiLSTM,
         MLModelType.enc_dec_LSTM: EncDecLSTM,
         MLModelType.enc_dec_att_LSTM: EncDecAttLSTM,
-        MLModelType.cnn_lstm: CnnLSTM,
+        MLModelType.cnn: Cnn,
         MLModelType.xgboost: XGB,
         MLModelType.nbeats: NBeats,
         MLModelType.deepar: DeepAR,

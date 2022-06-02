@@ -132,7 +132,10 @@ class Optimizer:
                 if isinstance(model, KerasModel):
                     callbacks = [TFKerasPruningCallback(trial, "val_loss")]
                 elif isinstance(model, XGB):
-                    callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-{Parameters.loss.value}")]
+                    loss = Parameters.loss.value
+                    if loss == "mse":
+                        loss = "rmse"
+                    callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-{loss}")]
                 else:
                     callbacks = []
                 model, loss_values = fit_and_predict(info_object=self.info_object,
