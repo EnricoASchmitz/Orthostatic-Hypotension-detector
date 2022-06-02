@@ -6,16 +6,17 @@
 
 # Imports
 import logging
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks, butter, filtfilt
 
+from Detector.Utility.Plotting import plotting
 from Detector.Utility.PydanticObject import DataObject
 
 # Variables
-Threshold = 1  # Threshold for minimal difference
+Threshold = 2  # Threshold for minimal difference
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +38,8 @@ def identify_flatliners(target_array: np.ndarray, future: int = 10) -> np.ndarra
     length = len(target_array)
     for point in range(length):
         # get point 1
-        point1 = (point, target_array[point])
+        current_point = target_array[point]
+        point1 = (point, current_point)
         # calculate n points into the future, where n = future
         f_point = point + future
         # if we surpass the total length it is our end point
@@ -45,15 +47,18 @@ def identify_flatliners(target_array: np.ndarray, future: int = 10) -> np.ndarra
             f_point = length - 1
         point2 = (f_point, target_array[f_point])
         # add calculate slope for the point to the list
-        slopes.append(slope(point1, point2))
+        slope_value = slope(point1, point2)
+        slopes.append(slope_value)
     # to numpy
     y = np.array(slopes)
     # apply a threshold
     y[y < Threshold] = 0
+    y = np.array(pd.Series(y).rolling(future * 2, min_periods=1, center=True).mean().bfill().ffill())
+    y = np.square(y)
     return y
 
 
-def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1) -> pd.DataFrame:
+def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.1) -> pd.DataFrame:
     """ Remove flatliners from dataframe
 
     Args:
@@ -65,7 +70,7 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
         dataframe without flatliners
     """
     # get only bp values
-    target_array = np.array(df[data_object.target_col])
+    target_array = np.array(df[data_object.target_col]).flatten()
 
     # Calculate the slope between a point and the next, flatliners will have a slope close to 0
     y = identify_flatliners(target_array)
@@ -116,13 +121,15 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
         flatliners = df.index[le_index:re_index]
         df.at[flatliners, "signal"] = False
     n_peaks = len(peak_plateaus["plateau_sizes"])
-    if n_peaks > 0:
-        logger.warning(f"Removing {n_peaks} plateaus")
 
     # remove flatliners
     df = df.where(df["signal"])
     df.drop("signal", inplace=True, axis=1)
-
+    if 0 < n_peaks:
+        logger.warning(f"Removing {n_peaks} plateaus")
+    if 2 > n_peaks or n_peaks > 10:
+        plotting.simple_plot(np.array(df[data_object.target_col]).flatten(), [target_array, -y],
+                             y2_name=["raw", "slope"])
     return df
 
 
@@ -144,7 +151,8 @@ def slope(point1: Tuple[int, int], point2: Tuple[int, int]) -> float:
     return (y2 - y1) / (x2 - x1)
 
 
-def butter_low_pass_filter(data: pd.Series, cutoff: float, fs: int, order: int) -> pd.Series:
+def butter_low_pass_filter(data: Union[pd.Series, np.ndarray], cutoff: float, fs: int, order: int) \
+        -> Union[pd.Series, np.ndarray]:
     """ Perform butter worth smoothing
 
     Args:
@@ -157,10 +165,12 @@ def butter_low_pass_filter(data: pd.Series, cutoff: float, fs: int, order: int) 
         Smoothed data
 
     """
-    index = data.index
     nyq = 0.5 * fs  # Nyquist Frequency
     normal_cutoff = cutoff / nyq
     # Get the filter coefficients
     b, a = butter(order, normal_cutoff, btype="low", analog=False)
     y = filtfilt(b, a, data)
-    return pd.Series(y, index=index)
+    if isinstance(data, pd.Series):
+        index = data.index
+        y = pd.Series(y, index=index)
+    return y

@@ -22,7 +22,7 @@ from Detector.enums import MLModelType
 
 warnings.simplefilter(action="ignore", category=UserWarning)
 warnings.simplefilter(action="ignore", category=RuntimeWarning)
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 # variables
 dataset_name = "klop"
 save_file = False

@@ -87,7 +87,7 @@ def plot_stages(fig: Figure, stand_markers: pd.DataFrame) -> Figure:
     return fig
 
 
-def simple_plot(y: np.array, y2: np.array = None, title: str = "plot", y2_name: str = "y2") -> None:
+def simple_plot(y: np.array, y2: Union[list,np.array] = None, title: str = "plot", y2_name: Union[list,str] = "y2", mode: str = "lines") -> None:
     """ Wrapper for plotly line function
 
     Args:
@@ -95,13 +95,18 @@ def simple_plot(y: np.array, y2: np.array = None, title: str = "plot", y2_name: 
         y2: data for second scatter (Optional)
         title: Title for the plot
         y2_name: Name for legend of y2
+        mode: Line type
 
     Returns:
         None
     """
     fig = px.line(y=y, title=title)
     if y2 is not None:
-        fig.add_scatter(y=y2, cliponaxis=True, mode="markers", name=y2_name)
+        if isinstance(y2, list):
+            for i, line in enumerate(y2):
+                fig.add_scatter(y=line, cliponaxis=True, mode=mode, name=y2_name[i])
+        else:
+            fig.add_scatter(y=y2, cliponaxis=True, mode=mode, name=y2_name)
     fig.show()
 
 
