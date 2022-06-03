@@ -13,16 +13,12 @@ import optuna
 from keras.layers import Flatten, AveragePooling1D
 from optuna import Trial
 from tensorflow import get_logger
-from tensorflow.keras.layers import Reshape, Conv1D
 from tensorflow.keras import Input
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
-from tensorflow.keras.layers import Dense, BatchNormalization, Dropout, Reshape, Conv1D
-from tensorflow.keras.optimizers import SGD, RMSprop, Adam
+from tensorflow.keras.layers import Dense, BatchNormalization, Dropout, Conv1D
 from tensorflow.python.keras.engine.keras_tensor import KerasTensor
 from tensorflow.python.keras.utils.vis_utils import plot_model
 
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
-from Detector.Utility.PydanticObject import DataObject
 from Detector.enums import Parameters
 
 
@@ -140,9 +136,10 @@ class MLP(Base):
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         if n_dense_layers > 0:
             dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+            batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         else:
             dropout = 0
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
+            batch_norm = False
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
@@ -179,7 +176,7 @@ class Cnn(Base):
     def cnn_layer(self, input_layer, filters, kernel_size, pooling, pool_size, strides, **kwargs):
         last_layer = Conv1D(filters=int(filters), kernel_size=int(kernel_size), strides=int(strides))(input_layer)
         if pooling:
-            last_layer = AveragePooling1D(pool_size)(last_layer)
+            last_layer = AveragePooling1D(int(pool_size))(last_layer)
         re = Flatten()(last_layer)
         bp_out = self._output_layers_parameters(re, **kwargs)
         return bp_out
@@ -203,7 +200,7 @@ class Cnn(Base):
 
     def _set_optuna_parameters(self, trial: optuna.Trial):
         # get CNN parameters
-        filters = trial.suggest_int("filters", 16, Parameters.default_units.value*2)
+        filters = trial.suggest_int("filters", 16, Parameters.default_units.value * 2)
         kernel_size = trial.suggest_int("kernel_size", 2, 10)
         pooling = trial.suggest_categorical("pooling", [True, False])
         if pooling:

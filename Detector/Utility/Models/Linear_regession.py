@@ -5,28 +5,19 @@
 # Script: XGBoost regressor implementation
 
 # Imports
-import logging
 import os.path
 import pickle
 
 import numpy as np
-from joblib import Parallel, delayed
 from optuna import Trial
-from sklearn.base import is_classifier
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.multioutput import MultiOutputRegressor, _fit_estimator
-from sklearn.utils.multiclass import check_classification_targets
-from sklearn.utils.validation import has_fit_parameter, _check_fit_params
-from xgboost import XGBRegressor
 
 from Detector.Utility.Models.abstractmodel import Model
-from Detector.Utility.PydanticObject import DataObject
-from Detector.enums import Parameters
 
 
 class LinearRegressor(Model):
     """ Linear regression model """
+
     def __init__(self, **kwargs):
         """ Create linear regression model """
         super().__init__()
@@ -54,7 +45,7 @@ class LinearRegressor(Model):
         assert data.ndim == 2, "dimensions incorrect"
         prediction = self.model.predict(data)
 
-        return prediction, None
+        return prediction
 
     def get_parameters(self):
         return {}

@@ -8,9 +8,10 @@
 # Imports
 from typing import Union
 
+from Detector.Utility.Models.Keras.parameter_models import Cnn, MLP
+from Detector.Utility.Models.Keras.timeserie_mappers import TimeserieMLP
 from Detector.Utility.Models.Linear_regession import LinearRegressor
 from Detector.Utility.Models.XGBoost import XGB
-from Detector.Utility.Models.Keras.parameter_models import Cnn, MLP
 from Detector.Utility.Models.abstractmodel import Model
 from Detector.enums import MLModelType
 
@@ -24,6 +25,7 @@ class ModelCreator:
         MLModelType.cnn: Cnn,
         MLModelType.xgboost: XGB,
         MLModelType.linearregression: LinearRegressor,
+        MLModelType.timeMLP: TimeserieMLP,
     }
 
     @staticmethod

@@ -19,6 +19,7 @@ class InfoObject(BaseModel):
     smooth: bool
     model: str
     nirs_input: bool
+    parameter_model: bool = None
     time_row: Optional[int] = Parameters.time_row_ms.value
 
 

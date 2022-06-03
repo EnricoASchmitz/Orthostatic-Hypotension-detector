@@ -20,7 +20,6 @@ from sklearn.utils.validation import has_fit_parameter, _check_fit_params
 from xgboost import XGBRegressor
 
 from Detector.Utility.Models.abstractmodel import Model
-from Detector.Utility.PydanticObject import DataObject
 from Detector.enums import Parameters
 
 
@@ -80,7 +79,7 @@ class XGB(Model):
         assert data.ndim == 2, "dimensions incorrect"
         prediction = self.model.predict(data)
 
-        return prediction, None
+        return prediction
 
     def get_parameters(self):
         return self.parameters

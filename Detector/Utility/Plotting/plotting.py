@@ -112,12 +112,11 @@ def simple_plot(y: np.array, y2: Union[list, np.array] = None, title: str = "plo
 
 
 def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray, true: np.ndarray,
-                    title: str, std: np.ndarray = None, folder_name: str = None):
+                    title: str, folder_name: str = None):
     """ Plot the prediction
 
     Args:
-        std:
-        folder_name:
+        folder_name: filename
         target_name: name to add to the plot
         target_index: column to plot
         true:  test data
@@ -145,7 +144,7 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
 
     date_test = np.array(range(0, len(true)))
 
-    if ((np.amin(prediction) < 0) or (np.max(prediction) > 300)) and std is None:
+    if (np.amin(prediction) < 0) or (np.max(prediction) > 300):
         # Clip the prediction
         logger.warning("Values clipped")
         prediction = np.clip(prediction, a_min=0, a_max=300)
@@ -165,25 +164,6 @@ def plot_prediction(target_name: str, target_index: int, prediction: np.ndarray,
     )
 
     plots = [trace2, trace3]
-
-    if std is not None:
-        std = std[..., target_index]
-        upper_std = Scatter(
-            x=date_test,
-            y=prediction + std,
-            opacity=0.5,
-            mode="lines",
-            name="+STD"
-        )
-        plots.append(upper_std)
-        lower_std = Scatter(
-            x=date_test,
-            y=prediction - std,
-            opacity=0.5,
-            mode="lines",
-            name="-STD"
-        )
-        plots.append(lower_std)
 
     layout = Layout(
         title=f"{title}, Loss {Parameters.loss.value}:{loss_value}",

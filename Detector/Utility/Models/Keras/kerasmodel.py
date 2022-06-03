@@ -6,21 +6,16 @@
 
 # Imports
 import os
-from abc import abstractmethod
 from typing import Optional, Union
 
 import numpy as np
 from optuna import Trial
-from tensorflow import keras, get_logger
-from tensorflow.keras import Input
+from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
-from tensorflow.keras.layers import Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import SGD, RMSprop, Adam
 from tensorflow.python.keras.engine.keras_tensor import KerasTensor
-from tensorflow.python.keras.utils.vis_utils import plot_model
 
 from Detector.Utility.Models.abstractmodel import Model
-from Detector.Utility.PydanticObject import DataObject
 from Detector.enums import Parameters
 
 
@@ -54,17 +49,14 @@ class KerasModel(Model):
         # model
         model = keras.Model(inputs=inputs, outputs=bp_out,
                             name="BP_model")
-        if self.m_eager:
-            run_eager = True
-        else:
-            run_eager = False
+
         if model_loss is None:
             model_loss = loss
 
         self.optimizer = optimizer
         self.model_loss = model_loss
 
-        model.compile(optimizer=optimizer, loss=model_loss, metrics=["mae"], run_eagerly=run_eager)
+        model.compile(optimizer=optimizer, loss=model_loss, metrics=["mae"])
 
         return model
 
@@ -93,18 +85,10 @@ class KerasModel(Model):
 
         return len(history.history["loss"])
 
-    def _make_prediction(self, inputs):
-        if self.get_intermediate:
-            model_pred, std = self.use_intermediate_values(inputs, self.get_intermediate)
-        else:
-            model_pred = self.model.predict(x=inputs)
-            std = None
-        return model_pred, std
-
     def predict(self, data):
         # use intermediate values for making the prediction
-        prediction, std = self._make_prediction(inputs=data)
-        return prediction, std
+        prediction = self.model.predict(x=data)
+        return prediction
 
     def get_parameters(self):
         return self.parameters

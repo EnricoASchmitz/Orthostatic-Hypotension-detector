@@ -37,6 +37,8 @@ class MLModelType(Enum):
     Dense = "dense"
     linearregression = "linearregression"
     cnn = "cnn"
+    timeMLP = "timemlp"
+
 
 class PreProcessorMethod(Enum):
     """ Available Preprocessor methods """

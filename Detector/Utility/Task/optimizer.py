@@ -12,14 +12,15 @@ from typing import Optional, Tuple
 
 import numpy as np
 import optuna
+import tensorflow as tf
 from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
 
-from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d
-from Detector.Utility.Models.XGBoost import XGB
+from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
+from Detector.Utility.Models.XGBoost import XGB
 from Detector.Utility.PydanticObject import InfoObject, DataObject
 from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, filter_out_test_subjects
 from Detector.enums import Parameters
@@ -97,8 +98,16 @@ class Optimizer:
         X_unscaled = self.input
         X, x_scalers = scale3d(X_unscaled.copy(), self.data_object)
 
-        output_unscaled = np.array(self.output)
-        output, out_scaler = scale2d(output_unscaled.copy(), self.data_object)
+        if self.output.ndim == 2:
+            output_unscaled = np.array(self.output)
+            out_scale_function = scale2d
+            out_reverse_scale_function = reverse_scale2d
+        else:
+            output_unscaled = np.array(self.output)
+            out_scale_function = scale3d
+            out_reverse_scale_function = reverse_scale3d
+
+        output, out_scaler = out_scale_function(output_unscaled.copy(), self.data_object)
 
         indexes = filter_out_test_subjects(self.info_dataset)
         try:
@@ -124,7 +133,7 @@ class Optimizer:
                                                 step=0,
                                                 indexes=indexes,
                                                 scaler=out_scaler,
-                                                rescale_function=reverse_scale2d,
+                                                rescale_function=out_reverse_scale_function,
                                                 callbacks=callbacks,
                                                 loss_function=Parameters.loss.value)
             del model
@@ -133,6 +142,9 @@ class Optimizer:
             self.logger.warning(e)
             loss_value = 1e+10
         except AssertionError as e:
+            self.logger.warning(e)
+            loss_value = 1e+10
+        except tf.errors.ResourceExhaustedError as e:
             self.logger.warning(e)
             loss_value = 1e+10
         if loss_value is np.nan:
