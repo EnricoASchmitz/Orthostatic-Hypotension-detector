@@ -16,7 +16,7 @@ import pandas as pd
 from numpy import ndarray
 from pandas import DataFrame
 
-from Detector.Utility.Data_preprocessing.Cleansing import remove_flatliners
+from Detector.Utility.Data_preprocessing.Cleansing import remove_unrealistic_values
 from Detector.Utility.Data_preprocessing.Transformation import resample, add_diastolic_systolic_bp
 from Detector.Utility.Data_preprocessing.extract_info import make_datasets
 from Detector.Utility.PydanticObject import InfoObject, DataObject
@@ -78,8 +78,8 @@ def preprocessing(info_object: InfoObject) -> Tuple[DataObject, ndarray, DataFra
                     df.loc[nans, data_object.target_col] = np.interp(x(nans), x(~nans),
                                                                      df[data_object.target_col][~nans])
 
-                # Remove flatliners from data
-                df = remove_flatliners(df, data_object)
+                # Remove values above and below normal
+                df = remove_unrealistic_values(df, data_object)
 
                 # If we want to resample, we resample with a value given for time_row in de config
                 if int(1000 / data_object.hz) != info_object.time_row:

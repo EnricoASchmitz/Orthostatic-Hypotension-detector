@@ -20,27 +20,28 @@ from sklearn.utils.validation import has_fit_parameter, _check_fit_params
 from xgboost import XGBRegressor
 
 from Detector.Utility.Models.abstractmodel import Model
-from Detector.Utility.PydanticObject import DataObject
 from Detector.enums import Parameters
 
 
 class XGB(Model):
     """ XGBoost model """
 
-    def __init__(self, data_object: DataObject, gpu, parameters=None,
+    def __init__(self, gpu, parameters=None,
                  **kwargs):
         """ Create XGBoost model """
         super().__init__()
-        self.n_in_steps = None
+        self.gpu = gpu
         if gpu:
             logger = logging.getLogger()
             logger.debug("using GPU")
-        self.data_object = data_object
 
         # fill parameters
         self.set_parameters(parameters)
 
-        xgb = XGBRegressor(eval_metric=Parameters.loss.value, verbosity=1, **self.parameters)
+        loss = Parameters.loss.value
+        if loss == "mse":
+            loss = "rmse"
+        xgb = XGBRegressor(eval_metric=loss, verbosity=1, **self.parameters)
 
         model = MyMultiOutputRegressor(xgb)
 
@@ -55,7 +56,10 @@ class XGB(Model):
         X_train, X_val = x_train_inputs[index_train], x_train_inputs[index_val]
         y_train, y_val = y_train_outputs[index_train], y_train_outputs[index_val]
 
-        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric=Parameters.loss.value,
+        loss = Parameters.loss.value
+        if loss == "mse":
+            loss = "rmse"
+        self.model.fit(X_train, y_train, eval_set=[(X_val, y_val)], eval_metric=loss,
                        callbacks=callbacks,
                        verbose=0)
         return self.parameters["n_estimators"]
@@ -75,7 +79,7 @@ class XGB(Model):
         assert data.ndim == 2, "dimensions incorrect"
         prediction = self.model.predict(data)
 
-        return prediction, None
+        return prediction
 
     def get_parameters(self):
         return self.parameters
@@ -105,24 +109,26 @@ class XGB(Model):
             "n_estimators": (Parameters.iterations.value * 10),
             "objective": "reg:squarederror"
         }
+        if self.gpu:
+            self.parameters.update({"tree_method": "gpu_hist"})
 
     def _set_optuna_parameters(self, trial):
-        param = {
-            "booster": trial.suggest_categorical("booster", ["gbtree", "gblinear", "dart"]),
-            "lambda": trial.suggest_loguniform("lambda", 1e-8, 1.0),
-            "alpha": trial.suggest_loguniform("alpha", 1e-8, 1.0),
-        }
 
-        if param["booster"] == "gbtree" or param["booster"] == "dart":
-            param["max_depth"] = trial.suggest_int("max_depth", 4, 31, step=4)
-            param["eta"] = trial.suggest_loguniform("eta", 1e-8, 1.0)
-            param["gamma"] = trial.suggest_loguniform("gamma", 1e-8, 1.0)
-            param["grow_policy"] = trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
-        if param["booster"] == "dart":
-            param["sample_type"] = trial.suggest_categorical("sample_type", ["uniform", "weighted"])
-            param["normalize_type"] = trial.suggest_categorical("normalize_type", ["tree", "forest"])
-            param["rate_drop"] = trial.suggest_loguniform("rate_drop", 1e-8, 1.0)
-            param["skip_drop"] = trial.suggest_loguniform("skip_drop", 1e-8, 1.0)
+        param = {
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.1, 1, step=0.1),
+            "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.1, 1, step=0.1),
+            "max_bin": trial.suggest_int("max_bin", 64, 512, step=32),
+            "gamma": trial.suggest_loguniform("gamma", 1e-8, 1.0),
+            "grow_policy": trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
+        }
+        if self.gpu:
+            param["tree_method"] = "gpu_hist"
+            param["sampling_method"] = trial.suggest_categorical("sampling_method", ["uniform", "gradient_based"])
+
+            if param["sampling_method"] == "gradient_based":
+                param["subsample"] = trial.suggest_float("subsample", 0.5, 1, step=0.1)
+        elif not self.gpu or param["sampling_method"] == "uniform":
+            param["subsample"] = trial.suggest_float("subsample", 0.1, 1, step=0.1)
         self.parameters.update(param)
 
     def save_model(self):

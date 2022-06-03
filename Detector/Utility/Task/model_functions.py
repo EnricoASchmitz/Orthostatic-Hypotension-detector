@@ -39,7 +39,7 @@ def fitting(model: Model, logger: Logger, x_train_inputs: np.ndarray, y_train_ou
     return n_iterations, (time.perf_counter() - start)
 
 
-def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
+def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.ndarray, float]:
     """ Predict with model and track time needed
 
         Args:
@@ -48,18 +48,18 @@ def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.n
             test_set: Testing set to use for fit
 
         Returns:
-            number of iterations, time needed for fitting
+            prediction, time needed for fitting
         """
     logger.info(f"predicting with model")
     start = time.perf_counter()
-    prediction, std = model.predict(test_set)
-    return prediction, std, (time.perf_counter() - start)
+    prediction = model.predict(test_set)
+    return prediction, (time.perf_counter() - start)
 
 
 def fit_and_predict(info_object: InfoObject, logger: Logger,
                     input_values: np.ndarray, output_values: np.ndarray,
                     indexes: Tuple[list, list], model: Model, step: int, scaler: Any,
-                    rescale_function: callable):
+                    rescale_function: callable, callbacks: list = [], loss_function: str = None):
     """ Fit and predict with a model
 
     Args:
@@ -72,18 +72,19 @@ def fit_and_predict(info_object: InfoObject, logger: Logger,
         step: CV step
         scaler: used scaler for rescaling
         rescale_function: function to do rescaling
-
+        callbacks: callbacks for fitting
+        loss_function: loss function to use, default None
     Returns:
         Model, loss_values
     """
     train_index, test_index = indexes
 
     n_iterations, training_time = fitting(model=model, logger=logger, x_train_inputs=input_values[train_index],
-                                          y_train_outputs=output_values[train_index])
+                                          y_train_outputs=output_values[train_index], callbacks=callbacks)
     mlflow.log_metric("Training time", training_time, step=step)
 
     # predict with model
-    prediction, std, predict_time = predicting(model=model, logger=logger, test_set=input_values[test_index])
+    prediction, predict_time = predicting(model=model, logger=logger, test_set=input_values[test_index])
 
     # scale data
     prediction = rescale_function(prediction, scaler)
@@ -94,14 +95,19 @@ def fit_and_predict(info_object: InfoObject, logger: Logger,
     logger.info(f"plotting prediction from model {info_object.model}")
 
     # save loss values for CV
-    # todo decide if we want this along with the avg
     # get loss values
-    loss_values = Loss().get_loss_values(prediction, output_values_unscaled[test_index])
-    cv_loss = {}
-    for loss_name in loss_values:
-        cv_loss[f"cv_{loss_name}"] = loss_values[loss_name]
-    # log loss values
-    mlflow.log_metrics(cv_loss, step=step)
+    if loss_function is None:
+        loss_values = Loss().get_loss_values(output_values_unscaled[test_index], prediction)
+        cv_loss = {}
+        for loss_name in loss_values:
+            cv_loss[f"cv_{loss_name}"] = loss_values[loss_name]
+        # log loss values
+        mlflow.log_metrics(cv_loss, step=step)
+    else:
+        loss = Loss().get_loss_metric(loss_function)
+        loss_values = round(loss(output_values_unscaled[test_index], prediction), 4)
+        mlflow.log_metric(loss_function, loss_values, step=step)
+
     return model, loss_values
 
 
@@ -118,3 +124,24 @@ def check_gpu() -> bool:
         for gpu in gpus:
             config.experimental.set_memory_growth(gpu, True)
     return use_gpu
+
+
+def filter_out_test_subjects(info_dataset):
+    info_dataset = info_dataset.reset_index(drop=True)
+    filter_features = []
+    all_ids = np.unique(info_dataset.ID)
+    assert len(all_ids) >= 2, "Only 1 subject in the data"
+    filter_data = info_dataset.drop_duplicates("ID")
+    for column in filter_data.columns:
+        unique_groups = np.unique(filter_data[column])
+        feature_groups = len(unique_groups)
+        if len(np.unique(filter_data.ID)) > feature_groups > 1:
+            filter_features.append(column)
+    filter_data = filter_data.drop_duplicates(filter_features)
+    test_ids = filter_data.ID
+    if set(test_ids) == set(all_ids):
+        print("removed 1 ID to save for training")
+        test_ids = test_ids[-1]
+    train_indexes = info_dataset.index[~info_dataset.ID.isin(test_ids)].tolist()
+    test_indexes = info_dataset.index[info_dataset.ID.isin(test_ids)].tolist()
+    return train_indexes, test_indexes

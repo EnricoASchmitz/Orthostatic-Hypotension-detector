@@ -12,33 +12,31 @@ from typing import Optional, Tuple
 
 import numpy as np
 import optuna
-import pandas as pd
+import tensorflow as tf
 from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
-from sklearn.model_selection import train_test_split
 
 from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
-from Detector.Utility.Data_preprocessing.extract_info import make_curves
-from Detector.Utility.Metrics.Losses import Loss
-from Detector.Utility.Models.Decision_trees.XGBoost import XGB
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
+from Detector.Utility.Models.XGBoost import XGB
 from Detector.Utility.PydanticObject import InfoObject, DataObject
-from Detector.Utility.Task.model_functions import check_gpu
+from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, filter_out_test_subjects
 from Detector.enums import Parameters
 
 
 class Optimizer:
     """ Optimize a model with optuna """
 
-    def __init__(self, x, output, info_object: InfoObject, data_object: DataObject):
+    def __init__(self, x, output, info_dataset, info_object: InfoObject, data_object: DataObject):
 
         self.input = x
         self.output = output
+        self.info_dataset = info_dataset
         self.info_object = info_object
         self.data_object = data_object
-        # optuna.logging.set_verbosity(optuna.logging.WARNING)
+        optuna.logging.set_verbosity(optuna.logging.ERROR)
         self.logger = logging.getLogger(__name__)
 
     def load_study(self, storage) -> Optional[Study]:
@@ -111,51 +109,45 @@ class Optimizer:
 
         output, out_scaler = out_scale_function(output_unscaled.copy(), self.data_object)
 
-        train, test = train_test_split(range(len(X)))
+        indexes = filter_out_test_subjects(self.info_dataset)
         try:
-            model = ModelCreator.create_model(self.info_object.model, data_object=self.data_object,
+            model = ModelCreator.create_model(self.info_object.model,
                                               input_shape=X.shape[1:],
                                               output_shape=output.shape[1:],
-                                              gpu=use_gpu,
+                                              gpu=use_gpu, plot_layers=True,
                                               parameters=trial)
-
             if isinstance(model, KerasModel):
                 callbacks = [TFKerasPruningCallback(trial, "val_loss")]
             elif isinstance(model, XGB):
-                callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-{Parameters.loss.value}")]
+                loss = Parameters.loss.value
+                if loss == "mse":
+                    loss = "rmse"
+                callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-{loss}")]
             else:
                 callbacks = []
-
-            model.fit(X[train], output[train], callbacks)
-            prediction, std = model.predict(X[test])
-
-            # Scale back the prediction
-            prediction = out_reverse_scale_function(prediction, out_scaler)
-
+            model, loss_value = fit_and_predict(info_object=self.info_object,
+                                                logger=self.logger,
+                                                input_values=X,
+                                                output_values=output,
+                                                model=model,
+                                                step=0,
+                                                indexes=indexes,
+                                                scaler=out_scaler,
+                                                rescale_function=out_reverse_scale_function,
+                                                callbacks=callbacks,
+                                                loss_function=Parameters.loss.value)
             del model
 
-            # Get loss function
-            loss = Loss().get_loss_metric(Parameters.loss.value)
-
-            # Compare parameter to full curve:
-            if self.info_object.parameter_model:
-                prediction = pd.DataFrame(prediction, columns=self.output.columns).copy()
-                true_curves, pred_curves = make_curves(prediction, self.output, self.data_object.reconstruct_params,
-                                                       self.data_object.recovery_times, test)
-                loss_value = round(loss(true_curves, pred_curves), 4)
-
-                # add the parameters loss not used for reconstruction
-                extra_params_pred = prediction.drop(self.data_object.reconstruct_params, axis=1)
-                extra_params_true = self.output.copy().drop(self.data_object.reconstruct_params, axis=1).iloc[test]
-                loss_value += round(loss(extra_params_true, extra_params_pred), 4)
-            else:
-                loss_value = round(loss(output_unscaled[test], prediction), 4)
-            if loss_value is np.nan:
-                loss_value = 1e+10
         except ValueError as e:
             self.logger.warning(e)
             loss_value = 1e+10
         except AssertionError as e:
             self.logger.warning(e)
             loss_value = 1e+10
+        except tf.errors.ResourceExhaustedError as e:
+            self.logger.warning(e)
+            loss_value = 1e+10
+        if loss_value is np.nan:
+            loss_value = 1e+10
+
         return loss_value

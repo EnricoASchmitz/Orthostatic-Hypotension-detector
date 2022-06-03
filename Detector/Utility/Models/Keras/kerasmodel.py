@@ -6,21 +6,16 @@
 
 # Imports
 import os
-from abc import abstractmethod
 from typing import Optional, Union
 
 import numpy as np
 from optuna import Trial
-from tensorflow import keras, get_logger
-from tensorflow.keras import Input
+from tensorflow import keras
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TerminateOnNaN
-from tensorflow.keras.layers import Dense, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import SGD, RMSprop, Adam
 from tensorflow.python.keras.engine.keras_tensor import KerasTensor
-from tensorflow.python.keras.utils.vis_utils import plot_model
 
 from Detector.Utility.Models.abstractmodel import Model
-from Detector.Utility.PydanticObject import DataObject
 from Detector.enums import Parameters
 
 
@@ -54,17 +49,14 @@ class KerasModel(Model):
         # model
         model = keras.Model(inputs=inputs, outputs=bp_out,
                             name="BP_model")
-        if self.m_eager:
-            run_eager = True
-        else:
-            run_eager = False
+
         if model_loss is None:
             model_loss = loss
 
         self.optimizer = optimizer
         self.model_loss = model_loss
 
-        model.compile(optimizer=optimizer, loss=model_loss, metrics=["mae"], run_eagerly=run_eager)
+        model.compile(optimizer=optimizer, loss=model_loss, metrics=["mae"])
 
         return model
 
@@ -93,18 +85,10 @@ class KerasModel(Model):
 
         return len(history.history["loss"])
 
-    def _make_prediction(self, inputs):
-        if self.get_intermediate:
-            model_pred, std = self.use_intermediate_values(inputs, self.get_intermediate)
-        else:
-            model_pred = self.model.predict(x=inputs)
-            std = None
-        return model_pred, std
-
     def predict(self, data):
         # use intermediate values for making the prediction
-        prediction, std = self._make_prediction(inputs=data)
-        return prediction, std
+        prediction = self.model.predict(x=data)
+        return prediction
 
     def get_parameters(self):
         return self.parameters
@@ -195,78 +179,4 @@ class KerasModel(Model):
         pass
 
     def use_intermediate_values(self, inputs, get_intermediate) -> Union[np.ndarray, np.ndarray]:
-        pass
-
-
-class Base(KerasModel):
-    def __init__(self, data_object: DataObject, input_shape, output_shape, parameters: Optional[dict],
-                 plot_layers: bool,
-                 gpu):
-        get_logger().setLevel("ERROR")
-        super().__init__()
-        self.logger.debug(f"GPU: {gpu}")
-
-        self.input_shape = input_shape
-        self.output_shape = output_shape
-        self.data_object = data_object
-
-        # fill parameters
-        self.set_parameters(parameters)
-
-        self.model = self._model(**self.parameters)
-        if plot_layers:
-            plot_model(self.model, show_shapes=True, to_file="model.png")
-
-    def _model(self, optimizer: str, loss: str,
-               **kwargs):
-        """ Make model
-
-       Args:
-            optimizer: optimizer
-            loss: loss
-       """
-        # Creating the layers
-        inputs = Input(shape=self.input_shape,
-                       name="BP_in")
-        last_layer = BatchNormalization()(inputs)
-        model_loss = None
-
-        model = self.compile_model(self._get_model(), inputs, last_layer, optimizer, loss, model_loss, **kwargs)
-        return model
-
-    def _output_layers_parameters(self, prev_layer, n_dense_layers, dropout, activation_out, batch_norm,
-                                  **kwargs) -> KerasTensor:
-        """ Create output layers
-
-        Args:
-             prev_layer: previous layer
-             n_dense_layers: number of Dense layers to use
-             dropout: dropout value
-             activation: activation to use for final layer
-        """
-        n_dense_layers = int(n_dense_layers)
-        dropout_value = float(dropout)
-
-        out_units = self.output_shape[-1]
-        input_shape = prev_layer.shape[-1]
-
-        layer_units = np.flip(np.linspace(out_units, input_shape, num=n_dense_layers))
-        for i in range(n_dense_layers):
-            dense_layer = Dense(layer_units[i], activation="relu", name=f"Dense_{i}")(prev_layer)
-            if batch_norm:
-                layer = BatchNormalization(name=f"BN_{i}")(dense_layer)
-            else:
-                layer = dense_layer
-            prev_layer = Dropout(dropout_value, name=f"dropout_out_{i}")(layer)
-        out_layer = Dense(units=out_units, name="BP_out", activation=activation_out)(prev_layer)
-        return out_layer
-
-    @abstractmethod
-    def _get_model(self):
-        raise NotImplementedError("Must override method")
-
-    def _set_optuna_parameters(self, trial: Trial):
-        pass
-
-    def _set_default_parameters(self):
         pass

@@ -15,12 +15,12 @@ from statistics import mean
 import mlflow
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import LeaveOneGroupOut
 
 from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d, reverse_scale3d
 from Detector.Utility.Data_preprocessing.extract_info import make_curves
 from Detector.Utility.Models.Model_creator import ModelCreator
-from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction, plot_curves, plot_bars
+from Detector.Utility.Plotting.plotting import plot_comparison, plot_curves, plot_bars, plot_prediction
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, predicting
@@ -31,7 +31,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
                 parameters_values: pd.DataFrame, full_curve: np.ndarray,
-                data_object: DataObject, info_object: InfoObject):
+                data_object: DataObject, info_object: InfoObject, fit_indexes: list, test_indexes: list):
     """ Train a model, save to MLflow
 
     Args:
@@ -41,6 +41,8 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         full_curve: Dataframe containing output to use for the model when predicting full curve
         data_object: information retrieved from the data
         info_object: information from config
+        fit_indexes: indexes to use for fitting
+        test_indexes: indexes to use for testing
     """
     use_gpu = check_gpu()
 
@@ -52,7 +54,8 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
     tags = {key: do[key] for key in keys_to_extract}
 
     serializer = MLflowSerializer(dataset_name=info_object.dataset,
-                                  parameter_expiriment=info_object.parameter_model, sample_tags=tags)
+                                  parameter_expiriment=info_object.parameter_model,
+                                  sample_tags=tags)
     last_optimized_run = serializer.get_last_optimized_run(info_object.model)
     if last_optimized_run is not None:
         run = mlflow.get_run(last_optimized_run.run_id)
@@ -80,20 +83,20 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
 
         # cross val
         step = 0
-        n_splits = 5
-        tscv = KFold(n_splits=n_splits)
+        ids = info_dataset.iloc[fit_indexes].ID
+        logo = LeaveOneGroupOut()
 
         loss_dicts = []
         models_list = []
 
-        fit_indexes, test_indexes = train_test_split(range(len(x)))
+        logo.get_n_splits(groups=ids)
 
-        for indexes in tscv.split(fit_indexes):
+        for indexes in logo.split(fit_indexes, groups=ids):
             logger.info(f"start cv: {step}")
             # collect
             gc.collect()
             logger.info(info_object.model)
-            model_copy = ModelCreator.create_model(info_object.model, data_object=data_object,
+            model_copy = ModelCreator.create_model(info_object.model,
                                                    input_shape=x.shape[1:],
                                                    output_shape=output.shape[1:],
                                                    gpu=use_gpu, plot_layers=True,
@@ -130,7 +133,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
 
         mlflow.log_metrics(avg_loss)
 
-        prediction, std, time = predicting(model, logger, x[test_indexes])
+        prediction, time = predicting(model, logger, x[test_indexes])
 
         # Scale back the prediction
         prediction_array = out_reverse_scale_function(prediction, out_scaler)
@@ -154,17 +157,13 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         else:
             for i in range(prediction.shape[0]):
                 for target_index, target_name in enumerate(data_object.target_col):
-
                     sample = test_indexes[i]
                     information = info_dataset.iloc[sample]
                     path = f"figure/prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
-                    if std is not None:
-                        std_target = std[i]
-                    else:
-                        std_target = None
                     plot_prediction(
-                        target_name, target_index, prediction[i], output_unscaled[sample], std=std_target,
+                        target_name, target_index, prediction[i], output_unscaled[sample],
                         title=f"{target_name} {path}".replace("_", " "), folder_name=path)
+
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())
 

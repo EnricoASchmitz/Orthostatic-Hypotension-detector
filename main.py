@@ -16,12 +16,13 @@ from sklearn.preprocessing import MinMaxScaler
 from Detector.Task.Optimize_model import optimize_model
 from Detector.Task.Preprocessing import preprocessing
 from Detector.Task.Train_model import train_model
+from Detector.Utility.Task.model_functions import filter_out_test_subjects
 from Detector.Utility.Task.preprocessing.PreprocessingFunctions import create_info_object
 from Detector.enums import MLModelType
 
 warnings.simplefilter(action="ignore", category=UserWarning)
 warnings.simplefilter(action="ignore", category=RuntimeWarning)
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 # variables
 dataset_name = "klop"
 save_file = False
@@ -57,18 +58,24 @@ def main(argv):
             model = model.value
         info_object.model = model
         print(info_object.model)
-        # set model type correct
-        if info_object.model in ["deepar", "nbeats"]:
+        if info_object.model == "timemlp":
+            error = "The baseline_tuple[0]/rest_length and standing_length/future_seconds need to be the same"
+            assert full_curve.shape[1] == X.shape[1], error
             info_object.parameter_model = False
         else:
             info_object.parameter_model = True
+        # filter out 1 of each group for testing
+        fit_indexes, test_indexes = filter_out_test_subjects(info_dataset)
 
         # optimize a model
-        if Optimize:
-            optimize_model(X, parameters, full_curve, data_object, info_object)
+        if Optimize and info_object.model != "linearregression":
+            optimize_model(x=X, parameters_values=parameters, full_curve=full_curve, info_dataset=info_dataset,
+                           data_object=data_object, info_object=info_object, fit_indexes=fit_indexes)
         if Fit or Optimize:
             # fit a model
-            train_model(X, info_dataset, parameters, full_curve, data_object, info_object)
+            train_model(x=X, info_dataset=info_dataset, parameters_values=parameters, full_curve=full_curve,
+                        data_object=data_object, info_object=info_object, fit_indexes=fit_indexes,
+                        test_indexes=test_indexes)
 
 
 def parse_arguments(argv):
