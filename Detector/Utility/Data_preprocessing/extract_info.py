@@ -398,14 +398,9 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
             logger.warning(warning)
             logger.warning("BP can not be lower than zero")
             continue
-        elif y_curve_array[:, 0].min() < 20:
+        elif y_curve_array[:, 0].min() < Parameters.minimal_BP.value:
             logger.warning(warning)
-            logger.warning("SBP can not be lower than 20")
-            continue
-
-        elif y_curve_array[:, 1].min() < 10:
-            logger.warning(warning)
-            logger.warning("DBP can not be lower than 10")
+            logger.warning(f"SBP can not be lower than {Parameters.minimal_BP.value}")
             continue
 
         # Make sure data is in the right format, or we skip the repeat

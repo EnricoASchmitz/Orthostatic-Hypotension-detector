@@ -5,7 +5,6 @@
 # Script: Optuna optimizing
 
 # Imports
-import gc
 import logging
 import os
 from pathlib import Path
@@ -16,14 +15,13 @@ import optuna
 from keras.backend import clear_session
 from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
-from sklearn.model_selection import LeaveOneGroupOut
 
-from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d, reverse_scale3d
+from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d
 from Detector.Utility.Models.Decision_trees.XGBoost import XGB
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
 from Detector.Utility.PydanticObject import InfoObject, DataObject
-from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict
+from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, filter_out_test_subjects
 from Detector.enums import Parameters
 
 
@@ -99,59 +97,37 @@ class Optimizer:
         X_unscaled = self.input
         X, x_scalers = scale3d(X_unscaled.copy(), self.data_object)
 
-        if self.output.ndim == 2:
-            output_unscaled = np.array(self.output)
-            out_scale_function = scale2d
-            out_reverse_scale_function = reverse_scale2d
-        else:
-            output_unscaled = np.array(self.output)
-            out_scale_function = scale3d
-            out_reverse_scale_function = reverse_scale3d
+        output_unscaled = np.array(self.output)
+        output, out_scaler = scale2d(output_unscaled.copy(), self.data_object)
 
-        output, out_scaler = out_scale_function(output_unscaled.copy(), self.data_object)
-
-        # cross val
-        step = 0
-        ids = np.array(self.info_dataset.ID)
-        logo = LeaveOneGroupOut()
-
-        loss_dicts = []
-
-        logo.get_n_splits(groups=ids)
-        loss_value = np.nan
+        indexes = filter_out_test_subjects(self.info_dataset)
         try:
-            for indexes in logo.split(range(len(X)), groups=ids):
-                self.logger.info(f"start cv: {step}")
-                # collect
-                gc.collect()
-                model = ModelCreator.create_model(self.info_object.model, data_object=self.data_object,
-                                                  input_shape=X.shape[1:],
-                                                  output_shape=output.shape[1:],
-                                                  gpu=use_gpu, plot_layers=True,
-                                                  parameters=trial)
-                if isinstance(model, KerasModel):
-                    callbacks = [TFKerasPruningCallback(trial, "val_loss")]
-                elif isinstance(model, XGB):
-                    loss = Parameters.loss.value
-                    if loss == "mse":
-                        loss = "rmse"
-                    callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-{loss}")]
-                else:
-                    callbacks = []
-                model, loss_values = fit_and_predict(info_object=self.info_object,
-                                                     logger=self.logger,
-                                                     input_values=X,
-                                                     output_values=output,
-                                                     model=model,
-                                                     step=step,
-                                                     indexes=indexes,
-                                                     scaler=out_scaler,
-                                                     rescale_function=out_reverse_scale_function,
-                                                     callbacks=callbacks,
-                                                     loss_function=Parameters.loss.value)
-                step += 1
-                loss_dicts.append(loss_values)
-                del model
+            model = ModelCreator.create_model(self.info_object.model, data_object=self.data_object,
+                                              input_shape=X.shape[1:],
+                                              output_shape=output.shape[1:],
+                                              gpu=use_gpu, plot_layers=True,
+                                              parameters=trial)
+            if isinstance(model, KerasModel):
+                callbacks = [TFKerasPruningCallback(trial, "val_loss")]
+            elif isinstance(model, XGB):
+                loss = Parameters.loss.value
+                if loss == "mse":
+                    loss = "rmse"
+                callbacks = [XGBoostPruningCallback(trial, observation_key=f"validation_0-{loss}")]
+            else:
+                callbacks = []
+            model, loss_value = fit_and_predict(info_object=self.info_object,
+                                                logger=self.logger,
+                                                input_values=X,
+                                                output_values=output,
+                                                model=model,
+                                                step=0,
+                                                indexes=indexes,
+                                                scaler=out_scaler,
+                                                rescale_function=reverse_scale2d,
+                                                callbacks=callbacks,
+                                                loss_function=Parameters.loss.value)
+            del model
 
         except ValueError as e:
             self.logger.warning(e)
@@ -159,10 +135,7 @@ class Optimizer:
         except AssertionError as e:
             self.logger.warning(e)
             loss_value = 1e+10
-
-        if loss_value is np.nan and loss_dicts:
-            loss_value = np.array(loss_dicts).mean()
-        elif loss_value is np.nan:
+        if loss_value is np.nan:
             loss_value = 1e+10
 
         return loss_value

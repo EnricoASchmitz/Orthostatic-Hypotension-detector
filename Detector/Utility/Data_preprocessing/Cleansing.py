@@ -6,18 +6,18 @@
 
 # Imports
 import logging
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 import pandas as pd
-from scipy.signal import find_peaks, butter, filtfilt
+from scipy.signal import butter, filtfilt
 
-from Detector.Utility.Plotting import plotting
 from Detector.Utility.PydanticObject import DataObject
-
 # Variables
-Threshold = 2  # Threshold for minimal difference
+from Detector.enums import Parameters
+
 logger = logging.getLogger(__name__)
+
 
 def butter_low_pass_filter(data: Union[pd.Series, np.ndarray], cutoff: float, fs: int, order: int) \
         -> Union[pd.Series, np.ndarray]:
@@ -44,7 +44,8 @@ def butter_low_pass_filter(data: Union[pd.Series, np.ndarray], cutoff: float, fs
     return y
 
 
-def remove_unrealistic_values(df, data_object: DataObject, mini=20, maxi=250):
+def remove_unrealistic_values(df, data_object: DataObject,
+                              mini=Parameters.minimal_BP.value, maxi=Parameters.maximal_BP.value):
     # get only bp values
     bp_col = data_object.target_col[0]
     bp = df[bp_col].copy()
@@ -59,16 +60,11 @@ def remove_unrealistic_values(df, data_object: DataObject, mini=20, maxi=250):
     upper = np.nanquantile(bp_copy, 0.95) + std * 2
     lower = np.nanquantile(bp_copy, 0.05) - std * 2
     # replace values above or below the respective threshold
-    plot = False
     if np.any(lower > bp) and np.any(bp < mini):
         bp[lower > bp] = np.nan
-        print("lowerbound reached")
-        plot = True
+        logger.warning("lowerbound reached")
     if np.any(upper < bp) and np.any(bp > maxi):
         bp[upper < bp] = np.nan
-        print("upperbound reached")
-        plot = True
-    if plot:
-        plotting.simple_plot(bp, df[bp_col])
+        logger.warning("upperbound reached")
     df[bp_col] = bp
     return df

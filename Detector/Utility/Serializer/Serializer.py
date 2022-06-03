@@ -16,7 +16,7 @@ import pandas as pd
 class MLflowSerializer:
     """ Save information to MLflow """
 
-    def __init__(self, dataset_name: str, parameter_expiriment: bool, sample_tags: dict):
+    def __init__(self, dataset_name: str, sample_tags: dict):
         # setup
         self.uri_start = "file://"
         pwd = os.getcwd()
@@ -25,10 +25,7 @@ class MLflowSerializer:
         tracking_uri = f"{self.uri_start}{pwd}/{dataset_name}"
         mlflow.set_tracking_uri(tracking_uri)
         sample_tags.update({"dataset": dataset_name})
-        if parameter_expiriment:
-            exp_name = "Parameters"
-        else:
-            exp_name = "Full curve"
+        exp_name = "Parameters"
         self.experiment_id = self._set_experiment(exp_name, sample_tags)
 
     def _set_experiment(self, exp_name, sample_tags):

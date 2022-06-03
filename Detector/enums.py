@@ -27,6 +27,8 @@ class Parameters(Enum):
     future_seconds = 150
     recovery_times = [15, 20, 30, 40, 50, 60, 120, 150]
     loss = "mse"
+    minimal_BP = 20
+    maximal_BP = 250
 
 
 class MLModelType(Enum):

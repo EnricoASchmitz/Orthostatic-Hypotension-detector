@@ -17,10 +17,10 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import LeaveOneGroupOut
 
-from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d, reverse_scale3d
+from Detector.Utility.Data_preprocessing.Transformation import scale3d, scale2d, reverse_scale2d
 from Detector.Utility.Data_preprocessing.extract_info import make_curves
 from Detector.Utility.Models.Model_creator import ModelCreator
-from Detector.Utility.Plotting.plotting import plot_comparison, plot_prediction, plot_curves, plot_bars
+from Detector.Utility.Plotting.plotting import plot_comparison, plot_curves, plot_bars
 from Detector.Utility.PydanticObject import DataObject, InfoObject
 from Detector.Utility.Serializer.Serializer import MLflowSerializer
 from Detector.Utility.Task.model_functions import check_gpu, fit_and_predict, predicting
@@ -54,7 +54,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
     tags = {key: do[key] for key in keys_to_extract}
 
     serializer = MLflowSerializer(dataset_name=info_object.dataset,
-                                  parameter_expiriment=info_object.parameter_model, sample_tags=tags)
+                                  sample_tags=tags)
     last_optimized_run = serializer.get_last_optimized_run(info_object.model)
     if last_optimized_run is not None:
         run = mlflow.get_run(last_optimized_run.run_id)
@@ -66,16 +66,8 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
     X_unscaled = x
     x, x_scalers = scale3d(X_unscaled.copy(), data_object)
 
-    if info_object.parameter_model:
-        output_unscaled = np.array(parameters_values)
-        out_scale_function = scale2d
-        out_reverse_scale_function = reverse_scale2d
-    else:
-        output_unscaled = full_curve
-        out_scale_function = scale3d
-        out_reverse_scale_function = reverse_scale3d
-
-    output, out_scaler = out_scale_function(output_unscaled.copy(), data_object)
+    output_unscaled = np.array(parameters_values)
+    output, out_scaler = scale2d(output_unscaled.copy(), data_object)
 
     with mlflow.start_run(experiment_id=serializer.experiment_id, run_name=info_object.model):
         mlflow.set_tag("phase", "training")
@@ -108,7 +100,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
                                                       step=step,
                                                       indexes=indexes,
                                                       scaler=out_scaler,
-                                                      rescale_function=out_reverse_scale_function)
+                                                      rescale_function=reverse_scale2d)
             step += 1
             loss_dicts.append(loss_values)
             models_list.append(model_copy)
@@ -135,38 +127,24 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
         prediction, std, time = predicting(model, logger, x[test_indexes])
 
         # Scale back the prediction
-        prediction_array = out_reverse_scale_function(prediction, out_scaler)
+        prediction_array = reverse_scale2d(prediction, out_scaler)
 
-        if info_object.parameter_model:
-            plot_comparison(info_object.model, info_dataset.iloc[test_indexes], list(parameters_values.columns),
-                            prediction_array, output_unscaled[test_indexes], folder_name="figure/")
-            prediction = pd.DataFrame(prediction_array, columns=parameters_values.columns).copy()
-            true_curve, pred_curve = make_curves(prediction, parameters_values, data_object.reconstruct_params,
-                                                 data_object.recovery_times, test_indexes)
-            for i in range(pred_curve.shape[0]):
-                for target_index, target_name in enumerate(data_object.target_col):
-                    plot_index = test_indexes[i]
-                    sample = full_curve[plot_index]
-                    information = info_dataset.iloc[plot_index]
-                    path = f"figure/prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
-                    plot_curves(sample, i, pred_curve, true_curve, target_index, target_name, folder_name=path)
+        plot_comparison(info_object.model, info_dataset.iloc[test_indexes], list(parameters_values.columns),
+                        prediction_array, output_unscaled[test_indexes], folder_name="figure/")
+        prediction = pd.DataFrame(prediction_array, columns=parameters_values.columns).copy()
+        true_curve, pred_curve = make_curves(prediction, parameters_values, data_object.reconstruct_params,
+                                             data_object.recovery_times, test_indexes)
+        for i in range(pred_curve.shape[0]):
+            for target_index, target_name in enumerate(data_object.target_col):
+                plot_index = test_indexes[i]
+                sample = full_curve[plot_index]
+                information = info_dataset.iloc[plot_index]
+                path = f"figure/prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
+                plot_curves(sample, i, pred_curve, true_curve, target_index, target_name, folder_name=path)
 
-            plot_bars(list(parameters_values.columns), output_unscaled[test_indexes], prediction_array,
-                      output_unscaled[fit_indexes], folder_name="figure/bar_plots/")
-        else:
-            for i in range(prediction.shape[0]):
-                for target_index, target_name in enumerate(data_object.target_col):
+        plot_bars(list(parameters_values.columns), output_unscaled[test_indexes], prediction_array,
+                  output_unscaled[fit_indexes], folder_name="figure/bar_plots/")
 
-                    sample = test_indexes[i]
-                    information = info_dataset.iloc[sample]
-                    path = f"figure/prediction/{information.ID}/{information.challenge}/{int(information['repeat'])}"
-                    if std is not None:
-                        std_target = std[i]
-                    else:
-                        std_target = None
-                    plot_prediction(
-                        target_name, target_index, prediction[i], output_unscaled[sample], std=std_target,
-                        title=f"{target_name} {path}".replace("_", " "), folder_name=path)
         # save parameters to mlflow
         mlflow.log_params(model.get_parameters())
 
