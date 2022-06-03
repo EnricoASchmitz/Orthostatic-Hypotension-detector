@@ -102,7 +102,7 @@ class Optimizer:
 
         indexes = filter_out_test_subjects(self.info_dataset)
         try:
-            model = ModelCreator.create_model(self.info_object.model, data_object=self.data_object,
+            model = ModelCreator.create_model(self.info_object.model,
                                               input_shape=X.shape[1:],
                                               output_shape=output.shape[1:],
                                               gpu=use_gpu, plot_layers=True,

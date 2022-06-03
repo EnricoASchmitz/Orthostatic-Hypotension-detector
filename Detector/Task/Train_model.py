@@ -87,7 +87,7 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
             # collect
             gc.collect()
             logger.info(info_object.model)
-            model_copy = ModelCreator.create_model(info_object.model, data_object=data_object,
+            model_copy = ModelCreator.create_model(info_object.model,
                                                    input_shape=x.shape[1:],
                                                    output_shape=output.shape[1:],
                                                    gpu=use_gpu, plot_layers=True,

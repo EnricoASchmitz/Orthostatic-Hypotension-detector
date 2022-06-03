@@ -10,6 +10,7 @@ from typing import Optional
 
 import numpy as np
 import optuna
+from keras.layers import Flatten, AveragePooling1D
 from optuna import Trial
 from tensorflow import get_logger
 from tensorflow.keras.layers import Reshape, Conv1D
@@ -26,7 +27,7 @@ from Detector.enums import Parameters
 
 
 class Base(KerasModel):
-    def __init__(self, data_object: DataObject, input_shape, output_shape, parameters: Optional[dict],
+    def __init__(self, input_shape, output_shape, parameters: Optional[dict],
                  plot_layers: bool,
                  gpu):
         get_logger().setLevel("ERROR")
@@ -35,7 +36,6 @@ class Base(KerasModel):
 
         self.input_shape = input_shape
         self.output_shape = output_shape
-        self.data_object = data_object
 
         # fill parameters
         self.set_parameters(parameters)
@@ -100,20 +100,18 @@ class Base(KerasModel):
 
 
 class MLP(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
+    def __init__(self, input_shape, output_shape,
                  gpu, plot_layers=False, parameters=None):
         """ Create MLP model
 
         Args:
-            data_object: information retrieved from the data
             input_shape: Shape of input
             output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
+        super().__init__(input_shape=input_shape,
                          output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
@@ -121,7 +119,7 @@ class MLP(Base):
                          )
 
     def reshape_layer(self, input_layer, **kwargs):
-        re = Reshape((-1,))(input_layer)
+        re = Flatten()(input_layer)
         bp_out = self._output_layers_parameters(re, **kwargs)
         return bp_out
 
@@ -159,30 +157,30 @@ class Cnn(Base):
     """ Basic CNN model """
 
     # todo fix Call to CreateProcess failed. Error code: 2
-    def __init__(self, data_object: DataObject, input_shape: tuple,
+    def __init__(self, input_shape: tuple,
                  output_shape: tuple, gpu: bool, plot_layers=False,
                  parameters=None):
         """ Create CNN model
 
         Args:
-            data_object: information retrieved from the data
             input_shape: Shape of input
             output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
+        super().__init__(input_shape=input_shape,
                          output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    def cnn_layer(self, input_layer, units_layer, kernel_size, **kwargs):
-        cnn_layer = Conv1D(filters=int(units_layer), kernel_size=int(kernel_size), padding="same")(input_layer)
-        re = Reshape((-1,))(cnn_layer)
+    def cnn_layer(self, input_layer, filters, kernel_size, pooling, pool_size, strides, **kwargs):
+        last_layer = Conv1D(filters=int(filters), kernel_size=int(kernel_size), strides=int(strides))(input_layer)
+        if pooling:
+            last_layer = AveragePooling1D(pool_size)(last_layer)
+        re = Flatten()(last_layer)
         bp_out = self._output_layers_parameters(re, **kwargs)
         return bp_out
 
@@ -191,8 +189,11 @@ class Cnn(Base):
 
     def _set_default_parameters(self):
         model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
+            "filters": 64,
             "kernel_size": 5,
+            "pooling": True,
+            "pool_size": 2,
+            "strides": 1,
             "n_dense_layers": 0,
             "dropout": 0,
             "activation_out": "linear",
@@ -202,8 +203,15 @@ class Cnn(Base):
 
     def _set_optuna_parameters(self, trial: optuna.Trial):
         # get CNN parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
-        kernel_size = trial.suggest_int("kernel_size", 2, 6, step=1)
+        filters = trial.suggest_int("filters", 16, Parameters.default_units.value*2)
+        kernel_size = trial.suggest_int("kernel_size", 2, 10)
+        pooling = trial.suggest_categorical("pooling", [True, False])
+        if pooling:
+            pool_size = trial.suggest_int("pool_size", 2, 6, step=2)
+        else:
+            pool_size = 0
+        strides = trial.suggest_int("strides", 1, 10)
+
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
         batch_norm = trial.suggest_categorical("batch_norm", [True, False])
@@ -212,8 +220,12 @@ class Cnn(Base):
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
-            "units_layer": units_layer,
+            "filters": filters,
+            "strides": strides,
+            "pooling": pooling,
+            "pool_size": pool_size,
             "kernel_size": kernel_size,
             "batch_norm": batch_norm,
         }
+
         self.parameters.update(model_parameters)

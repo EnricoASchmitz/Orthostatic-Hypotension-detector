@@ -8,6 +8,7 @@
 # Imports
 from typing import Union
 
+from Detector.Utility.Models.Linear_regession import LinearRegressor
 from Detector.Utility.Models.XGBoost import XGB
 from Detector.Utility.Models.Keras.parameter_models import Cnn, MLP
 from Detector.Utility.Models.abstractmodel import Model
@@ -22,6 +23,7 @@ class ModelCreator:
         MLModelType.Dense: MLP,
         MLModelType.cnn: Cnn,
         MLModelType.xgboost: XGB,
+        MLModelType.linearregression: LinearRegressor,
     }
 
     @staticmethod

@@ -127,6 +127,7 @@ def check_gpu() -> bool:
 
 
 def filter_out_test_subjects(info_dataset):
+    info_dataset = info_dataset.reset_index(drop=True)
     filter_features = []
     all_ids = np.unique(info_dataset.ID)
     assert len(all_ids) >= 2, "Only 1 subject in the data"

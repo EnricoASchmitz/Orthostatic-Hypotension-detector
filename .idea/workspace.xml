@@ -2,9 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/kerasmodel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Detector/Utility/Models/Linear_regession.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Task/Train_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Train_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/extract_info.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Keras/parameter_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Keras/parameter_models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/Model_creator.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/Model_creator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Models/XGBoost.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Models/XGBoost.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/optimizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/enums.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/enums.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,15 +60,17 @@
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Detector/Utility/Models" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="fileTemplates" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector\Detector\Utility\Models" />
       <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic Hypotension detector\Detector\Utility\Data_preprocessing" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector\Detector\Utility\Models" />
       <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector\Detector" />
       <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector\Detector\Utility\Models\Keras" />
     </key>

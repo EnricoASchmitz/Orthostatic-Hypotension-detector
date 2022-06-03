@@ -63,7 +63,7 @@ def main(argv):
         fit_indexes, test_indexes = filter_out_test_subjects(info_dataset)
 
         # optimize a model
-        if Optimize:
+        if Optimize and info_object.model != "linearregression":
             optimize_model(x=X, parameters_values=parameters, info_dataset=info_dataset, data_object=data_object,
                            info_object=info_object, fit_indexes=fit_indexes)
         if Fit or Optimize:

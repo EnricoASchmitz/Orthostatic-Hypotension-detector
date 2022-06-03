@@ -455,6 +455,9 @@ def get_info(y, index, first_col, timesteps):
     column_number += 1
 
     drop_time = drop_time_predicted
+    if drop_time < 0:
+        logger.warning("droptime below 0 setting to 0.01")
+        drop_time = 0.01
 
     BP_timepoints = {}
     for step in timesteps:
@@ -481,6 +484,8 @@ def make_curves(prediction, output, reconstruct_params, steps, test_indexes):
     true_reconstucted_curve = []
     reconstucted_curves_prediction = []
     for i, value in enumerate(test_indexes):
-        true_reconstucted_curve.append(parameters_to_curve(reconstruct_out, value, steps))
-        reconstucted_curves_prediction.append(parameters_to_curve(reconstruct_prediction, i, steps))
+        true_reconstruction = parameters_to_curve(reconstruct_out, value, steps)
+        pred_reconstruction = parameters_to_curve(reconstruct_prediction, i, steps)
+        true_reconstucted_curve.append(true_reconstruction)
+        reconstucted_curves_prediction.append(pred_reconstruction)
     return np.array(true_reconstucted_curve), np.array(reconstucted_curves_prediction)

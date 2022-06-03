@@ -27,16 +27,14 @@ from Detector.enums import Parameters
 class XGB(Model):
     """ XGBoost model """
 
-    def __init__(self, data_object: DataObject, gpu, parameters=None,
+    def __init__(self, gpu, parameters=None,
                  **kwargs):
         """ Create XGBoost model """
         super().__init__()
-        self.n_in_steps = None
         self.gpu = gpu
         if gpu:
             logger = logging.getLogger()
             logger.debug("using GPU")
-        self.data_object = data_object
 
         # fill parameters
         self.set_parameters(parameters)
