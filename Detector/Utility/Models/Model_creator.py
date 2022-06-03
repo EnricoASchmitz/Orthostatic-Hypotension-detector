@@ -8,8 +8,8 @@
 # Imports
 from typing import Union
 
-from Detector.Utility.Models.Decision_trees.XGBoost import XGB
-from Detector.Utility.Models.Keras.parameter_models import Cnn, Dense
+from Detector.Utility.Models.XGBoost import XGB
+from Detector.Utility.Models.Keras.parameter_models import Cnn, MLP
 from Detector.Utility.Models.abstractmodel import Model
 from Detector.enums import MLModelType
 
@@ -19,7 +19,7 @@ class ModelCreator:
 
     # Set object mapping
     MODEL_CONSTRUCTORS = {
-        MLModelType.Dense: Dense,
+        MLModelType.Dense: MLP,
         MLModelType.cnn: Cnn,
         MLModelType.xgboost: XGB,
     }

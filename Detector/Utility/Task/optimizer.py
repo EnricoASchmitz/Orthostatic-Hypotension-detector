@@ -17,7 +17,7 @@ from optuna import Study
 from optuna.integration import TFKerasPruningCallback, XGBoostPruningCallback
 
 from Detector.Utility.Data_preprocessing.Transformation import scale2d, scale3d, reverse_scale2d
-from Detector.Utility.Models.Decision_trees.XGBoost import XGB
+from Detector.Utility.Models.XGBoost import XGB
 from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.Utility.Models.Model_creator import ModelCreator
 from Detector.Utility.PydanticObject import InfoObject, DataObject
