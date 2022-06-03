@@ -5,31 +5,109 @@
 # Script: Keras parameter model implementations
 
 # Imports
+from abc import abstractmethod
+from typing import Optional
 
+import numpy as np
 import optuna
-from tensorflow.keras.layers import LSTM, Bidirectional, Reshape, Conv1D, Attention, Concatenate
+from keras.layers import Flatten, AveragePooling1D
+from optuna import Trial
+from tensorflow import get_logger
+from tensorflow.keras import Input
+from tensorflow.keras.layers import Dense, BatchNormalization, Dropout, Conv1D
 from tensorflow.python.keras.engine.keras_tensor import KerasTensor
+from tensorflow.python.keras.utils.vis_utils import plot_model
 
-from Detector.Utility.Models.Keras.kerasmodel import Base
-from Detector.Utility.PydanticObject import DataObject
+from Detector.Utility.Models.Keras.kerasmodel import KerasModel
 from Detector.enums import Parameters
 
 
-class Dense(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 gpu, plot_layers=False, parameters=None):
-        """ Create LSTM model
+class Base(KerasModel):
+    def __init__(self, input_shape, output_shape, parameters: Optional[dict],
+                 plot_layers: bool,
+                 gpu):
+        get_logger().setLevel("ERROR")
+        super().__init__()
+        self.logger.debug(f"GPU: {gpu}")
+
+        self.input_shape = input_shape
+        self.output_shape = output_shape
+
+        # fill parameters
+        self.set_parameters(parameters)
+
+        self.model = self._model(**self.parameters)
+        if plot_layers:
+            plot_model(self.model, show_shapes=True, to_file="model.png")
+
+    def _model(self, optimizer: str, loss: str,
+               **kwargs):
+        """ Make model
+
+       Args:
+            optimizer: optimizer
+            loss: loss
+       """
+        # Creating the layers
+        inputs = Input(shape=self.input_shape,
+                       name="BP_in")
+        last_layer = BatchNormalization()(inputs)
+        model_loss = None
+
+        model = self.compile_model(self._get_model(), inputs, last_layer, optimizer, loss, model_loss, **kwargs)
+        return model
+
+    def _output_layers_parameters(self, prev_layer, n_dense_layers, dropout, activation_out, batch_norm,
+                                  **kwargs) -> KerasTensor:
+        """ Create output layers
 
         Args:
-            data_object: information retrieved from the data
+             prev_layer: previous layer
+             n_dense_layers: number of Dense layers to use
+             dropout: dropout value
+             activation: activation to use for final layer
+        """
+        n_dense_layers = int(n_dense_layers)
+        dropout_value = float(dropout)
+
+        out_units = self.output_shape[-1]
+        input_shape = prev_layer.shape[-1]
+
+        layer_units = np.flip(np.linspace(out_units, input_shape, num=n_dense_layers))
+        for i in range(n_dense_layers):
+            dense_layer = Dense(layer_units[i], activation="relu", name=f"Dense_{i}")(prev_layer)
+            if batch_norm:
+                layer = BatchNormalization(name=f"BN_{i}")(dense_layer)
+            else:
+                layer = dense_layer
+            prev_layer = Dropout(dropout_value, name=f"dropout_out_{i}")(layer)
+        out_layer = Dense(units=out_units, name="BP_out", activation=activation_out)(prev_layer)
+        return out_layer
+
+    @abstractmethod
+    def _get_model(self):
+        raise NotImplementedError("Must override method")
+
+    def _set_optuna_parameters(self, trial: Trial):
+        pass
+
+    def _set_default_parameters(self):
+        pass
+
+
+class MLP(Base):
+    def __init__(self, input_shape, output_shape,
+                 gpu, plot_layers=False, parameters=None):
+        """ Create MLP model
+
+        Args:
             input_shape: Shape of input
             output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
+        super().__init__(input_shape=input_shape,
                          output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
@@ -37,7 +115,7 @@ class Dense(Base):
                          )
 
     def reshape_layer(self, input_layer, **kwargs):
-        re = Reshape((-1,))(input_layer)
+        re = Flatten()(input_layer)
         bp_out = self._output_layers_parameters(re, **kwargs)
         return bp_out
 
@@ -58,415 +136,15 @@ class Dense(Base):
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         if n_dense_layers > 0:
             dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
+            batch_norm = trial.suggest_categorical("batch_norm", [True, False])
         else:
             dropout = 0
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
+            batch_norm = False
         activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
         model_parameters = {
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
-            "batch_norm": batch_norm,
-        }
-        self.parameters.update(model_parameters)
-
-
-class SimpleLSTM(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 gpu, plot_layers=False, parameters=None):
-        """ Create LSTM model
-
-        Args:
-            data_object: information retrieved from the data
-            input_shape: Shape of input
-            output_shape: Shape of output
-            gpu: bool, if GPU is available
-            plot_layers: bool, plot the models
-            parameters: Parameters to use for model creation
-        """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
-                         output_shape=output_shape,
-                         gpu=gpu,
-                         plot_layers=plot_layers,
-                         parameters=parameters
-                         )
-
-    def lstm_layer(self, input_layer, units_layer, dropout, **kwargs):
-        lstm_layer = LSTM(int(units_layer), dropout=float(dropout))(input_layer)
-        bp_out = self._output_layers_parameters(lstm_layer, dropout=dropout, **kwargs)
-        return bp_out
-
-    def _get_model(self):
-        return self.lstm_layer
-
-    def _set_default_parameters(self):
-        model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
-            "n_dense_layers": 0,
-            "dropout": 0.0,
-            "activation_out": "linear",
-            "batch_norm": True
-        }
-        self.parameters.update(model_parameters)
-
-    def _set_optuna_parameters(self, trial: optuna.Trial):
-        # get LSTM parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
-        n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
-        dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
-        activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
-        model_parameters = {
-            "n_dense_layers": n_dense_layers,
-            "activation_out": activation_out,
-            "dropout": dropout,
-            "units_layer": units_layer,
-            "batch_norm": batch_norm,
-        }
-        self.parameters.update(model_parameters)
-
-
-class BiLSTM(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 gpu, plot_layers=False, parameters=None):
-        """ Create BiLSTM model
-
-        Args:
-            data_object: information retrieved from the data
-            input_shape: Shape of input
-            output_shape: Shape of output
-            gpu: bool, if GPU is available
-            plot_layers: bool, plot the models
-            parameters: Parameters to use for model creation
-        """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
-                         output_shape=output_shape,
-                         gpu=gpu,
-                         plot_layers=plot_layers,
-                         parameters=parameters
-                         )
-
-    def bilstm_layer(self, input_layer, units_layer, dropout, **kwargs):
-        bilstm_layer = Bidirectional(LSTM(int(units_layer), dropout=float(dropout)))(
-            input_layer)
-        bp_out = self._output_layers_parameters(bilstm_layer, dropout=dropout, **kwargs)
-        return bp_out
-
-    def _get_model(self):
-        return self.bilstm_layer
-
-    def _set_default_parameters(self):
-        model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
-            "dropout": 0.0,
-            "n_dense_layers": 0,
-            "dropout_value": 0.0,
-            "activation_out": "linear",
-            "batch_norm": True
-        }
-        self.parameters.update(model_parameters)
-
-    def _set_optuna_parameters(self, trial: optuna.Trial):
-        # get LSTM parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
-        n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
-        dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
-        activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
-        model_parameters = {
-            "n_dense_layers": n_dense_layers,
-            "activation_out": activation_out,
-            "dropout": dropout,
-            "units_layer": units_layer,
-            "batch_norm": batch_norm,
-        }
-        self.parameters.update(model_parameters)
-
-
-class StackedLSTM(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 gpu, plot_layers=False, parameters=None):
-        """ Create StackedLSTM model
-
-        Args:
-            data_object: information retrieved from the data
-            input_shape: Shape of input
-            output_shape: Shape of output
-            gpu: bool, if GPU is available
-            plot_layers: bool, plot the models
-            parameters: Parameters to use for model creation
-        """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
-                         output_shape=output_shape,
-                         gpu=gpu,
-                         plot_layers=plot_layers,
-                         parameters=parameters
-                         )
-
-    def recursive_block(self, prev_layer: KerasTensor, n_blocks: int, units_layer: int, dropout: float, **kwargs):
-        """ Create a stacked bilstm-lstm block
-
-        Args:
-            prev_layer: Layer to append block to
-            n_blocks: number of blocks
-            units_layer: number of hidden unit's
-            dropout: dropout used in LSTM
-
-        Returns:
-            Last layer in the block
-        """
-        lstm_nodes = int(units_layer)
-        dropout = float(dropout)
-        for layer in range(int(n_blocks)):
-            if layer == int(n_blocks) - 1:
-                prev_layer = LSTM(lstm_nodes, dropout=dropout)(prev_layer)
-            else:
-                prev_layer = LSTM(lstm_nodes, dropout=dropout, return_sequences=True)(prev_layer)
-        bp_out = self._output_layers_parameters(prev_layer, dropout=dropout, **kwargs)
-        return bp_out
-
-    def _get_model(self):
-        return self.recursive_block
-
-    def _set_default_parameters(self):
-        model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
-            "n_blocks": 2,
-            "dropout": 0.0,
-            "n_dense_layers": 0,
-            "dropout_value": 0.0,
-            "activation_out": "linear",
-            "batch_norm": True
-        }
-        self.parameters.update(model_parameters)
-
-    def _set_optuna_parameters(self, trial: optuna.Trial):
-        # get LSTM parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=16)
-        n_blocks = trial.suggest_int("n_blocks", 1, 3)
-        n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
-        dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
-        activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
-        model_parameters = {
-            "n_dense_layers": n_dense_layers,
-            "activation_out": activation_out,
-            "dropout": dropout,
-            "units_layer": units_layer,
-            "n_blocks": n_blocks,
-            "batch_norm": batch_norm,
-        }
-        self.parameters.update(model_parameters)
-
-
-class StackedBiLSTM(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 gpu, plot_layers=False, parameters=None):
-        """ Create Stacked BiLSTM model
-
-        Args:
-            data_object: information retrieved from the data
-            input_shape: Shape of input
-            output_shape: Shape of output
-            gpu: bool, if GPU is available
-            plot_layers: bool, plot the models
-            parameters: Parameters to use for model creation
-        """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
-                         output_shape=output_shape,
-                         gpu=gpu,
-                         plot_layers=plot_layers,
-                         parameters=parameters
-                         )
-
-    def recursive_block(self, prev_layer: KerasTensor, n_blocks: int, units_layer: int, dropout: float,
-                        **kwargs) -> KerasTensor:
-        """ Create a stacked bilstm-lstm block
-
-        Args:
-            prev_layer: Layer to append block to
-            n_blocks: number of blocks
-            units_layer: number of hidden unit's
-            dropout: dropout used in LSTM
-
-        Returns:
-            Last layer in the block
-        """
-        bilstm_nodes = int(units_layer)
-        dropout = float(dropout)
-        for layer in range(int(n_blocks)):
-            if layer == int(n_blocks) - 1:
-                prev_layer = LSTM(bilstm_nodes, dropout=dropout)(prev_layer)
-            else:
-                prev_layer = LSTM(bilstm_nodes, dropout=dropout, return_sequences=True)(prev_layer)
-        bp_out = self._output_layers_parameters(prev_layer, dropout=dropout, **kwargs)
-        return bp_out
-
-    def _get_model(self):
-        return self.recursive_block
-
-    def _set_default_parameters(self):
-        model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
-            "n_blocks": 2,
-            "dropout": 0.0,
-            "n_dense_layers": 0,
-            "activation_out": "linear",
-            "batch_norm": True
-        }
-        self.parameters.update(model_parameters)
-
-    def _set_optuna_parameters(self, trial: optuna.Trial):
-        # get LSTM parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=16)
-        n_blocks = trial.suggest_int("n_blocks", 1, 3)
-        n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
-        dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
-        activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
-        model_parameters = {
-            "n_dense_layers": n_dense_layers,
-            "activation_out": activation_out,
-            "dropout": dropout,
-            "units_layer": units_layer,
-            "n_blocks": n_blocks,
-            "batch_norm": batch_norm,
-        }
-        self.parameters.update(model_parameters)
-
-
-class EncDecLSTM(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 gpu, plot_layers=False, parameters=None):
-        """ Create EncDecLSTM model
-
-        Args:
-            data_object: information retrieved from the data
-            input_shape: Shape of input
-            output_shape: Shape of output
-            gpu: bool, if GPU is available
-            plot_layers: bool, plot the models
-            parameters: Parameters to use for model creation
-        """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
-                         output_shape=output_shape,
-                         gpu=gpu,
-                         plot_layers=plot_layers,
-                         parameters=parameters
-                         )
-
-    def encdec_layer(self, input_layer: KerasTensor, units_layer: int, dropout: float, **kwargs):
-        units_layer = int(units_layer)
-        dropout = float(dropout)
-        bp_encoder, enc_state_h, enc_state_c = LSTM(units_layer, dropout=dropout, return_sequences=True,
-                                                    return_state=True,
-                                                    name="translate_encoder")(input_layer)
-        bp_decoder, dec_state_h, dec_state_c = LSTM(units_layer, dropout=dropout,
-                                                    return_state=True,
-                                                    name="translate_decoder")(bp_encoder,
-                                                                              initial_state=[enc_state_h,
-                                                                                             enc_state_c])
-        bp_out = self._output_layers_parameters(bp_decoder, dropout=dropout, **kwargs)
-        return bp_out
-
-    def _get_model(self):
-        return self.encdec_layer
-
-    def _set_default_parameters(self):
-        model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
-            "dropout": 0.0,
-            "n_dense_layers": 0,
-            "activation_out": "linear",
-            "batch_norm": True
-        }
-        self.parameters.update(model_parameters)
-
-    def _set_optuna_parameters(self, trial: optuna.Trial):
-        # get LSTM parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
-        n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
-        dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
-        activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
-        model_parameters = {
-            "n_dense_layers": n_dense_layers,
-            "activation_out": activation_out,
-            "dropout": dropout,
-            "units_layer": units_layer,
-            "batch_norm": batch_norm,
-        }
-        self.parameters.update(model_parameters)
-
-
-class EncDecAttLSTM(Base):
-    def __init__(self, data_object: DataObject, input_shape, output_shape,
-                 gpu, plot_layers=False, parameters=None):
-        """ Create EncDecAttLSTM model
-
-        Args:
-            data_object: information retrieved from the data
-            input_shape: Shape of input
-            output_shape: Shape of output
-            gpu: bool, if GPU is available
-            plot_layers: bool, plot the models
-            parameters: Parameters to use for model creation
-        """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
-                         output_shape=output_shape,
-                         gpu=gpu,
-                         plot_layers=plot_layers,
-                         parameters=parameters
-                         )
-
-    def encdecatt_layer(self, input_layer: KerasTensor, units_layer: int, dropout: float, **kwargs):
-        units_layer = int(units_layer)
-        dropout = float(dropout)
-        bp_encoder, enc_state_h, enc_state_c = LSTM(units_layer, dropout=dropout, return_sequences=True,
-                                                    return_state=True,
-                                                    name="translate_encoder")(input_layer)
-        bp_decoder, dec_state_h, dec_state_c = LSTM(units_layer, dropout=dropout, return_sequences=True,
-                                                    return_state=True,
-                                                    name="translate_decoder")(bp_encoder,
-                                                                              initial_state=[enc_state_h,
-                                                                                             enc_state_c])
-        attn_out = Attention(name="attention_layer")([bp_encoder, bp_decoder])
-        decoder_concat_input = Concatenate(axis=-1, name="concat_layer")([bp_decoder, attn_out])
-        lstm_layer = LSTM(int(units_layer), dropout=float(dropout))(decoder_concat_input)
-        bp_out = self._output_layers_parameters(lstm_layer, dropout=dropout, **kwargs)
-        return bp_out
-
-    def _get_model(self):
-        return self.encdecatt_layer
-
-    def _set_default_parameters(self):
-        model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
-            "dropout": 0.0,
-            "n_dense_layers": 0,
-            "activation_out": "linear",
-            "batch_norm": True
-        }
-        self.parameters.update(model_parameters)
-
-    def _set_optuna_parameters(self, trial: optuna.Trial):
-        # get LSTM parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
-        n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
-        dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
-        batch_norm = trial.suggest_categorical("batch_norm", [True, False])
-        activation_out = trial.suggest_categorical("activation_out", ["tanh", "linear"])
-        model_parameters = {
-            "n_dense_layers": n_dense_layers,
-            "activation_out": activation_out,
-            "dropout": dropout,
-            "units_layer": units_layer,
             "batch_norm": batch_norm,
         }
         self.parameters.update(model_parameters)
@@ -476,30 +154,30 @@ class Cnn(Base):
     """ Basic CNN model """
 
     # todo fix Call to CreateProcess failed. Error code: 2
-    def __init__(self, data_object: DataObject, input_shape: tuple,
+    def __init__(self, input_shape: tuple,
                  output_shape: tuple, gpu: bool, plot_layers=False,
                  parameters=None):
         """ Create CNN model
 
         Args:
-            data_object: information retrieved from the data
             input_shape: Shape of input
             output_shape: Shape of output
             gpu: bool, if GPU is available
             plot_layers: bool, plot the models
             parameters: Parameters to use for model creation
         """
-        super().__init__(data_object=data_object,
-                         input_shape=input_shape,
+        super().__init__(input_shape=input_shape,
                          output_shape=output_shape,
                          gpu=gpu,
                          plot_layers=plot_layers,
                          parameters=parameters
                          )
 
-    def cnn_layer(self, input_layer, units_layer, kernel_size, **kwargs):
-        cnn_layer = Conv1D(filters=int(units_layer), kernel_size=int(kernel_size), padding="same")(input_layer)
-        re = Reshape((-1,))(cnn_layer)
+    def cnn_layer(self, input_layer, filters, kernel_size, pooling, pool_size, strides, **kwargs):
+        last_layer = Conv1D(filters=int(filters), kernel_size=int(kernel_size), strides=int(strides))(input_layer)
+        if pooling:
+            last_layer = AveragePooling1D(int(pool_size))(last_layer)
+        re = Flatten()(last_layer)
         bp_out = self._output_layers_parameters(re, **kwargs)
         return bp_out
 
@@ -508,8 +186,11 @@ class Cnn(Base):
 
     def _set_default_parameters(self):
         model_parameters = {
-            "units_layer": int(Parameters.default_units.value),
+            "filters": 64,
             "kernel_size": 5,
+            "pooling": True,
+            "pool_size": 2,
+            "strides": 1,
             "n_dense_layers": 0,
             "dropout": 0,
             "activation_out": "linear",
@@ -519,8 +200,15 @@ class Cnn(Base):
 
     def _set_optuna_parameters(self, trial: optuna.Trial):
         # get CNN parameters
-        units_layer = trial.suggest_int("units_layer", 32, int(Parameters.default_units.value * 2), step=32)
-        kernel_size = trial.suggest_int("kernel_size", 2, 6, step=1)
+        filters = trial.suggest_int("filters", 16, Parameters.default_units.value * 2)
+        kernel_size = trial.suggest_int("kernel_size", 2, 10)
+        pooling = trial.suggest_categorical("pooling", [True, False])
+        if pooling:
+            pool_size = trial.suggest_int("pool_size", 2, 6, step=2)
+        else:
+            pool_size = 0
+        strides = trial.suggest_int("strides", 1, 10)
+
         n_dense_layers = trial.suggest_int("n_dense_layers", 0, 6)
         dropout = trial.suggest_float("dropout", 0.0, 0.8, step=0.2)
         batch_norm = trial.suggest_categorical("batch_norm", [True, False])
@@ -529,8 +217,12 @@ class Cnn(Base):
             "n_dense_layers": n_dense_layers,
             "activation_out": activation_out,
             "dropout": dropout,
-            "units_layer": units_layer,
+            "filters": filters,
+            "strides": strides,
+            "pooling": pooling,
+            "pool_size": pool_size,
             "kernel_size": kernel_size,
             "batch_norm": batch_norm,
         }
+
         self.parameters.update(model_parameters)

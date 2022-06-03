@@ -8,11 +8,10 @@
 # Imports
 from typing import Union
 
-from Detector.Utility.Models.Decision_trees.XGBoost import XGB
-from Detector.Utility.Models.Keras.DeepAR import DeepAR
-from Detector.Utility.Models.Keras.nbeats import NBeats
-from Detector.Utility.Models.Keras.parameter_models import SimpleLSTM, StackedLSTM, BiLSTM, StackedBiLSTM, EncDecLSTM, \
-    EncDecAttLSTM, Cnn, Dense
+from Detector.Utility.Models.Keras.parameter_models import Cnn, MLP
+from Detector.Utility.Models.Keras.timeserie_mappers import TimeserieMLP
+from Detector.Utility.Models.Linear_regession import LinearRegressor
+from Detector.Utility.Models.XGBoost import XGB
 from Detector.Utility.Models.abstractmodel import Model
 from Detector.enums import MLModelType
 
@@ -22,18 +21,11 @@ class ModelCreator:
 
     # Set object mapping
     MODEL_CONSTRUCTORS = {
-        MLModelType.Dense: Dense,
-        MLModelType.LSTM: SimpleLSTM,
-        MLModelType.StackedLSTM: StackedLSTM,
-        MLModelType.biLSTM: BiLSTM,
-        MLModelType.StackedBiLSTM: StackedBiLSTM,
-        MLModelType.enc_dec_LSTM: EncDecLSTM,
-        MLModelType.enc_dec_att_LSTM: EncDecAttLSTM,
+        MLModelType.Dense: MLP,
         MLModelType.cnn: Cnn,
         MLModelType.xgboost: XGB,
-        MLModelType.nbeats: NBeats,
-        MLModelType.deepar: DeepAR,
-
+        MLModelType.linearregression: LinearRegressor,
+        MLModelType.timeMLP: TimeserieMLP,
     }
 
     @staticmethod

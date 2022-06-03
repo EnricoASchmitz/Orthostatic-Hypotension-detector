@@ -7,7 +7,7 @@
 # Imports
 import logging
 from abc import ABC, abstractmethod
-from typing import Union, Optional, Tuple
+from typing import Union
 
 import numpy as np
 from optuna import Trial
@@ -19,7 +19,6 @@ class Model(ABC):
         self.model = None
         self.parameters = None
         self.logger = logging.getLogger(__name__)
-        self.m_eager = True
 
     @abstractmethod
     def fit(self, x_train_inputs: np.ndarray, y_train_outputs: np.ndarray, callbacks: list) -> int:
@@ -36,7 +35,7 @@ class Model(ABC):
         raise NotImplementedError(f"Abstract class function ({__name__}) not overwritten!")
 
     @abstractmethod
-    def predict(self, data: np.ndarray) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+    def predict(self, data: np.ndarray) -> np.ndarray:
         """ Predict with model
 
         Args:

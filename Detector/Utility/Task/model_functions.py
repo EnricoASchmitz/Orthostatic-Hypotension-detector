@@ -39,7 +39,7 @@ def fitting(model: Model, logger: Logger, x_train_inputs: np.ndarray, y_train_ou
     return n_iterations, (time.perf_counter() - start)
 
 
-def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
+def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.ndarray, float]:
     """ Predict with model and track time needed
 
         Args:
@@ -48,12 +48,12 @@ def predicting(model: Model, logger: Logger, test_set: np.ndarray) -> Tuple[np.n
             test_set: Testing set to use for fit
 
         Returns:
-            number of iterations, time needed for fitting
+            prediction, time needed for fitting
         """
     logger.info(f"predicting with model")
     start = time.perf_counter()
-    prediction, std = model.predict(test_set)
-    return prediction, std, (time.perf_counter() - start)
+    prediction = model.predict(test_set)
+    return prediction, (time.perf_counter() - start)
 
 
 def fit_and_predict(info_object: InfoObject, logger: Logger,
@@ -84,7 +84,7 @@ def fit_and_predict(info_object: InfoObject, logger: Logger,
     mlflow.log_metric("Training time", training_time, step=step)
 
     # predict with model
-    prediction, std, predict_time = predicting(model=model, logger=logger, test_set=input_values[test_index])
+    prediction, predict_time = predicting(model=model, logger=logger, test_set=input_values[test_index])
 
     # scale data
     prediction = rescale_function(prediction, scaler)
@@ -127,6 +127,7 @@ def check_gpu() -> bool:
 
 
 def filter_out_test_subjects(info_dataset):
+    info_dataset = info_dataset.reset_index(drop=True)
     filter_features = []
     all_ids = np.unique(info_dataset.ID)
     assert len(all_ids) >= 2, "Only 1 subject in the data"

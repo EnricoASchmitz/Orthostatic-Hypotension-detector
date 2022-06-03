@@ -14,8 +14,8 @@ class Files(Enum):
 
 class Parameters(Enum):
     """ Available parameters """
-    iterations = 1000
-    n_trials = 100
+    iterations = 1
+    n_trials = 2
     batch_size = 8
     validation_split = 0.2
     time_row_ms = 10
@@ -27,21 +27,17 @@ class Parameters(Enum):
     future_seconds = 150
     recovery_times = [15, 20, 30, 40, 50, 60, 120, 150]
     loss = "mse"
+    minimal_BP = 20
+    maximal_BP = 250
 
 
 class MLModelType(Enum):
     """ Available models """
     xgboost = "xgb"
     Dense = "dense"
-    LSTM = "lstm"
-    StackedLSTM = "stackedlstm"
-    biLSTM = "bilstm"
-    StackedBiLSTM = "stackedbilstm"
-    enc_dec_LSTM = "enc_dec_lstm"
-    enc_dec_att_LSTM = "enc_dec_att_lstm"
+    linearregression = "linearregression"
     cnn = "cnn"
-    nbeats = "nbeats"
-    deepar = "deepar"
+    timeMLP = "timemlp"
 
 
 class PreProcessorMethod(Enum):
