@@ -36,7 +36,7 @@ class Optimizer:
         self.info_dataset = info_dataset
         self.info_object = info_object
         self.data_object = data_object
-        # optuna.logging.set_verbosity(optuna.logging.WARNING)
+        optuna.logging.set_verbosity(optuna.logging.ERROR)
         self.logger = logging.getLogger(__name__)
 
     def load_study(self, storage) -> Optional[Study]:
