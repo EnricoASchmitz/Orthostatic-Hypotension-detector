@@ -11,7 +11,6 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from scipy.signal import butter, filtfilt, find_peaks
-from sklearn.preprocessing import RobustScaler
 
 from Detector.Utility.Plotting import plotting
 from Detector.Utility.PydanticObject import DataObject
@@ -30,7 +29,7 @@ def identify_flatliners(target_array: np.ndarray, future=20):
     y[y > 0] = 1
     y = pd.Series(y).rolling(future, min_periods=1, center=True).mean()
     y = abs(y)
-    y = np.mean([y,stat], axis=0)
+    y = np.mean([y, stat], axis=0)
     y = np.round(y, 0)
     return y
 
@@ -49,7 +48,7 @@ def get_scaled_statistics(rolling_data):
     return data
 
 
-def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2, plot = False)\
+def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2, plot=False) \
         -> pd.DataFrame:
     """ Remove flatliners from dataframe
 
