@@ -63,7 +63,9 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
         dataframe without flatliners
     """
     # get only bp values
-    target_array = np.array(df[data_object.target_col]).flatten()
+    target_array = df[data_object.target_col].copy()
+    target_array.dropna(axis=0, inplace=True)
+    target_array = np.array(target_array).flatten()
 
     # Get flatliners 0 is flat 1 is not
     y = identify_flatliners(target_array)
@@ -117,7 +119,7 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
     logger.warning(f"Removing {len(peak_plateaus['plateau_sizes'])} plateaus")
 
     # remove flatliners
-    df = df.where(df["signal"])
+    df[data_object.target_col] = df[data_object.target_col].where(df["signal"])
     df.drop("signal", inplace=True, axis=1)
 
     if plot:
@@ -175,5 +177,4 @@ def remove_unrealistic_values(df, data_object: DataObject,
         bp[upper < bp] = np.nan
         logger.warning("upperbound reached")
     df[bp_col] = bp
-    df.dropna(axis=0, inplace=True)
     return df
