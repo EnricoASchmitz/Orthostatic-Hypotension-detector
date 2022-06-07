@@ -83,13 +83,13 @@ def preprocessing(info_object: InfoObject) -> Tuple[DataObject, ndarray, DataFra
                 # Remove flatliner artifacts
                 df = remove_flatliners(df, data_object)
 
+                # add diastolic and systolic values
+                df, data_object = add_diastolic_systolic_bp(df, data_object, info_object)
+
                 # If we want to resample, we resample with a value given for time_row in de config
                 if int(1000 / data_object.hz) != info_object.time_row:
                     logger.info("resampled")
                     df, data_object = resample(df, data_object, info_object)
-
-                # add diastolic and systolic values
-                df, data_object = add_diastolic_systolic_bp(df, data_object, info_object)
 
                 challenges[challenge] = df
 

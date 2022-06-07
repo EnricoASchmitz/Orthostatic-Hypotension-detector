@@ -49,13 +49,15 @@ def get_scaled_statistics(rolling_data):
     return data
 
 
-def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2) -> pd.DataFrame:
+def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2, plot = False)\
+        -> pd.DataFrame:
     """ Remove flatliners from dataframe
 
     Args:
         df: dataframe
         data_object: Object containing all the needed information
         seconds_per_plateau: the number of seconds we expect a plateau to be
+        plot: Plot before and after filter
 
     Returns:
         dataframe without flatliners
@@ -118,7 +120,9 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
     df = df.where(df["signal"])
     df.drop("signal", inplace=True, axis=1)
 
-    plotting.simple_plot(x=df.index, y=df[data_object.target_col[0]], y2=[target_array, y], y2_name=["original", "y"])
+    if plot:
+        plotting.simple_plot(x=df.index, y=df[data_object.target_col[0]],
+                             y2=[target_array, y], y2_name=["original", "y"])
 
     return df
 
