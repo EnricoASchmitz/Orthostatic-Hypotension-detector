@@ -128,7 +128,7 @@ def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_pla
     return df
 
 
-def butter_low_pass_filter(data: Union[pd.Series, np.ndarray], cutoff: float, fs: int, order: int) \
+def butter_low_pass_filter(data: Union[pd.Series, np.ndarray], cutoff: float, fs: float, order: int) \
         -> Union[pd.Series, np.ndarray]:
     """ Perform butter worth smoothing
 
