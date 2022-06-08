@@ -178,20 +178,7 @@ def remove_unrealistic_values(df, data_object: DataObject,
     bp = df[bp_col].copy()
     bp_copy = bp.copy()
     # set all values which are very low or high to nan
-    bp_copy[bp_copy < mini - 5] = np.nan
-    bp_copy[bp_copy > maxi + 5] = np.nan
-    # get the standard deviation from the filtered data
-    ro = bp_copy.rolling(data_object.hz * 5, min_periods=1, center=True)
-    std = ro.std().ffill().bfill()
-    # calculate the upper and lower bound
-    upper = np.nanquantile(bp_copy, 0.95) + std * 2
-    lower = np.nanquantile(bp_copy, 0.05) - std * 2
-    # replace values above or below the respective threshold
-    if np.any(lower > bp) and np.any(bp < mini):
-        bp[lower > bp] = np.nan
-        logger.warning("lowerbound reached")
-    if np.any(upper < bp) and np.any(bp > maxi):
-        bp[upper < bp] = np.nan
-        logger.warning("upperbound reached")
-    df[bp_col] = bp
+    bp_copy[bp_copy < mini] = np.nan
+    bp_copy[bp_copy > maxi] = np.nan
+    df[bp_col] = bp_copy
     return df
