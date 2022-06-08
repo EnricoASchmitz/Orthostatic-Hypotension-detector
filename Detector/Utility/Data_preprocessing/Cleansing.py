@@ -48,7 +48,7 @@ def get_scaled_statistics(rolling_data):
     return data
 
 
-def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2, plot=False) \
+def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2, plot=True) \
         -> pd.DataFrame:
     """ Remove flatliners from dataframe
 
@@ -151,6 +151,24 @@ def butter_low_pass_filter(data: Union[pd.Series, np.ndarray], cutoff: float, fs
         index = data.index
         y = pd.Series(y, index=index)
     return y
+
+
+def hampel_filter(input_series, window_size, n_sigmas=3):
+    k = 1.4826  # scale factor for Gaussian distribution
+    new_series = input_series.copy()
+
+    # helper lambda function
+    MAD = lambda x: np.median(np.abs(x - np.median(x)))
+
+    rolling_median = input_series.rolling(window=2 * window_size, center=True).median()
+    rolling_mad = k * input_series.rolling(window=2 * window_size, center=True).apply(MAD)
+    diff = np.abs(input_series - rolling_median)
+
+    np_array = np.array(diff > rolling_mad.multiply(n_sigmas)).flatten()
+    indices = list(np.argwhere(np_array).flatten())
+    new_series.iloc[indices] = rolling_median.iloc[indices]
+
+    return new_series
 
 
 def remove_unrealistic_values(df, data_object: DataObject,
