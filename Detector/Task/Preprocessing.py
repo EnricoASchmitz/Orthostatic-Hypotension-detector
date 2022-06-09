@@ -99,7 +99,7 @@ def preprocessing(info_object: InfoObject) -> Tuple[DataObject, ndarray, DataFra
                 challenges[challenge] = df
 
                 # get the protocol markers standing or sitting
-                df, stand_markers = get_markers(df, markers_dict)
+                stand_markers = get_markers(df, markers_dict)
 
                 markers[challenge] = stand_markers
 

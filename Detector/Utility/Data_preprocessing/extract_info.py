@@ -369,7 +369,7 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
     stand = h_stages.str.contains("stand", case=False)
     stop_index = df.index[0]
 
-    for repeat in range(0, 3):
+    for repeat in range(len(info["Markers"])):
         warning = f"Subject {sub}; challenge: {chal}; repeat: {repeat + 1}"
 
         start_index, stand_index, stop_index = get_indices(sitting, stand, stop_index)
