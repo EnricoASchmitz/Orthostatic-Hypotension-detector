@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from scipy.io import loadmat
 from scipy.signal import decimate
+from sklearn.preprocessing import MinMaxScaler
 
 from Detector.Utility.PydanticObject import TagsObject
 from Detector.Utility.Task.preprocessing.PreprocessingFunctions import fetch_matlab_struct_data, add_value
@@ -136,11 +137,35 @@ class KlopPreprocessor(Preprocessor):
 
         # convert acc columns to 1 or 2 columns
         acc_df = df.filter(like="ACC")
+        scaler = MinMaxScaler()
+        index_acc = acc_df.index
+        cols_acc = acc_df.columns
+        acc_array = scaler.fit_transform(np.array(acc_df))
+        acc_df = pd.DataFrame(acc_array, index=index_acc, columns=cols_acc)
         drop_cols = list(acc_df.columns)
-        Z = acc_df.filter(regex="Z").mean(axis=1)
+        X = acc_df.filter(regex='X')
+        dup_col = [e for e in X.columns if X[e].nunique() == 1]
+        if dup_col:
+            X[dup_col] = 1
+        Y = acc_df.filter(regex='Y')
+        dup_col = [e for e in Y.columns if Y[e].nunique() == 1]
+        if dup_col:
+            Y[dup_col] = 1
+        Z = acc_df.filter(regex='Z')
+        dup_col = [e for e in Z.columns if Z[e].nunique() == 1]
+        if dup_col:
+            Z[dup_col] = 1
+        movement_features = []
+        if MERGE_L_R:
+            col = "movement"
+            df[col] = np.sqrt(X.mean(axis=1) ** 2 + Y.mean(axis=1) ** 2 + Z.mean(axis=1) ** 2)
+            movement_features.append(col)
+        else:
+            for i in range(len(X.columns)):
+                col_name = f"movement_S{i}"
+                df[col_name] = np.sqrt(X.iloc[:, i] ** 2 + Y.iloc[:, i] ** 2 + Z.iloc[:, i] ** 2)
+                movement_features.append(col_name)
         df.drop(drop_cols, axis=1, inplace=True)
-        df["Z_movement"] = Z
-
         dataframe_cols = list(df.columns)
         [dataframe_cols.remove(col) for col in target_col]
 
@@ -148,7 +173,7 @@ class KlopPreprocessor(Preprocessor):
             "index_col": index_col,
             "target_col": target_col,
             "nirs_col": nirs_col,
-            "movement_features": ["Z_movement"],
+            "movement_features": movement_features,
             "features": dataframe_cols,
             "hz": hz,
         }
