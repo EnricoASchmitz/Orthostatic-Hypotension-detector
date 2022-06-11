@@ -48,7 +48,7 @@ def get_scaled_statistics(rolling_data):
     return data
 
 
-def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2, plot=True) \
+def remove_flatliners(df: pd.DataFrame, data_object: DataObject, seconds_per_plateau: float = 1.2, plot=False) \
         -> pd.DataFrame:
     """ Remove flatliners from dataframe
 

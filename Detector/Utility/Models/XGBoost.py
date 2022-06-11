@@ -41,7 +41,7 @@ class XGB(Model):
         loss = Parameters.loss.value
         if loss == "mse":
             loss = "rmse"
-        xgb = XGBRegressor(eval_metric=loss, verbosity=1, **self.parameters)
+        xgb = XGBRegressor(eval_metric=loss, verbosity=0, **self.parameters)
 
         model = MyMultiOutputRegressor(xgb)
 
