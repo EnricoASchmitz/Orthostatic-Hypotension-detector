@@ -1,7 +1,9 @@
 # Ignore file types
 *.db
+*.pyc
+.idea/workspace.xml
 
 # Ignore folders
 klop/
 */__pycache__/
-*.pyc
+
