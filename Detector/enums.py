@@ -14,8 +14,9 @@ class Files(Enum):
 
 class Parameters(Enum):
     """ Available parameters """
-    iterations = 1000
-    n_trials = 500
+    iterations = 100
+    n_trials = 5
+    max_opt_hours = 24
     batch_size = 8
     validation_split = 0.2
     time_row_ms = 10
@@ -27,8 +28,8 @@ class Parameters(Enum):
     future_seconds = 150
     recovery_times = [15, 20, 30, 40, 50, 60, 120, 150]
     loss = "mse"
-    minimal_BP = 20
-    maximal_BP = 250
+    minimal_BP = 15
+    maximal_BP = 300
 
 
 class MLModelType(Enum):

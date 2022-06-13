@@ -308,7 +308,8 @@ def extract_values(data_object: DataObject, df: pd.Series,
     for Nirs_type in data_object.nirs_col:
         nirs = df[Nirs_type][starting_index:stop_index].copy()
         nirs = nirs.ffill().bfill()
-        smooth_nirs = butter_low_pass_filter(nirs, cutoff=0.5, fs=100, order=2)
+        # parameters: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2818571/
+        smooth_nirs = butter_low_pass_filter(nirs, cutoff=0.01, fs=0.5, order=2)
         x_nirs = get_x_values(x_nirs, smooth_nirs, Nirs_type)
 
     data_object.reconstruct_params = reconstruct_params
@@ -368,7 +369,7 @@ def make_datasets(data_object: DataObject, sub: str, info: dict, seconds: int,
     stand = h_stages.str.contains("stand", case=False)
     stop_index = df.index[0]
 
-    for repeat in range(0, 3):
+    for repeat in range(len(info["Markers"])):
         warning = f"Subject {sub}; challenge: {chal}; repeat: {repeat + 1}"
 
         start_index, stand_index, stop_index = get_indices(sitting, stand, stop_index)

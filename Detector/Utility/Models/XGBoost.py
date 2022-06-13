@@ -41,7 +41,7 @@ class XGB(Model):
         loss = Parameters.loss.value
         if loss == "mse":
             loss = "rmse"
-        xgb = XGBRegressor(eval_metric=loss, verbosity=1, **self.parameters)
+        xgb = XGBRegressor(eval_metric=loss, verbosity=0, **self.parameters)
 
         model = MyMultiOutputRegressor(xgb)
 
@@ -106,7 +106,7 @@ class XGB(Model):
 
     def _set_default_parameters(self, parameters=None):
         self.parameters = {
-            "n_estimators": (Parameters.iterations.value * 10),
+            "n_estimators": Parameters.iterations.value,
             "objective": "reg:squarederror"
         }
         if self.gpu:

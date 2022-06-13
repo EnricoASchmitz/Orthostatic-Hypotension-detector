@@ -80,7 +80,8 @@ class Optimizer:
         study.optimize(self._objective,
                        n_trials=Parameters.n_trials.value,
                        gc_after_trial=True,
-                       callbacks=[lambda study, trial: clear_session()]
+                       callbacks=[lambda study, trial: clear_session()],
+                       timeout=int(int(Parameters.max_opt_hours.value)*60*60)
                        )
         return study
 

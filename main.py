@@ -22,7 +22,7 @@ from Detector.enums import MLModelType
 
 warnings.simplefilter(action="ignore", category=UserWarning)
 warnings.simplefilter(action="ignore", category=RuntimeWarning)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 # variables
 dataset_name = "klop"
 save_file = False
@@ -86,11 +86,12 @@ def parse_arguments(argv):
     Fit = None
     try:
         opts, args = getopt.getopt(argv,
-                                   "hdmofsl",
+                                   "hdmofsnl",
                                    [
                                        "dataset=",
                                        "model=",
                                        "smooth=",
+                                       "nirs_input=",
                                        "file_loc=",
                                        "optimize=",
                                        "fit="
@@ -109,7 +110,11 @@ def parse_arguments(argv):
             elif opt in ("-m", "--model"):
                 info_dict["model"] = arg
             elif opt in ("-s", "--smooth"):
+                arg = parse_bool(opt, arg)
                 info_dict["smooth"] = arg
+            elif opt in ("-n", "--nirs_input"):
+                arg = parse_bool(opt, arg)
+                info_dict["nirs_input"] = arg
             elif opt in ("-l", "--file_loc"):
                 info_dict["file_loc"] = arg
             elif opt in ("-o", "--optimize"):
