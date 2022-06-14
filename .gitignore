@@ -3,6 +3,6 @@
 *.db
 
 # Ignore folders
-klop/
+*klop/
 __pycache__/
 

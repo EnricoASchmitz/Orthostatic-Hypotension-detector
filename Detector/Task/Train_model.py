@@ -53,7 +53,8 @@ def train_model(x: np.ndarray, info_dataset: pd.DataFrame,
     do = data_object.dict()
     tags = {key: do[key] for key in keys_to_extract}
 
-    serializer = MLflowSerializer(dataset_name=info_object.dataset,
+    serializer = MLflowSerializer(nirs_data=info_object.nirs_input,
+                                  dataset_name=info_object.dataset,
                                   parameter_expiriment=info_object.parameter_model,
                                   sample_tags=tags)
     last_optimized_run = serializer.get_last_optimized_run(info_object.model)
