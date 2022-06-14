@@ -15,7 +15,7 @@ from Detector.Utility.PydanticObject import TagsObject
 
 class Preprocessor(ABC):
     @abstractmethod
-    def get_df(self, file) -> Tuple[pd.DataFrame, dict, dict]:
+    def get_df(self, file, file_name=None) -> Tuple[pd.DataFrame, dict, dict]:
         """ Return dataset
 
         Returns:

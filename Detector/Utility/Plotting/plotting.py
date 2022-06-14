@@ -224,7 +224,7 @@ def plot_comparison(model_name, info_df, names, rescaled_prediction, true, folde
 
 
 def plot_curves(sample, plot_index, reconstucted_curves_prediction, true_reconstucted_curve, target_index, BP_type,
-                folder_name=None):
+                folder_name=None, streamlit_bool: bool = False):
     true = sample[:, target_index].copy()
     base_tuple = Parameters.baseline_tuple.value
     base_length = base_tuple[0] - base_tuple[1]
@@ -256,6 +256,8 @@ def plot_curves(sample, plot_index, reconstucted_curves_prediction, true_reconst
 
     if folder_name is not None:
         mlflow.log_figure(figure, f"{folder_name}/{BP_type}_parameter_prediction.html")
+    elif streamlit_bool:
+        return figure
     else:
         figure.show()
 

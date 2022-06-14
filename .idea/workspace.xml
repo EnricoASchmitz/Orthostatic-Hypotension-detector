@@ -3,11 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="ad4d38da-039a-4677-a087-b0ea8e16e93a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config.json" beforeDir="false" afterPath="$PROJECT_DIR$/Config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Preprocessing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Task/Train_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Task/Train_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Data_preprocessing/Cleansing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/model_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Plotting/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Plotting/plotting.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Serializer/Serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Serializer/Serializer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/KlopPreprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/KlopPreprocessor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/PreprocessingFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/PreprocessingFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/abstractPreprocessor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Detector/Utility/Task/preprocessing/abstractPreprocessor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,12 +65,34 @@
       <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic Hypotension detector\Detector\Utility\Data_preprocessing" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector" />
       <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector\Detector\Utility\Models" />
       <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector\Detector" />
       <recent name="C:\Users\enric\Documents\Master thesis\Scripts_master\Orthostatic-Hypotension-detector\Detector\Utility\Models\Keras" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.main">
+    <configuration name="Orthostatic_hypotension_detection" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Orthostatic-Hypotension-detector" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Orthostatic_hypotension_detection.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -94,6 +117,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.Orthostatic_hypotension_detection" />
       </list>
     </recent_temporary>
   </component>

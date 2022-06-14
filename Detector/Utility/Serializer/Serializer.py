@@ -12,6 +12,8 @@ from typing import Optional
 import mlflow
 import pandas as pd
 
+from Detector.enums import Parameters
+
 
 class MLflowSerializer:
     """ Save information to MLflow """
@@ -90,3 +92,10 @@ class MLflowSerializer:
             return
         # only return the latest run
         return last_run.iloc[0]
+
+    def get_best_model(self, loss: str = Parameters.loss.value):
+        query = "tags.phase = 'training'"
+        df = mlflow.search_runs([self.experiment_id],
+                                filter_string=query)
+        last_run = df.loc[df[f'metrics.avg_{loss}'].idxmin()]
+        return last_run
