@@ -4,6 +4,6 @@
 .idea/workspace.xml
 
 # Ignore folders
-klop/
-*/__pycache__/
+*klop/
+__pycache__/
 

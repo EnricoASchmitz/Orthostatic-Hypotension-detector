@@ -16,13 +16,17 @@ import pandas as pd
 class MLflowSerializer:
     """ Save information to MLflow """
 
-    def __init__(self, dataset_name: str, parameter_expiriment: bool, sample_tags: dict):
+    def __init__(self, nirs_data: bool, dataset_name: str, parameter_expiriment: bool, sample_tags: dict):
         # setup
         self.uri_start = "file://"
         pwd = os.getcwd()
         if pwd[0] != "/":
             self.uri_start = f"{self.uri_start}/"
-        tracking_uri = f"{self.uri_start}{pwd}/{dataset_name}"
+        if nirs_data:
+            data_type = "NIRS"
+        else:
+            data_type = "BP"
+        tracking_uri = f"{self.uri_start}{pwd}/{data_type}_{dataset_name}"
         mlflow.set_tracking_uri(tracking_uri)
         sample_tags.update({"dataset": dataset_name})
         if parameter_expiriment:

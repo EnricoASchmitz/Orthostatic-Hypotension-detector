@@ -42,7 +42,8 @@ def optimize_model(x: np.ndarray,
     do = data_object.dict()
     tags = {key: do[key] for key in keys_to_extract}
 
-    serializer = MLflowSerializer(dataset_name=info_object.dataset,
+    serializer = MLflowSerializer(nirs_data=info_object.nirs_input,
+                                  dataset_name=info_object.dataset,
                                   parameter_expiriment=info_object.parameter_model,
                                   sample_tags=tags)
     old_run = check_for_optimized_run(serializer, name=info_object.model, storage_file=storage)
