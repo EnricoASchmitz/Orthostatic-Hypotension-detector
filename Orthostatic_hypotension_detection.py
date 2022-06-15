@@ -140,9 +140,12 @@ if __name__ == "__main__":
 
             model_parameters = run.data.params
             # get the artifact store location
-            artifact_uri = best_run.artifact_uri
+            artifact_uri_with_lead = best_run.artifact_uri
             # remove uri suffix
-            artifact_uri = artifact_uri.removeprefix(serializer.uri_start)
+            artifact_uri = artifact_uri_with_lead.removeprefix(serializer.uri_start)
+            if artifact_uri_with_lead == artifact_uri:
+                serializer.uri_start = serializer.uri_start[:-1]
+                artifact_uri = artifact_uri_with_lead.removeprefix(serializer.uri_start)
             # get the model folder
             model_folder = Path(os.path.join(artifact_uri, f"model/"))
 
@@ -162,7 +165,7 @@ if __name__ == "__main__":
                 model_folder = Path(str(model_folder).lstrip("/\\"))
                 model.load_model(model_folder)
 
-            st.write("Prediction")
+            st.write("## Prediction")
             with st.spinner('Making prediction...'):
                 prediction = model.predict(x)
             # Scale back the prediction
