@@ -161,6 +161,7 @@ if __name__ == "__main__":
                             for target_index, target_name in enumerate(["SBP", "DBP"]):
                                 fig = plot_curve(i, pred_curve, target_index, target_name)
                                 st.plotly_chart(fig, use_container_width=True)
+                    get_clicks(False, remove=True)
 
     if st.button("Reset"):
         get_clicks(False, remove=True)
