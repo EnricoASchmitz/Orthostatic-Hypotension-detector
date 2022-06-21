@@ -87,12 +87,14 @@ def add_value(dictionary: dict, columns: Union[str, List[str]], value: np.array)
     return dictionary
 
 
-def create_info_object(dataset: Optional[str] = None, info_dict: Optional[dict] = None):
+def create_info_object(dataset: Optional[str] = None, info_dict: Optional[dict] = None,
+                       config_file: str = Files.config.value):
     """ Create an info object
 
     Args:
         dataset: data set to use
         info_dict: dictionary to use for creation of object, if None use Config.json
+        config_file: config file with default settings
 
     Raises:
         ValueError: if dataset and info_dict not specified.
@@ -103,7 +105,7 @@ def create_info_object(dataset: Optional[str] = None, info_dict: Optional[dict] 
     if (dataset is None) and (info_dict is None):
         raise ValueError("Missing a dataset for config or a dict containing the information")
 
-    with open(Files.config.value, "r") as f:
+    with open(config_file, "r") as f:
         json_dict = json.load(f)[str(dataset)]
         json_dict.update(info_dict)
         info_dict = json_dict.copy()

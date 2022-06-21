@@ -7,6 +7,7 @@
 # Imports
 import os
 from os.path import basename
+from pathlib import Path
 from typing import Tuple
 
 import numpy as np
@@ -31,9 +32,10 @@ class KlopPreprocessor(Preprocessor):
         self.logger = logger
         self.info_object = info_object
 
-    def get_df(self, file) -> Tuple[pd.DataFrame, dict, dict]:
+    def get_df(self, file, file_name: str = None) -> Tuple[pd.DataFrame, dict, dict]:
         # check type of file preprocessed or markerschecked
-        file_name = basename(file)
+        if isinstance(file, Path) and file_name is None:
+            file_name = basename(file)
 
         target_col = ["BP"]
         features = [

@@ -6,3 +6,5 @@
 *klop/
 __pycache__/
 
+counter.txt
+.idea/workspace.xml
