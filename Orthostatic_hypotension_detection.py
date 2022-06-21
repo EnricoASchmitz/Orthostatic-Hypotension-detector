@@ -25,10 +25,9 @@ Click = 0
 def load_json():
     st.write("# Parameter models")
     st.write("## Information")
-    config_file = st.file_uploader("pick a .json file", type="json")
     preproccesor = st.radio("Pick a preprocessor to use", ('klop',))
-    clicks = get_clicks(st.button("Click me"))
-    return config_file, preproccesor, clicks
+    clicks = get_clicks(st.button("Continue"))
+    return preproccesor, clicks
 
 
 def load_input():
@@ -105,63 +104,63 @@ def load_model(input_shape, output_shape):
 
 
 if __name__ == "__main__":
-    config_file, preproccesor, clicks = load_json()
+    preproccesor, clicks = load_json()
+    logger, input_file = load_input()
     if clicks >= 1:
-        if config_file is None:
-            st.warning('No config file given!')
+        if input_file is None:
+            st.warning('No input file given!')
             st.stop()
-        logger, input_file = load_input()
+        oxy_name, dxy_name = load_names()
+        if clicks == 1:
+            st.warning("press continue")
         if clicks >= 2:
-            if input_file is None:
-                st.warning('No input file given!')
-                st.stop()
-            oxy_name, dxy_name = load_names()
+            scalers_in, scaler_out = load_scalers()
+            output_shape = len(scalers_in), scalers_in[0].n_features_in_
+            if clicks == 2:
+                st.warning("press continue")
             if clicks >= 3:
-                scalers_in, scaler_out = load_scalers()
-                output_shape = len(scalers_in), scalers_in[0].n_features_in_
-                if clicks >= 4:
 
-                    X = load_data()
-                    model = load_model(input_shape=X.shape[1:], output_shape=output_shape)
-                    X_scaled = scale3d(X, scalers_in)
-                    st.write("## Prediction")
-                    with st.spinner('Making prediction...'):
-                        prediction = model.predict(X_scaled)
-                        # Scale back the prediction
-                        prediction_array = scaler_out.inverse_transform(prediction)
-                        cols = ['BP_systolic_drop', 'BP_systolic_drop_index', 'BP_systolic_drop_rate',
-                                'BP_systolic_recovery_15', 'BP_systolic_recovery_20',
-                                'BP_systolic_recovery_30', 'BP_systolic_recovery_40',
-                                'BP_systolic_recovery_50', 'BP_systolic_recovery_60',
-                                'BP_systolic_recovery_120', 'BP_systolic_recovery_150',
-                                'BP_systolic_drop_per_sec', 'BP_systolic_recovery_rate_60',
-                                'BP_diastolic_drop', 'BP_diastolic_drop_index',
-                                'BP_diastolic_drop_rate', 'BP_diastolic_recovery_15',
-                                'BP_diastolic_recovery_20', 'BP_diastolic_recovery_30',
-                                'BP_diastolic_recovery_40', 'BP_diastolic_recovery_50',
-                                'BP_diastolic_recovery_60', 'BP_diastolic_recovery_120',
-                                'BP_diastolic_recovery_150', 'BP_diastolic_drop_per_sec',
-                                'BP_diastolic_recovery_rate_60']
-                        reconstruct_params = ['BP_systolic_drop', 'BP_systolic_drop_index', 'BP_systolic_recovery_15',
-                                              'BP_systolic_recovery_20', 'BP_systolic_recovery_30',
-                                              'BP_systolic_recovery_40', 'BP_systolic_recovery_50',
-                                              'BP_systolic_recovery_60', 'BP_systolic_recovery_120',
-                                              'BP_systolic_recovery_150', 'BP_diastolic_drop',
-                                              'BP_diastolic_drop_index', 'BP_diastolic_recovery_15',
-                                              'BP_diastolic_recovery_20', 'BP_diastolic_recovery_30',
-                                              'BP_diastolic_recovery_40', 'BP_diastolic_recovery_50',
-                                              'BP_diastolic_recovery_60', 'BP_diastolic_recovery_120',
-                                              'BP_diastolic_recovery_150']
-                        recovery_times = [15, 20, 30, 40, 50, 60, 120, 150]
+                X = load_data()
+                model = load_model(input_shape=X.shape[1:], output_shape=output_shape)
+                X_scaled = scale3d(X, scalers_in)
+                st.write("## Prediction")
+                with st.spinner('Making prediction...'):
+                    prediction = model.predict(X_scaled)
+                    # Scale back the prediction
+                    prediction_array = scaler_out.inverse_transform(prediction)
+                    cols = ['BP_systolic_drop', 'BP_systolic_drop_index', 'BP_systolic_drop_rate',
+                            'BP_systolic_recovery_15', 'BP_systolic_recovery_20',
+                            'BP_systolic_recovery_30', 'BP_systolic_recovery_40',
+                            'BP_systolic_recovery_50', 'BP_systolic_recovery_60',
+                            'BP_systolic_recovery_120', 'BP_systolic_recovery_150',
+                            'BP_systolic_drop_per_sec', 'BP_systolic_recovery_rate_60',
+                            'BP_diastolic_drop', 'BP_diastolic_drop_index',
+                            'BP_diastolic_drop_rate', 'BP_diastolic_recovery_15',
+                            'BP_diastolic_recovery_20', 'BP_diastolic_recovery_30',
+                            'BP_diastolic_recovery_40', 'BP_diastolic_recovery_50',
+                            'BP_diastolic_recovery_60', 'BP_diastolic_recovery_120',
+                            'BP_diastolic_recovery_150', 'BP_diastolic_drop_per_sec',
+                            'BP_diastolic_recovery_rate_60']
+                    reconstruct_params = ['BP_systolic_drop', 'BP_systolic_drop_index', 'BP_systolic_recovery_15',
+                                          'BP_systolic_recovery_20', 'BP_systolic_recovery_30',
+                                          'BP_systolic_recovery_40', 'BP_systolic_recovery_50',
+                                          'BP_systolic_recovery_60', 'BP_systolic_recovery_120',
+                                          'BP_systolic_recovery_150', 'BP_diastolic_drop',
+                                          'BP_diastolic_drop_index', 'BP_diastolic_recovery_15',
+                                          'BP_diastolic_recovery_20', 'BP_diastolic_recovery_30',
+                                          'BP_diastolic_recovery_40', 'BP_diastolic_recovery_50',
+                                          'BP_diastolic_recovery_60', 'BP_diastolic_recovery_120',
+                                          'BP_diastolic_recovery_150']
+                    recovery_times = [15, 20, 30, 40, 50, 60, 120, 150]
 
-                        prediction = pd.DataFrame(prediction_array, columns=cols).copy()
-                        pred_curve = make_curves(prediction, reconstruct_params, recovery_times)
-                        for i in range(pred_curve.shape[0]):
-                            st.write(f"Prediction for repetition {i}")
-                            for target_index, target_name in enumerate(["SBP", "DBP"]):
-                                fig = plot_curve(i, pred_curve, target_index, target_name)
-                                st.plotly_chart(fig, use_container_width=True)
-                    get_clicks(False, remove=True)
+                    prediction = pd.DataFrame(prediction_array, columns=cols).copy()
+                    pred_curve = make_curves(prediction, reconstruct_params, recovery_times)
+                    for i in range(pred_curve.shape[0]):
+                        st.write(f"Prediction for repetition {i}")
+                        for target_index, target_name in enumerate(["SBP", "DBP"]):
+                            fig = plot_curve(i, pred_curve, target_index, target_name)
+                            st.plotly_chart(fig, use_container_width=True)
+                get_clicks(False, remove=True)
 
     if st.button("Reset"):
         get_clicks(False, remove=True)
