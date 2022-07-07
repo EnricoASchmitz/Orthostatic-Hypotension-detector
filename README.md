@@ -47,3 +47,8 @@ Also including used the model
 # Optimization
 Optimization is done with Optuna, this performs a number of trials and saves the best trial to MLflow
 After optimizing we need to use the optimized parameter in a fitting task to get the model saved.
+
+# Application
+The [application](Orthostatic_hypotension_detection.py) from streamlit can be used to extract and use a trained model on your data.
+For this to work you would need the NIRS_klop folder in the same directory and adjusted the paths in the meta.yamls in the NIRS_klop folder.
+The paths can be easily changed using this [script](rewrite_mlflow_yaml.py).
