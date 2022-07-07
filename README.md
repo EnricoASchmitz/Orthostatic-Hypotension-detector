@@ -1,10 +1,10 @@
-# Orthostatic hypotenstion detector
+# Orthostatic hypotension detector
 
 
 
 # Input data
-The expected input for the data are 40 seconds of sitting and 150 seconds during standing of oxygenated heamoglobin and deoxigneated heamoglobin signals.
-In the config file settings can be changed to use it on your own data, adjust the data preposessing or the used model.
+The expected input for the data is 40 seconds of sitting and 150 seconds during standing of oxygenated haemoglobin and deoxygenated haemoglobin signals.
+In the config file, settings can be changed to use it on your data, adjust the data prepossessing or the used model.
 
 
 ## To use the current preprossor
@@ -30,20 +30,20 @@ expected timestep names:
 - "nirs_time", column with the timesteps
 - "fs_nirs", number of Hz
 
-## How to implement your own method(model or preprocessing your own data.)
-  1. Create a class based on the abtract class
-  2. Add the class to the corresponding creator and the enums file in the write column
+## How to implement your method(model or preprocessing your data.)
+  1. Create a class based on the abstract class
+  2. Add the class to the corresponding creator and the enums file in the right column
   3. Implement all abstract methods
   4. Use the new method in the config file
 
-# predicting
-From the input data the algorithm will infer characterisitcs about the SBP and DBP after standing up.
-The infered characteristics can be used to make a diagnosis if the patient has OH.
+# Predicting
+From the input data, the algorithm will infer the characteristics of the SBP and DBP after standing up.
+The inferred characteristics can be used to make a diagnosis if the patient has OH.
 
 # Data will be saved to MLflow
-The data is saved with MLflow, this contains a ui which we can use to compare trained and optimized models.
+The data is saved with MLflow, this contains a UI which we can use to compare trained and optimized models.
 Also including used the model
 
 # Optimization
-Optimzation is done with Optuna, this performs a number of trials and save the best trial to MLflow
+Optimization is done with Optuna, this performs a number of trials and saves the best trial to MLflow
 After optimizing we need to use the optimized parameter in a fitting task to get the model saved.
