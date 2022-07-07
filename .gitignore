@@ -3,7 +3,6 @@
 *.db
 
 # Ignore folders
-*klop/
 __pycache__/
 
 counter.txt
